@@ -1,0 +1,21 @@
+{
+  "name": "noinfopath-kendo-ui",
+  "main": "noinfopath-kendo-ui.js",
+  "version": "0.0.1",
+  "authors": [
+    "noInfoPath <info@noinfopath.com>"
+  ],
+  "description": "noInfoPath data module",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "ng-lodash": "~0.2.0",
+    "jquery": "~2.1.4"
+  }
+}
