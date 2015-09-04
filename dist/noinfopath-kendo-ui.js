@@ -98,7 +98,7 @@ noInfoPath.kendo = {};
 (function(angular, undefined){
 	"use strict";
 
-	angular.module("noinfopath.kendu.ui")
+	angular.module("noinfopath.kendo.ui")
 		.service("kendoQueryParser",[function(){
 			var filters, sort, paging;
 
@@ -121,7 +121,11 @@ noInfoPath.kendo = {};
 			});
 
 			this.parse = function(kendoOptions){
-				console.warn("TODO: Implement kendoQueryParser::parse method.");
+				//filter { logic: "and", filters: [ { field: "name", operator: "startswith", value: "Jane" } ] }
+				//{"take":10,"skip":0,"page":1,"pageSize":10,"filter":{"logic":"and","filters":[{"value":"apple","operator":"startswith","ignoreCase":true}]}}
+				if(!!kendoOptions.take) paging = new noInfoPath.data.NoPage(kendoOptions.skip, kendoOptions.take);
+				if(!!kendoOptions.sort) sort = new noInfoPath.data.NoSort(kendoOptions.sort);
+				if(!!kendoOptions.filter) filters = new noInfoPath.data.NoFilters(kendoOptions.filter);
 			};
 
 			this.toArray = function(){
@@ -160,7 +164,7 @@ noInfoPath.kendo = {};
 		like the IndexedDB, WebSql and HTTP implementations.
 	*/
 		.factory("noKendoDataSourceFactory", ["kendoQueryParser", function(kendoQueryParser){
-			function kendoDataSourceService(){
+			function KendoDataSourceService(){
 				this.create = function (config, noTable){
 					if(!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
 					if(!noTable) throw "kendoDataSourceService::create requires a no noTable object as the second parameter";
@@ -176,7 +180,7 @@ noInfoPath.kendo = {};
 							read: function(options){
 								kendoQueryParser.parse(options.data);
 
-								noTable.noRead.apply(null, kendoQueryBuilder.toArray())
+								noTable.noRead.apply(null, kendoQueryParser.toArray())
 									.then(options.sucess)
 									.catch(options.error);
 							},
@@ -204,7 +208,54 @@ noInfoPath.kendo = {};
 
 					return kds;
 				};
+
 			}
+
+			return new KendoDataSourceService();
 		}]);
 })(angular, kendo);
 
+//grid.js
+(function(angular, undefined){
+    angular.module("noinfopath.kendo.ui")
+
+		/**
+		* ```html
+		* <no-kendo-grid no-provider="noWebSQL" no-table="Cooperators" no-component="Cooperators" />
+		* ```
+		*/
+        .directive("noKendoGrid", ['$injector', '$state','$q','lodash','noKendoDataSourceFactory', 'noConfig', function($injector, $state, $q, _, noKendoDataSourceFactory, noConfig){
+            return {
+                link: function(scope, el, attrs){
+                    if(!attrs.noProvider) throw "noGrid requires a noProvider attribute";
+                    if(!attrs.noTable) throw "noGrid requires a noTable attribute.";
+
+                     //Ensure with have a propertly configured application.
+                    //In this case a properly configured IndexedDB also.
+                    noConfig.whenReady()
+                        .then(_start)
+                        .catch(function(err){
+                            console.error(err);
+                        });
+
+                    function _start(){
+						var _provider = $injector.get(attrs.noProvider),
+						_config = noConfig.current.components[attrs.noComponent];
+
+						// _provider.wait(_config.dataProvider)
+						// 	.then(function(){
+						// 		var _table = _provider[attrs.noTable],
+						//
+						// 		_dataSource = noKendoDataSourceFactory.create(_config.kendoDataSource, _table);
+						//
+						// 		_config.dataSource = _dataSource;
+						//
+						// 		el.kendoGrid(_config.kendoGrid);
+						// 	});
+
+                    }
+                }
+            };
+        }]);
+
+})(angular);

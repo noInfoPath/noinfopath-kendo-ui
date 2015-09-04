@@ -18,7 +18,7 @@
 		like the IndexedDB, WebSql and HTTP implementations.
 	*/
 		.factory("noKendoDataSourceFactory", ["kendoQueryParser", function(kendoQueryParser){
-			function kendoDataSourceService(){
+			function KendoDataSourceService(){
 				this.create = function (config, noTable){
 					if(!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
 					if(!noTable) throw "kendoDataSourceService::create requires a no noTable object as the second parameter";
@@ -62,6 +62,9 @@
 
 					return kds;
 				};
+
 			}
+
+			return new KendoDataSourceService();
 		}]);
 })(angular, kendo);
