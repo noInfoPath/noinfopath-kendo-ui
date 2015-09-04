@@ -34,7 +34,7 @@
 							read: function(options){
 								kendoQueryParser.parse(options.data);
 
-								noTable.noRead.apply(null, kendoQueryBuilder.toArray())
+								noTable.noRead.apply(null, kendoQueryParser.toArray())
 									.then(options.sucess)
 									.catch(options.error);
 							},
