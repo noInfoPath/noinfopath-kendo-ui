@@ -28,7 +28,7 @@
 (function(angular, undefined){
 	"use strict";
 
-	angular.module("noinfopath.kendu.ui")
+	angular.module("noinfopath.kendo.ui")
 		.service("kendoQueryParser",[function(){
 			var filters, sort, paging;
 
@@ -51,7 +51,11 @@
 			});
 
 			this.parse = function(kendoOptions){
-				console.warn("TODO: Implement kendoQueryParser::parse method.");
+				//filter { logic: "and", filters: [ { field: "name", operator: "startswith", value: "Jane" } ] }
+				//{"take":10,"skip":0,"page":1,"pageSize":10,"filter":{"logic":"and","filters":[{"value":"apple","operator":"startswith","ignoreCase":true}]}}
+				if(!!kendoOptions.take) paging = new noInfoPath.data.NoPage(kendoOptions.skip, kendoOptions.take);
+				if(!!kendoOptions.sort) sort = new noInfoPath.data.NoSort(kendoOptions.sort);
+				if(!!kendoOptions.filter) filters = new noInfoPath.data.NoFilters(kendoOptions.filter);
 			};
 
 			this.toArray = function(){

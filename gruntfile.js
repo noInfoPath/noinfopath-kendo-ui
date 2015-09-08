@@ -64,7 +64,7 @@ module.exports = function(grunt) {
     	},
         watch: {
             files: ['src/*.js', 'test/*.spec.js'],
-            tasks: ['document']
+            tasks: ['notest']
         },
         uglify: {
             options: {
@@ -75,8 +75,15 @@ module.exports = function(grunt) {
                     'dist/noinfopath-kendo-ui.min.js': ['dist/noinfopath-kendi-ui.js']
                 }
             }
-        }
-
+        },
+		copy: {
+          test: {
+              files: [
+                  //{expand:true, flatten:false, src: [ 'lib/js/noinfopath/*.*'], dest: 'build/'},
+                  {expand:true, flatten:true, src: [ 'dist/*.js'], dest: '../noinfopath-test-server-node/no/lib/js/noinfopath/'},
+              	]
+          	}
+      	}
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-concat');
@@ -91,4 +98,5 @@ module.exports = function(grunt) {
 	grunt.registerTask('build', ['karma:continuous', 'bumpup','version','concat:noinfopath']);
     grunt.registerTask('jenkins', ['karma:continuous']);
     grunt.registerTask('document', ['concat:noinfopath', 'nodocs:internal', 'concat:readme']);
+	grunt.registerTask('notest', ['concat:noinfopath', 'copy:test']);
 };

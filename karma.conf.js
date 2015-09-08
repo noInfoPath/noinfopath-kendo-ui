@@ -26,8 +26,10 @@ module.exports = function(config) {
         'src/global.js',
         'src/datasource.js',
         'src/grid.js',
+		'src/query-parser.js',
         'test/mock/*.mock.js',
-        'test/datasource.spec.js'
+        'test/datasource.spec.js',
+		'test/query-parser.spec.js'
     ],
 
 
