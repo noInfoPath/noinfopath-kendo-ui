@@ -18,7 +18,7 @@
 		like the IndexedDB, WebSql and HTTP implementations.
 	*/
 		.factory("noKendoDataSourceFactory", ["kendoQueryParser", function(kendoQueryParser){
-			function kendoDataSourceService(){
+			function KendoDataSourceService(){
 				this.create = function (config, noTable){
 					if(!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
 					if(!noTable) throw "kendoDataSourceService::create requires a no noTable object as the second parameter";
@@ -28,40 +28,43 @@
 						transport: {
 							create: function(options){
 								noTable.noCreate(options.data)
-									.then(options.sucess)
+									.then(options.success)
 									.catch(options.error);
 							},
 							read: function(options){
 								kendoQueryParser.parse(options.data);
 
-								noTable.noRead.apply(null, kendoQueryBuilder.toArray())
-									.then(options.sucess)
+								noTable.noRead.apply(null, kendoQueryParser.toArray())
+									.then(options.success)
 									.catch(options.error);
 							},
 							update: function(options){
 								noTable.noUpdate(options.data)
-									.then(options.sucess)
+									.then(options.success)
 									.catch(options.error);
 							},
 							destroy: function(options){
 								noTable.noDestroy(options.data)
-									.then(options.sucess)
+									.then(options.success)
 									.catch(options.error);
 							}
 						},
 						schema: {
 							data: function(data){
-								return data;
+								return data.paged;
 							},
 							total: function(data){
-								return data.__total || data.length;
+								return data.total;
 							}
 						}
 					}, config),
-					kds = new kendo.data.DataSource(config);
+					kds = new kendo.data.DataSource(ds);
 
 					return kds;
 				};
+
 			}
+
+			return new KendoDataSourceService();
 		}]);
 })(angular, kendo);
