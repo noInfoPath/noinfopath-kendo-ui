@@ -3,7 +3,11 @@
 
 ## Overview
 NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
-it with NoInfoPath Data.
+it with NoInfoPath Data. It is important to note that this module inplements
+ implied interfaces that NoInfoPath defines. For the sake if this discussion
+ we'll use the generic object oriented notation of "Ixyz", where "I" stands
+ for interface. This particular module will implement the IQueryParser, and
+ IQueryBuilder interface.
 
 ## Dependencies
 
@@ -49,12 +53,18 @@ it with NoInfoPath Data.
 |---|----|----|
 |Jeff|2015-08-08T16:38:00Z|Creating a new NoInfoPath module.|
 
-## kendoQueryParser
+## kendoQueryParser :: INoQueryParser
 
 ### Overview
-The kendoQueryParser takes the `data` property of the options
+For standardization reasons let's call this an Interface that is required
+when you have a user interface that provides instructions as how to filter,
+sort and page a given table or set of data. This particular implementation
+is specific to Kendo UI DataSources, and the Kendo Widgets that interact
+with them.
+
+The kendoQueryParser takes the `data` property of the `options`
 parameter passed to the Kendo DataSources transport.read method. The
-data object is inspected and its filter, sort, and paging values are
+`data` object is inspected and its filter, sort, and paging values are
 converted to NoInfoPath compatible versions.
 
 ### Methods
