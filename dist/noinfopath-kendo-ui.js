@@ -174,37 +174,37 @@ noInfoPath.kendo = {};
 						transport: {
 							create: function(options){
 								noTable.noCreate(options.data)
-									.then(options.sucess)
+									.then(options.success)
 									.catch(options.error);
 							},
 							read: function(options){
 								kendoQueryParser.parse(options.data);
 
 								noTable.noRead.apply(null, kendoQueryParser.toArray())
-									.then(options.sucess)
+									.then(options.success)
 									.catch(options.error);
 							},
 							update: function(options){
 								noTable.noUpdate(options.data)
-									.then(options.sucess)
+									.then(options.success)
 									.catch(options.error);
 							},
 							destroy: function(options){
 								noTable.noDestroy(options.data)
-									.then(options.sucess)
+									.then(options.success)
 									.catch(options.error);
 							}
 						},
 						schema: {
 							data: function(data){
-								return data;
+								return data.paged;
 							},
 							total: function(data){
-								return data.__total || data.length;
+								return data.total;
 							}
 						}
 					}, config),
-					kds = new kendo.data.DataSource(config);
+					kds = new kendo.data.DataSource(ds);
 
 					return kds;
 				};
@@ -230,30 +230,32 @@ noInfoPath.kendo = {};
                     if(!attrs.noProvider) throw "noGrid requires a noProvider attribute";
                     if(!attrs.noTable) throw "noGrid requires a noTable attribute.";
 
+					noConfig.whenReady()
+						.then(function(){
+							var _config = noConfig.current.components[attrs.noComponent];
+
+							scope.$watch(_config.dataProvider, function(newval, oldval){
+								if(newval){
+									var _provider = $injector.get(attrs.noProvider),
+								 		_table = scope[_config.dataProvider][attrs.noTable],
+										_dataSource;
+
+									_dataSource = noKendoDataSourceFactory.create(_config.kendoDataSource, _table);
+
+									_config.kendoGrid.dataSource = _dataSource;
+
+									el.kendoGrid(_config.kendoGrid);
+
+								}
+							});
+						})
+						.catch(function(err){
+							console.error(err);
+						});
+
                      //Ensure with have a propertly configured application.
                     //In this case a properly configured IndexedDB also.
-                    noConfig.whenReady()
-                        .then(_start)
-                        .catch(function(err){
-                            console.error(err);
-                        });
 
-                    function _start(){
-						var _provider = $injector.get(attrs.noProvider),
-						_config = noConfig.current.components[attrs.noComponent];
-
-						// _provider.wait(_config.dataProvider)
-						// 	.then(function(){
-						// 		var _table = _provider[attrs.noTable],
-						//
-						// 		_dataSource = noKendoDataSourceFactory.create(_config.kendoDataSource, _table);
-						//
-						// 		_config.dataSource = _dataSource;
-						//
-						// 		el.kendoGrid(_config.kendoGrid);
-						// 	});
-
-                    }
                 }
             };
         }]);
