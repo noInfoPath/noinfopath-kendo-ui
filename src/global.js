@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 0.0.0
+ *	@version 0.0.2
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -59,6 +59,7 @@
  *	|Who|When|What|
  *	|---|----|----|
  *	|Jeff|2015-08-08T16:38:00Z|Creating a new NoInfoPath module.|
+ *	|Jeff|2015-09-15T11:10:00Z|Implemented noKendoGrid with noKendoDataSource, which integrates with the NoInfoPath Data Providers.|
 */
 
 //Establish noInfoPath.kendo namespace.

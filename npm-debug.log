@@ -1,0 +1,120 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'publish' ]
+2 info using npm@2.5.1
+3 info using node@v0.12.0
+4 verbose publish [ '.' ]
+5 silly cache add args [ '.', null ]
+6 verbose cache add spec .
+7 silly cache add parsed spec { raw: '.',
+7 silly cache add   scope: null,
+7 silly cache add   name: null,
+7 silly cache add   rawSpec: '.',
+7 silly cache add   spec: '/Users/gochinj/ws/noinfopath-v2/noinfopath-kendo-ui',
+7 silly cache add   type: 'directory' }
+8 verbose addLocalDirectory /Users/gochinj/.npm/noinfopath-kendo-ui/0.0.1/package.tgz not in flight; packing
+9 verbose tar pack [ '/Users/gochinj/.npm/noinfopath-kendo-ui/0.0.1/package.tgz',
+9 verbose tar pack   '/Users/gochinj/ws/noinfopath-v2/noinfopath-kendo-ui' ]
+10 verbose tarball /Users/gochinj/.npm/noinfopath-kendo-ui/0.0.1/package.tgz
+11 verbose folder /Users/gochinj/ws/noinfopath-v2/noinfopath-kendo-ui
+12 info prepublish noinfopath-kendo-ui@0.0.1
+13 verbose addLocalTarball adding from inside cache /Users/gochinj/.npm/noinfopath-kendo-ui/0.0.1/package.tgz
+14 silly cache afterAdd noinfopath-kendo-ui@0.0.1
+15 verbose afterAdd /Users/gochinj/.npm/noinfopath-kendo-ui/0.0.1/package/package.json not in flight; writing
+16 verbose afterAdd /Users/gochinj/.npm/noinfopath-kendo-ui/0.0.1/package/package.json written
+17 silly publish { name: 'noinfopath-kendo-ui',
+17 silly publish   version: '0.0.1',
+17 silly publish   description: 'noInfoPath wrapper around Kendo UI',
+17 silly publish   main: 'noinfopath-kendo-ui.js',
+17 silly publish   directories: { test: 'test' },
+17 silly publish   scripts: { test: 'echo "Error: no test specified" && exit 1' },
+17 silly publish   repository:
+17 silly publish    { type: 'git',
+17 silly publish      url: 'http://gitlab.imginconline.com/noinfopath/noinfopath-kendo-ui.git' },
+17 silly publish   author:
+17 silly publish    { name: 'noInfoPath',
+17 silly publish      email: 'info@noInfoPath.org',
+17 silly publish      url: 'http://www.noinfopath.org/' },
+17 silly publish   license: 'MIT',
+17 silly publish   devDependencies:
+17 silly publish    { 'angular-mocks': '^1.3.8',
+17 silly publish      grunt: '^0.4.5',
+17 silly publish      'grunt-bumpup': '^0.6.2',
+17 silly publish      'grunt-contrib-concat': '^0.5.1',
+17 silly publish      'grunt-contrib-copy': '^0.8.0',
+17 silly publish      'grunt-contrib-watch': '^0.6.1',
+17 silly publish      'grunt-karma': '^0.10.1',
+17 silly publish      'grunt-nodocs': '0.0.10',
+17 silly publish      'grunt-version': '^1.0.0',
+17 silly publish      'jasmine-ajax': '^3.0.0',
+17 silly publish      'jasmine-core': '^2.1.3',
+17 silly publish      jsdoc: '^3.3.0-beta1',
+17 silly publish      'jshint-stylish': '^1.0.1',
+17 silly publish      karma: '^0.12.28',
+17 silly publish      'karma-chrome-launcher': '^0.1.7',
+17 silly publish      'karma-coverage': '^0.2.7',
+17 silly publish      'karma-html-reporter': '^0.2.4',
+17 silly publish      'karma-ie-launcher': '^0.1.5',
+17 silly publish      'karma-jasmine': '^0.3.3',
+17 silly publish      'karma-phantomjs-launcher': '^0.1.4',
+17 silly publish      'karma-safari-launcher': '^0.1.1',
+17 silly publish      'karma-verbose-reporter': '0.0.1',
+17 silly publish      'noinfopath-helpers': '0.0.16',
+17 silly publish      phantomjs: '^1.9.15' },
+17 silly publish   dependencies:
+17 silly publish    { angular: '^1.3.15',
+17 silly publish      noinfopath: '^0.2.3',
+17 silly publish      'noinfopath-data': '^0.2.9' },
+17 silly publish   readme: '# noinfopath-kendo-ui\n@version 0.0.0\n\n## Overview\nNoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate\nit with NoInfoPath Data. It is important to note that this module inplements\n implied interfaces that NoInfoPath defines. For the sake if this discussion\n we\'ll use the generic object oriented notation of "Ixyz", where "I" stands\n for interface. This particular module will implement the IQueryParser, and\n IQueryBuilder interface.\n\n## Dependencies\n\n- AngularJS\n- jQuery\n- ngLodash\n- noinfopath\n- noinfopath.data\n\n## Development Dependencies\n\n> See `package.json` for exact version requirements.\n\n- indexedDB.polyfill\n- angular-mocks\n- es5-shim\n- grunt\n- grunt-bumpup\n- grunt-version\n- grunt-contrib-concat\n- grunt-contrib-copy\n- grunt-contrib-watch\n- grunt-karma\n- jasmine-ajax\n- jasmine-core\n- jshint-stylish\n- karma\n- karma-chrome-launcher\n- karma-coverage\n- karma-firefox-launcher\n- karma-html-reporter\n- karma-ie-launcher\n- karma-jasmine\n- karma-phantomjs-launcher\n- karma-safari-launcher\n- karma-verbose-reporter\n- noinfopath-helpers\n- phantomjs\n\n## Developers\' Remarks\n\n|Who|When|What|\n|---|----|----|\n|Jeff|2015-08-08T16:38:00Z|Creating a new NoInfoPath module.|\n\n## kendoQueryParser :: INoQueryParser\n\n### Overview\nFor standardization reasons let\'s call this an Interface that is required\nwhen you have a user interface that provides instructions as how to filter,\nsort and page a given table or set of data. This particular implementation\nis specific to Kendo UI DataSources, and the Kendo Widgets that interact\nwith them.\n\nThe kendoQueryParser takes the `data` property of the `options`\nparameter passed to the Kendo DataSources transport.read method. The\n`data` object is inspected and its filter, sort, and paging values are\nconverted to NoInfoPath compatible versions.\n\n### Methods\n\n#### parse(kendoOptions)\nParses the Kendo options into NoInfoPath compatible objects. Stores\nthe results internally for future use.\n\n#### toArray()\nReturns any filters, sorts or paging data as an array compatible\nwith a call to `function.prototype.array`.\n\n### Properties\n\n|Name|Type|Description|\n|----|----|-----------|\n|hasFilters|Boolean|Returns true if filters are available.|\n|hasSort|Boolean|Returns true if sorts are available.|\n|hasPaging|Boolean|Returns true if paging data is available.|\n\n## noKendoDataSourceFactory\n\n\n### Overview\nThis factory returns a service that creates Kendo DataSource objects\nthat are compatible with other NoInfoPath wrapped Kendo widgets. The\nconfiguration data is stored in the NoInfoPath Configuration database,\nplaced there either by using the NoInfopath Designer or by a developer,\ncreating bare metal applications using the NoInfoPath open source\ncomponents.\n\n\nAll properties mentioned in the Kendo DataSource documentation are\nsupported with a few tactical exceptions. A few of options are set at\nruntime by the NoInfoPath Kendo UI DataSource wrapper.  This allows\nKendo\'s data aware widgets to work with NoInfoPath\'s data providers,\nlike the IndexedDB, WebSql and HTTP implementations.\n\n',
+17 silly publish   readmeFilename: 'README.md',
+17 silly publish   gitHead: 'a079147cea1fc951e936cc300795aae5a4110b69',
+17 silly publish   _id: 'noinfopath-kendo-ui@0.0.1',
+17 silly publish   _shasum: 'bda259c0f7b288ce145fc3bd9124cc1f1485f978',
+17 silly publish   _from: '.' }
+18 silly mapToRegistry name noinfopath-kendo-ui
+19 silly mapToRegistry using default registry
+20 silly mapToRegistry registry https://registry.npmjs.org/
+21 silly mapToRegistry uri https://registry.npmjs.org/noinfopath-kendo-ui
+22 verbose publish registryBase https://registry.npmjs.org/
+23 silly publish uploading /Users/gochinj/.npm/noinfopath-kendo-ui/0.0.1/package.tgz
+24 verbose request uri https://registry.npmjs.org/noinfopath-kendo-ui
+25 verbose request sending authorization for write operation
+26 info attempt registry request try #1 at 11:07:02 AM
+27 verbose request id 3d123a62789885db
+28 http request PUT https://registry.npmjs.org/noinfopath-kendo-ui
+29 http 403 https://registry.npmjs.org/noinfopath-kendo-ui
+30 verbose headers { 'content-type': 'application/json',
+30 verbose headers   'cache-control': 'max-age=60',
+30 verbose headers   'content-length': '95',
+30 verbose headers   'accept-ranges': 'bytes',
+30 verbose headers   date: 'Tue, 15 Sep 2015 15:07:03 GMT',
+30 verbose headers   via: '1.1 varnish',
+30 verbose headers   connection: 'keep-alive',
+30 verbose headers   'x-served-by': 'cache-jfk1025-JFK',
+30 verbose headers   'x-cache': 'MISS',
+30 verbose headers   'x-cache-hits': '0',
+30 verbose headers   'x-timer': 'S1442329621.310024,VS0,VE1853' }
+31 verbose request invalidating /Users/gochinj/.npm/registry.npmjs.org/noinfopath-kendo-ui on PUT
+32 error publish Failed PUT 403
+33 verbose stack Error: "You cannot publish over the previously published version 0.0.1." : noinfopath-kendo-ui
+33 verbose stack     at CachingRegistryClient.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:254:14)
+33 verbose stack     at Request._callback (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:178:14)
+33 verbose stack     at Request.self.callback (/usr/local/lib/node_modules/npm/node_modules/request/request.js:344:22)
+33 verbose stack     at Request.emit (events.js:110:17)
+33 verbose stack     at Request.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:1239:14)
+33 verbose stack     at Request.emit (events.js:129:20)
+33 verbose stack     at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:1187:12)
+33 verbose stack     at IncomingMessage.emit (events.js:129:20)
+33 verbose stack     at _stream_readable.js:908:16
+33 verbose stack     at process._tickCallback (node.js:355:11)
+34 verbose statusCode 403
+35 verbose pkgid noinfopath-kendo-ui
+36 verbose cwd /Users/gochinj/ws/noinfopath-v2/noinfopath-kendo-ui
+37 error Darwin 14.5.0
+38 error argv "node" "/usr/local/bin/npm" "publish"
+39 error node v0.12.0
+40 error npm  v2.5.1
+41 error code E403
+42 error "You cannot publish over the previously published version 0.0.1." : noinfopath-kendo-ui
+43 error If you need help, you may report this error at:
+43 error     <http://github.com/npm/npm/issues>
+44 verbose exit [ 1, true ]

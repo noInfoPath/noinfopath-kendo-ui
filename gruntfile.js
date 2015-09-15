@@ -43,7 +43,7 @@ module.exports = function(grunt) {
         		prefix: '@version\\s*'
       		},
     		defaults: {
-    			src: ['src/globals.js']
+    			src: ['src/global.js']
     		}
     	},
         nodocs: {
@@ -95,7 +95,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-nodocs');
 
 	//Default task(s).
-	grunt.registerTask('build', ['karma:continuous', 'bumpup','version','concat:noinfopath']);
+	grunt.registerTask('build', ['karma:continuous', 'bumpup','version','concat:noinfopath','nodocs:internal','concat:readme']);
     grunt.registerTask('jenkins', ['karma:continuous']);
     grunt.registerTask('document', ['concat:noinfopath', 'nodocs:internal', 'concat:readme']);
 	grunt.registerTask('notest', ['concat:noinfopath', 'copy:test']);
