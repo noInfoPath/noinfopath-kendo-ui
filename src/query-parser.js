@@ -32,44 +32,30 @@
 		.service("kendoQueryParser",[function(){
 			var filters, sort, paging;
 
-			Object.defineProperties(this, {
-				"hasFilters": {
-					"get": function(){
-						return !!filters;
-					}
-				},
-				"hasSort": {
-					"get": function(){
-						return !!sort;
-					}
-				},
-				"hasPaging": {
-					"get": function(){
-						return !!paging;
-					}
-				}
-			});
-
 			this.parse = function(kendoOptions){
+                var filters, sort, paging;
+
 				//filter { logic: "and", filters: [ { field: "name", operator: "startswith", value: "Jane" } ] }
 				//{"take":10,"skip":0,"page":1,"pageSize":10,"filter":{"logic":"and","filters":[{"value":"apple","operator":"startswith","ignoreCase":true}]}}
 				if(!!kendoOptions.take) paging = new noInfoPath.data.NoPage(kendoOptions.skip, kendoOptions.take);
 				if(!!kendoOptions.sort) sort = new noInfoPath.data.NoSort(kendoOptions.sort);
 				if(!!kendoOptions.filter) filters = new noInfoPath.data.NoFilters(kendoOptions.filter);
-			};
 
-			this.toArray = function(){
+                return toArray(filters, sort, paging);
+            };
+
+			function toArray(filters, sort, paging){
 				var arr = [];
 
-				if(this.hasFilters) arr.push(filters);
+				if(!!filters) arr.push(filters);
 
-				if(this.hasSort) arr.push(sort);
+				if(!!sort) arr.push(sort);
 
-				if(this.hasPaging) arr.push(paging);
+				if(!!paging) arr.push(paging);
 
 				if(arr.length === 0) arr = undefined;
 
 				return arr;
-			};
+			}
 		}]);
 })(angular);

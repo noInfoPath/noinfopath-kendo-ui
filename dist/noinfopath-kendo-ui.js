@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 0.0.2
+ *	@version 0.0.3
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -107,45 +107,31 @@ noInfoPath.kendo = {};
 		.service("kendoQueryParser",[function(){
 			var filters, sort, paging;
 
-			Object.defineProperties(this, {
-				"hasFilters": {
-					"get": function(){
-						return !!filters;
-					}
-				},
-				"hasSort": {
-					"get": function(){
-						return !!sort;
-					}
-				},
-				"hasPaging": {
-					"get": function(){
-						return !!paging;
-					}
-				}
-			});
-
 			this.parse = function(kendoOptions){
+                var filters, sort, paging;
+
 				//filter { logic: "and", filters: [ { field: "name", operator: "startswith", value: "Jane" } ] }
 				//{"take":10,"skip":0,"page":1,"pageSize":10,"filter":{"logic":"and","filters":[{"value":"apple","operator":"startswith","ignoreCase":true}]}}
 				if(!!kendoOptions.take) paging = new noInfoPath.data.NoPage(kendoOptions.skip, kendoOptions.take);
 				if(!!kendoOptions.sort) sort = new noInfoPath.data.NoSort(kendoOptions.sort);
 				if(!!kendoOptions.filter) filters = new noInfoPath.data.NoFilters(kendoOptions.filter);
-			};
 
-			this.toArray = function(){
+                return toArray(filters, sort, paging);
+            };
+
+			function toArray(filters, sort, paging){
 				var arr = [];
 
-				if(this.hasFilters) arr.push(filters);
+				if(!!filters) arr.push(filters);
 
-				if(this.hasSort) arr.push(sort);
+				if(!!sort) arr.push(sort);
 
-				if(this.hasPaging) arr.push(paging);
+				if(!!paging) arr.push(paging);
 
 				if(arr.length === 0) arr = undefined;
 
 				return arr;
-			};
+			}
 		}]);
 })(angular);
 
@@ -168,14 +154,16 @@ noInfoPath.kendo = {};
 		Kendo's data aware widgets to work with NoInfoPath's data providers,
 		like the IndexedDB, WebSql and HTTP implementations.
 	*/
-		.factory("noKendoDataSourceFactory", ["kendoQueryParser", function(kendoQueryParser){
+		.factory("noKendoDataSourceFactory", ["$injector", "kendoQueryParser", function($injector, kendoQueryParser){
 			function KendoDataSourceService(){
 				this.create = function (config, noTable){
 					if(!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
 					if(!noTable) throw "kendoDataSourceService::create requires a no noTable object as the second parameter";
-					if(noTable.constructor.name !== "NoTable") throw "noTable parameter is expected to be of type NoTable";
+					//if(noTable.constructor.name !== "NoTable") throw "noTable parameter is expected to be of type NoTable";
 
 					var ds = angular.merge({
+                        serverFiltering: true,
+                        serverPaging: true,
 						transport: {
 							create: function(options){
 								noTable.noCreate(options.data)
@@ -183,9 +171,8 @@ noInfoPath.kendo = {};
 									.catch(options.error);
 							},
 							read: function(options){
-								kendoQueryParser.parse(options.data);
 
-								noTable.noRead.apply(null, kendoQueryParser.toArray())
+								noTable.noRead.apply(null, kendoQueryParser.parse(options.data))
 									.then(options.success)
 									.catch(options.error);
 							},
@@ -208,8 +195,36 @@ noInfoPath.kendo = {};
 								return data.total;
 							}
 						}
-					}, config),
-					kds = new kendo.data.DataSource(ds);
+					}, config.noKendoDataSource),
+                    kds;
+
+                    /*
+                    *   The `filter` property requires special processing because
+                    *   it supports dynamic value binding from any injectable
+                    *   data source location.  $scope or $stateParams for
+                    *   exmaple.
+                    */
+                    if(config.filter){
+
+                        var filters = [];
+
+                        for(var f in config.filter){
+                            var filter = angular.copy(config.filter[f]);
+
+                            if(angular.isObject(filter.value)){
+                                var source = $injector.get(filter.value.source);
+
+                                filter.value = noInfoPath.getItem(source, filter.value.property);
+
+                                filters.push(filter);
+                            }
+                        }
+
+                        ds.filter = filters;
+                        //grid.dataSource.filter(filters);
+                    }
+
+                    kds = new kendo.data.DataSource(ds);
 
 					return kds;
 				};
@@ -225,42 +240,130 @@ noInfoPath.kendo = {};
     angular.module("noinfopath.kendo.ui")
 
 		/**
+        * ## noKendoGrid (no-kendo-grid) Directive
+        *
+        * Creates a Kendo UI Grid, bound to a NoInfoPath data provider, and
+        * injects it into the DOM.
+        *
+        * ### Attributes
+        *
+        * |Name|Descriptions|
+        * |----|------------|
+        * |no-config|The name of the configuration node in noConfig.current. |
+        *
 		* ```html
-		* <no-kendo-grid no-provider="noWebSQL" no-table="Cooperators" no-component="Cooperators" />
+		* <no-kendo-grid no-config="noComponents.cooperators"/>
 		* ```
+        * #### Sample noComponent Configuration
+        *
+        * ```json
+        *   {
+        *       noComponents: {
+        *           "cooperators": {
+        *               dataProvider: "noWebSQL",
+        *               entityName: "vw_Cooperator_Summary",
+        *               noKendoGrid: {},
+        *               noKendoDataSource: {}
+        *           }
+        *       }
+        *   }
+        * ```
+        *
+        * OR
+        *
+        * |Name|Descriptions|
+        * |----|------------|
+        * |noForm|Name of the noForm configuration to retreive from the noFormBuilderService.|
+        * |noComponent|Name of the noForm component to use for configuration data.|
+        *
+        * ```html
+		* <no-kendo-grid no-form="form1" no-component="grid1" />
+		* ```
+        *
+        * #### Sample noForm Configuration
+        *
+        * ```json
+        *   {
+        *       form1: {
+        *           components: {
+        *               "grid1": {
+        *                   dataProvider: "noWebSQL",
+        *                   databaseName: "FCFNv2",
+        *                   entityName: "vw_Cooperator_Summary"
+        *                   KendoGrid: {},
+        *                   kendoDataSource: {}
+        *               }
+        *           }
+        *       }
+        *   }
+        * ```
 		*/
-        .directive("noKendoGrid", ['$injector', '$state','$q','lodash','noKendoDataSourceFactory', 'noConfig', function($injector, $state, $q, _, noKendoDataSourceFactory, noConfig){
+        .directive("noKendoGrid", ['$injector', '$state','$q','lodash','noKendoDataSourceFactory', function($injector, $state, $q, _, noKendoDataSourceFactory){
             return {
                 link: function(scope, el, attrs){
-                    if(!attrs.noProvider) throw "noGrid requires a noProvider attribute";
-                    if(!attrs.noTable) throw "noGrid requires a noTable attribute.";
+                    var configurationType,
+                        cfgFn = {
+                            "noConfig": function(attrs){
+                                var noConfig = $injector.get("noConfig");
+                                return noConfig.whenReady()
+                                    .then(function(){
+                                        return noInfoPath.getItem(noConfig.current, attrs.noConfig);
+                                    })
+                                    .catch(function(err){
+                                        console.error(err);
+                                        return $q.reject(err);  //Log in re-throw.
+                                    });
+                            },
+                            "noForm": function(attrs){
+                                var noForms = $injector.get("noForms");
+                                return $q.resolve(noForms);
+                            }
+                        };
 
-					noConfig.whenReady()
-						.then(function(){
-							var _config = noConfig.current.components[attrs.noComponent];
+                    if(attrs.noConfig){
+                        configurationType = "noConfig";
+                    }else if(attrs.noForm){
+                        if(!attrs.noComponent) throw "noGrid, using a noForm configuration, requires a noComponent attribute";
+                        configurationType = "noForm";
+                    }else{
+                        throw "noKendoGrid requires either a noConfig or noForm attribute";
+                    }
 
-							scope.$watch(_config.dataProvider, function(newval, oldval){
-								if(newval){
-									var _provider = $injector.get(attrs.noProvider),
-								 		_table = scope[_config.dataProvider][attrs.noTable],
-										_dataSource;
+                    cfgFn[configurationType](attrs)
+                        .then(function(config){
+                            var provider = $injector.get(config.dataProvider),
+						 		db = provider.getDatabase(config.databaseName),
+                                entity = db[config.entityName],
+								dataSource;
 
-									_dataSource = noKendoDataSourceFactory.create(_config.kendoDataSource, _table);
+                            if(!entity) throw config.entityName + " not found in provider " + config.dataProvider;
 
-									_config.kendoGrid.dataSource = _dataSource;
+							dataSource = noKendoDataSourceFactory.create(config, entity);
 
-									el.kendoGrid(_config.kendoGrid);
+							config.noKendoGrid.dataSource = dataSource;
 
-								}
-							});
-						})
-						.catch(function(err){
-							console.error(err);
-						});
+                            config.noKendoGrid.selectable = "row";
 
-                     //Ensure with have a propertly configured application.
-                    //In this case a properly configured IndexedDB also.
+                            config.noKendoGrid.change = function(){
+                                var data = this.dataItem(this.select()),
+                                    params = {};
 
+                                params[config.primaryKey] = data[config.primaryKey];
+
+                                if(config.toState){
+                                    $state.go(config.toState, params);
+                                }else{
+                                    var tableName = this.dataSource.transport.tableName;
+                                    scope.$root.$broadcast("noGrid::change+" + tableName, data);
+                                }
+                            };
+
+							var grid = el.kendoGrid(config.noKendoGrid).data("kendoGrid");
+
+                        })
+                        .catch(function(err){
+                            console.error(err);
+                        });
                 }
             };
         }]);

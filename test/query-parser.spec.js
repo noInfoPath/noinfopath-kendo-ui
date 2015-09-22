@@ -22,20 +22,11 @@ describe("Testing noinfopath.kendo.ui", function(){
 		it("should exist", function(){
 			expect(kendoQueryParser).toBeDefined();
 			expect(kendoQueryParser.parse).toBeDefined();
-			expect(kendoQueryParser.toArray).toBeDefined();
-		});
-
-		it("should parse a kendo option object", function(){
-			kendoQueryParser.parse(mockKendoQueryOptions);
-
-			expect(kendoQueryParser.hasFilters).toBeTruthy();
-			expect(kendoQueryParser.hasSort).toBeTruthy();
-			expect(kendoQueryParser.hasPaging).toBeTruthy();
 		});
 
 		it("toArray should have returned an array of three objects", function(){
-			kendoQueryParser.parse(mockKendoQueryOptions);
-			var arr = kendoQueryParser.toArray();
+
+			var arr = kendoQueryParser.parse(mockKendoQueryOptions);
 
 			expect(arr.length).toBe(3);
 			expect(arr[0].__type).toBe("NoFilters");

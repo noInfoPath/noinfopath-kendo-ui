@@ -1,5 +1,5 @@
 # noinfopath-kendo-ui
-@version 0.0.2
+@version 0.0.3
 
 ## Overview
 NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -98,7 +98,66 @@ runtime by the NoInfoPath Kendo UI DataSource wrapper.  This allows
 Kendo's data aware widgets to work with NoInfoPath's data providers,
 like the IndexedDB, WebSql and HTTP implementations.
 
+  The `filter` property requires special processing because
+  it supports dynamic value binding from any injectable
+  data source location.  $scope or $stateParams for
+  exmaple.
+
+## noKendoGrid (no-kendo-grid) Directive
+
+Creates a Kendo UI Grid, bound to a NoInfoPath data provider, and
+injects it into the DOM.
+
+### Attributes
+
+|Name|Descriptions|
+|----|------------|
+|no-config|The name of the configuration node in noConfig.current. |
+
 ```html
-<no-kendo-grid no-provider="noWebSQL" no-table="Cooperators" no-component="Cooperators" />
+<no-kendo-grid no-config="noComponents.cooperators"/>
+```
+#### Sample noComponent Configuration
+
+```json
+  {
+      noComponents: {
+          "cooperators": {
+              dataProvider: "noWebSQL",
+              entityName: "vw_Cooperator_Summary",
+              noKendoGrid: {},
+              noKendoDataSource: {}
+          }
+      }
+  }
+```
+
+OR
+
+|Name|Descriptions|
+|----|------------|
+|noForm|Name of the noForm configuration to retreive from the noFormBuilderService.|
+|noComponent|Name of the noForm component to use for configuration data.|
+
+```html
+<no-kendo-grid no-form="form1" no-component="grid1" />
+```
+
+#### Sample noForm Configuration
+
+```json
+  {
+      form1: {
+          components: {
+              "grid1": {
+                  dataProvider: "noWebSQL",
+                  databaseName: "FCFNv2",
+                  entityName: "vw_Cooperator_Summary"
+                  KendoGrid: {},
+                  kendoDataSource: {}
+              }
+          }
+      }
+  }
 ```
 
