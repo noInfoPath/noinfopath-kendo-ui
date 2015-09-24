@@ -83,6 +83,7 @@
                             }
                         };
 
+
                     if(attrs.noConfig){
                         configurationType = "noConfig";
                     }else if(attrs.noForm){
@@ -92,36 +93,55 @@
                         throw "noKendoGrid requires either a noConfig or noForm attribute";
                     }
 
+                    function configure(config, params){
+                        var provider = $injector.get(config.dataProvider),
+                            db = provider.getDatabase(config.databaseName),
+                            entity = db[config.entityName],
+                            dataSource;
+
+                        if(!entity) throw config.entityName + " not found in provider " + config.dataProvider;
+
+
+                        dataSource = noKendoDataSourceFactory.create(config, entity, params);
+
+                        config.noKendoGrid.dataSource = dataSource;
+
+                        config.noKendoGrid.selectable = "row";
+
+                        config.noKendoGrid.change = function(){
+                            var data = this.dataItem(this.select()),
+                                params = {};
+
+                            params[config.primaryKey] = data[config.primaryKey];
+
+                            if(config.toState){
+                                $state.go(config.toState, params);
+                            }else{
+                                var tableName = this.dataSource.transport.tableName;
+                                scope.$root.$broadcast("noGrid::change+" + tableName, data);
+                            }
+                        };
+
+                        var grid = el.kendoGrid(config.noKendoGrid).data("kendoGrid");
+
+                    }
+
                     cfgFn[configurationType](attrs)
                         .then(function(config){
-                            var provider = $injector.get(config.dataProvider),
-						 		db = provider.getDatabase(config.databaseName),
-                                entity = db[config.entityName],
-								dataSource;
-
-                            if(!entity) throw config.entityName + " not found in provider " + config.dataProvider;
-
-							dataSource = noKendoDataSourceFactory.create(config, entity);
-
-							config.noKendoGrid.dataSource = dataSource;
-
-                            config.noKendoGrid.selectable = "row";
-
-                            config.noKendoGrid.change = function(){
-                                var data = this.dataItem(this.select()),
-                                    params = {};
-
-                                params[config.primaryKey] = data[config.primaryKey];
-
-                                if(config.toState){
-                                    $state.go(config.toState, params);
+                            if(config.waitFor){
+                                if(config.waitFor.source === "scope"){
+                                    scope.$watch(config.waitFor.property, function(newval, oldval, scope){
+                                        if(newval){
+                                            configure(config, scope);
+                                        }
+                                    });
                                 }else{
-                                    var tableName = this.dataSource.transport.tableName;
-                                    scope.$root.$broadcast("noGrid::change+" + tableName, data);
+                                    configure(config);
                                 }
-                            };
+                            }else{
+                                configure(config);
+                            }
 
-							var grid = el.kendoGrid(config.noKendoGrid).data("kendoGrid");
 
                         })
                         .catch(function(err){
