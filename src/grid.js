@@ -53,7 +53,7 @@
         *                   dataProvider: "noWebSQL",
         *                   databaseName: "FCFNv2",
         *                   entityName: "vw_Cooperator_Summary"
-        *                   KendoGrid: {},
+        *                   kendoGrid: {},
         *                   kendoDataSource: {}
         *               }
         *           }

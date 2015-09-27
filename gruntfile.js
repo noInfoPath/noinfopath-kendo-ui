@@ -9,7 +9,7 @@ module.exports = function(grunt) {
 		    noinfopath: {
 		        src: [
 		        	'src/global.js',
-                    'src/query-parser.js',
+                    //'src/query-parser.js',
                     'src/datasource.js',
                     'src/grid.js'
 		        ],

@@ -17,14 +17,20 @@
 		Kendo's data aware widgets to work with NoInfoPath's data providers,
 		like the IndexedDB, WebSql and HTTP implementations.
 	*/
-		.factory("noKendoDataSourceFactory", ["$injector", "kendoQueryParser", function($injector, kendoQueryParser){
+		.factory("noKendoDataSourceFactory", ["$injector", "noQueryParser", function($injector, noQueryParser){
 			function KendoDataSourceService(){
-				this.create = function (config, noTable){
+				this.create = function (config, noTable, params){
+                    //console.warn("TODO: Implement config.noDataSource and ???");
 					if(!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
 					if(!noTable) throw "kendoDataSourceService::create requires a no noTable object as the second parameter";
 					//if(noTable.constructor.name !== "NoTable") throw "noTable parameter is expected to be of type NoTable";
 
-					var ds = angular.merge({
+					var parsers = {
+                            "date": function(data){
+                                return new Date(data);
+                            }
+                        },
+                        ds = angular.merge({
                         serverFiltering: true,
                         serverPaging: true,
 						transport: {
@@ -35,7 +41,7 @@
 							},
 							read: function(options){
 
-								noTable.noRead.apply(null, kendoQueryParser.parse(options.data))
+								noTable.noRead.apply(null, noQueryParser.parse(options.data))
 									.then(options.success)
 									.catch(options.error);
 							},
@@ -61,7 +67,28 @@
 					}, config.noKendoDataSource),
                     kds;
 
+                    /**
+                    *   #### Schema Model
+                    *
+                    *   When the noKendoDataSource config contains a schema.model
+                    *   then loop through looking for fields that have a type and a
+                    *   parser property and set the parser propety to one of
+                    *   parse functions defined in the parsers collection.
+                    */
+                    if(ds.schema.model && ds.schema.model.fields){
+                        var fields = ds.schema.model.fields;
+                        for(var f in fields){
+                            var field = fields[f];
+
+                            if(field.type && field.parse) {
+                                field.parse = parsers[field.type];
+                            }
+                        }
+                    }
+
                     /*
+                    *   #### config::filter
+                    *
                     *   The `filter` property requires special processing because
                     *   it supports dynamic value binding from any injectable
                     *   data source location.  $scope or $stateParams for
@@ -71,11 +98,11 @@
 
                         var filters = [];
 
-                        for(var f in config.filter){
-                            var filter = angular.copy(config.filter[f]);
+                        for(var fi in config.filter){
+                            var filter = angular.copy(config.filter[fi]);
 
                             if(angular.isObject(filter.value)){
-                                var source = $injector.get(filter.value.source);
+                                var source = params ? params : $injector.get(filter.value.source);
 
                                 filter.value = noInfoPath.getItem(source, filter.value.property);
 

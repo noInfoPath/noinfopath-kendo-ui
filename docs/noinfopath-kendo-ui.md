@@ -54,32 +54,6 @@ it with NoInfoPath Data. It is important to note that this module inplements
 |Jeff|2015-08-08T16:38:00Z|Creating a new NoInfoPath module.|
 |Jeff|2015-09-15T11:10:00Z|Implemented noKendoGrid with noKendoDataSource, which integrates with the NoInfoPath Data Providers.|
 
-## kendoQueryParser
-
-### Overview
-The kendoQueryParser takes the `data` property of the options
-parameter passed to the Kendo DataSources transport.read method. The
-data object is inspected and its filter, sort, and paging values are
-converted to NoInfoPath compatible versions.
-
-### Methods
-
-#### parse(kendoOptions)
-Parses the Kendo options into NoInfoPath compatible objects. Stores
-the results internally for future use.
-
-#### toArray()
-Returns any filters, sorts or paging data as an array compatible
-with a call to `function.prototype.array`.
-
-### Properties
-
-|Name|Type|Description|
-|----|----|-----------|
-|hasFilters|Boolean|Returns true if filters are available.|
-|hasSort|Boolean|Returns true if sorts are available.|
-|hasPaging|Boolean|Returns true if paging data is available.|
-
 ## noKendoDataSourceFactory
 
 
@@ -97,6 +71,15 @@ supported with a few tactical exceptions. A few of options are set at
 runtime by the NoInfoPath Kendo UI DataSource wrapper.  This allows
 Kendo's data aware widgets to work with NoInfoPath's data providers,
 like the IndexedDB, WebSql and HTTP implementations.
+
+  #### Schema Model
+
+  When the noKendoDataSource config contains a schema.model
+  then loop through looking for fields that have a type and a
+  parser property and set the parser propety to one of
+  parse functions defined in the parsers collection.
+
+  #### config::filter
 
   The `filter` property requires special processing because
   it supports dynamic value binding from any injectable
@@ -153,7 +136,7 @@ OR
                   dataProvider: "noWebSQL",
                   databaseName: "FCFNv2",
                   entityName: "vw_Cooperator_Summary"
-                  KendoGrid: {},
+                  kendoGrid: {},
                   kendoDataSource: {}
               }
           }
