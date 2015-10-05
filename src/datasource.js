@@ -99,10 +99,19 @@
                         var filters = [];
 
                         for(var fi in config.filter){
-                            var filter = angular.copy(config.filter[fi]);
+                            var filter = angular.copy(config.filter[fi]), source;
 
                             if(angular.isObject(filter.value)){
-                                var source = params ? params : $injector.get(filter.value.source);
+
+                                /*
+                                 *  ```scoped``` passed in from underlying directive as ```params```.
+                                */
+                                if(filter.value.source === "scope") {
+                                    //console.warn("TODO: Need to handle use case where scope is passed in from a directive.");
+                                    source = params;
+                                }else{
+                                    source = $injector.get(filter.value.source);
+                                }
 
                                 filter.value = noInfoPath.getItem(source, filter.value.property);
 

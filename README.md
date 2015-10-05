@@ -1,11 +1,11 @@
 # noinfopath-kendo-ui
-@version 0.0.3
+@version 0.0.4
 
 ## Overview
 NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
 it with NoInfoPath Data. It is important to note that this module inplements
  implied interfaces that NoInfoPath defines. For the sake if this discussion
- we'll use the generic object oriented notation of "Ixyz", where "I" stands
+ we'll use the generic object oriented notation of "IXyz", where "I" stands
  for interface. This particular module will implement the IQueryParser, and
  IQueryBuilder interface.
 
@@ -86,6 +86,8 @@ like the IndexedDB, WebSql and HTTP implementations.
   data source location.  $scope or $stateParams for
   exmaple.
 
+ ```scoped``` passed in from underlying directive as ```params```.
+
 ## noKendoGrid (no-kendo-grid) Directive
 
 Creates a Kendo UI Grid, bound to a NoInfoPath data provider, and
@@ -143,4 +145,10 @@ OR
       }
   }
 ```
+
+  ##### change() event handler
+
+  Listens on the Kendo UI Grid components change event
+  and transitions the user to the ```toState``` specified
+  in the noConfig node for this directive.
 

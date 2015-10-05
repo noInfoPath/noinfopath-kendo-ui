@@ -2,13 +2,13 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 0.0.3
+ *	@version 0.0.4
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
  *	it with NoInfoPath Data. It is important to note that this module inplements
  *  implied interfaces that NoInfoPath defines. For the sake if this discussion
- *  we'll use the generic object oriented notation of "Ixyz", where "I" stands
+ *  we'll use the generic object oriented notation of "IXyz", where "I" stands
  *  for interface. This particular module will implement the IQueryParser, and
  *  IQueryBuilder interface.
  *

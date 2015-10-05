@@ -2,13 +2,13 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 0.0.3
+ *	@version 0.0.4
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
  *	it with NoInfoPath Data. It is important to note that this module inplements
  *  implied interfaces that NoInfoPath defines. For the sake if this discussion
- *  we'll use the generic object oriented notation of "Ixyz", where "I" stands
+ *  we'll use the generic object oriented notation of "IXyz", where "I" stands
  *  for interface. This particular module will implement the IQueryParser, and
  *  IQueryBuilder interface.
  *
@@ -174,10 +174,19 @@ noInfoPath.kendo = {};
                         var filters = [];
 
                         for(var fi in config.filter){
-                            var filter = angular.copy(config.filter[fi]);
+                            var filter = angular.copy(config.filter[fi]), source;
 
                             if(angular.isObject(filter.value)){
-                                var source = params ? params : $injector.get(filter.value.source);
+
+                                /*
+                                 *  ```scoped``` passed in from underlying directive as ```params```.
+                                */
+                                if(filter.value.source === "scope") {
+                                    //console.warn("TODO: Need to handle use case where scope is passed in from a directive.");
+                                    source = params;
+                                }else{
+                                    source = $injector.get(filter.value.source);
+                                }
 
                                 filter.value = noInfoPath.getItem(source, filter.value.property);
 
@@ -296,25 +305,36 @@ noInfoPath.kendo = {};
                     }
 
                     function configure(config, params){
-                        var provider = $injector.get(config.dataProvider),
-                            db = provider.getDatabase(config.databaseName),
-                            entity = db[config.entityName],
+                        var dsCfg = config.noDataSource ? config.noDataSource : config,
+                            provider = $injector.get(dsCfg.dataProvider),
+                            db = provider.getDatabase(dsCfg.databaseName),
+                            entity = db[dsCfg.entityName],
                             dataSource;
 
-                        if(!entity) throw config.entityName + " not found in provider " + config.dataProvider;
+                        if(!entity) throw dsCfg.entityName + " not found in provider " + dsCfg.dataProvider;
 
 
-                        dataSource = noKendoDataSourceFactory.create(config, entity, params);
+                        dataSource = noKendoDataSourceFactory.create(dsCfg, entity, params);
 
                         config.noKendoGrid.dataSource = dataSource;
 
                         config.noKendoGrid.selectable = "row";
 
+                        /*
+                        *   ##### change() event handler
+                        *
+                        *   Listens on the Kendo UI Grid components change event
+                        *   and transitions the user to the ```toState``` specified
+                        *   in the noConfig node for this directive.
+                        */
                         config.noKendoGrid.change = function(){
-                            var data = this.dataItem(this.select()),
+                            var dsCfg = config.noDataSource ? config.noDataSource : config,
+                                data = this.dataItem(this.select()),
                                 params = {};
 
-                            params[config.primaryKey] = data[config.primaryKey];
+                            params[config.primaryKey] = data[dsCfg.primaryKey];
+
+                            params = angular.merge(params, $state.params);
 
                             if(config.toState){
                                 $state.go(config.toState, params);
@@ -330,9 +350,11 @@ noInfoPath.kendo = {};
 
                     cfgFn[configurationType](attrs)
                         .then(function(config){
-                            if(config.waitFor){
-                                if(config.waitFor.source === "scope"){
-                                    scope.$watch(config.waitFor.property, function(newval, oldval, scope){
+                            var dsCfg = config.noDataSource ? config.noDataSource : config;
+
+                            if(dsCfg.waitFor){
+                                if(dsCfg.waitFor.source === "scope"){
+                                    scope.$watch(dsCfg.waitFor.property, function(newval, oldval, scope){
                                         if(newval){
                                             configure(config, scope);
                                         }
@@ -351,6 +373,53 @@ noInfoPath.kendo = {};
                         });
                 }
             };
-        }]);
+        }])
+
+
+        ;
+})(angular);
+
+//datepicker.js
+(function(angular, undefined){
+    angular.module("noinfopath.kendo.ui")
+        .directive("noKendoDatePicker", ["noConfig", function(noConfig){
+            function _link(scope, el, attrs){
+                var config = noInfoPath.getItem(noConfig.current, attrs.noConfig),
+                    input = angular.element("<input type=\"date\">"),
+                    datePicker;
+
+                noInfoPath.setItem(scope, config.ngModel, new Date());
+
+                config.options.change = function(){
+                    noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(this.value()));
+                };
+
+                scope.$watch(config.ngModel, function(newval){
+                    if(newval){
+                        datePicker.value(newval);
+                    }
+                });
+
+                el.append(input);
+
+                datePicker = input.kendoDatePicker(config.options).data("kendoDatePicker");
+
+
+
+            }
+
+
+            directive = {
+                restrict:"E",
+                link: _link,
+                scope: false
+            };
+
+            return directive;
+
+
+
+        }])
+    ;
 
 })(angular);

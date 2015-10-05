@@ -11,7 +11,8 @@ module.exports = function(grunt) {
 		        	'src/global.js',
                     //'src/query-parser.js',
                     'src/datasource.js',
-                    'src/grid.js'
+                    'src/grid.js',
+                    'src/datepicker.js'
 		        ],
 		        dest: 'dist/noinfopath-kendo-ui.js'
 		    },
@@ -26,8 +27,8 @@ module.exports = function(grunt) {
             },
             continuous: {
                 configFile: 'karma.conf.js',
-                singleRun: true,
-                browsers: ['PhantomJS']
+                singleRun: true /*,
+                browsers: ['PhantomJS']*/
             },
             ugly: {
                 configFile: 'karma.ugly.conf.js',
@@ -64,7 +65,7 @@ module.exports = function(grunt) {
     	},
         watch: {
             files: ['src/*.js', 'test/*.spec.js'],
-            tasks: ['notest']
+            tasks: ['jenkins']
         },
         uglify: {
             options: {

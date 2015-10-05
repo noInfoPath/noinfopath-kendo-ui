@@ -21,6 +21,8 @@ module.exports = function(config) {
         'bower_components/ng-lodash/build/ng-lodash.js',
         'lib/js/kendo/kendo.all.min.js',
         'node_modules/noinfopath/dist/noinfopath.js',
+        'node_modules/noinfopath-helpers/src/noinfopath-helpers.js',
+        'node_modules/noinfopath-data/node_modules/noinfopath-logger/dist/noinfopath-logger.js',
         'node_modules/noinfopath-data/dist/noinfopath-dexie.js',
         'node_modules/noinfopath-data/dist/noinfopath-data.js',
         'src/global.js',
@@ -75,7 +77,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['PhantomJS'],
+    browsers: ['Chrome'],
 
 
     // Continuous Integration mode

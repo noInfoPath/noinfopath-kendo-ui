@@ -2,7 +2,7 @@ describe("Testing noinfopath.kendo.ui", function(){
 	var $timeout, db, noKendoDataSourceFactory;
 
 	beforeEach(function(){
-		module("noinfopath.data.mock");
+		module("noinfopath.data");
 		module("noinfopath.kendo.ui");
 		inject(function($injector){
 			//noDbSchema = $injector.get("noDbSchema");

@@ -94,25 +94,36 @@
                     }
 
                     function configure(config, params){
-                        var provider = $injector.get(config.dataProvider),
-                            db = provider.getDatabase(config.databaseName),
-                            entity = db[config.entityName],
+                        var dsCfg = config.noDataSource ? config.noDataSource : config,
+                            provider = $injector.get(dsCfg.dataProvider),
+                            db = provider.getDatabase(dsCfg.databaseName),
+                            entity = db[dsCfg.entityName],
                             dataSource;
 
-                        if(!entity) throw config.entityName + " not found in provider " + config.dataProvider;
+                        if(!entity) throw dsCfg.entityName + " not found in provider " + dsCfg.dataProvider;
 
 
-                        dataSource = noKendoDataSourceFactory.create(config, entity, params);
+                        dataSource = noKendoDataSourceFactory.create(dsCfg, entity, params);
 
                         config.noKendoGrid.dataSource = dataSource;
 
                         config.noKendoGrid.selectable = "row";
 
+                        /*
+                        *   ##### change() event handler
+                        *
+                        *   Listens on the Kendo UI Grid components change event
+                        *   and transitions the user to the ```toState``` specified
+                        *   in the noConfig node for this directive.
+                        */
                         config.noKendoGrid.change = function(){
-                            var data = this.dataItem(this.select()),
+                            var dsCfg = config.noDataSource ? config.noDataSource : config,
+                                data = this.dataItem(this.select()),
                                 params = {};
 
-                            params[config.primaryKey] = data[config.primaryKey];
+                            params[config.primaryKey] = data[dsCfg.primaryKey];
+
+                            params = angular.merge(params, $state.params);
 
                             if(config.toState){
                                 $state.go(config.toState, params);
@@ -128,9 +139,11 @@
 
                     cfgFn[configurationType](attrs)
                         .then(function(config){
-                            if(config.waitFor){
-                                if(config.waitFor.source === "scope"){
-                                    scope.$watch(config.waitFor.property, function(newval, oldval, scope){
+                            var dsCfg = config.noDataSource ? config.noDataSource : config;
+
+                            if(dsCfg.waitFor){
+                                if(dsCfg.waitFor.source === "scope"){
+                                    scope.$watch(dsCfg.waitFor.property, function(newval, oldval, scope){
                                         if(newval){
                                             configure(config, scope);
                                         }
@@ -149,6 +162,8 @@
                         });
                 }
             };
-        }]);
+        }])
 
+
+        ;
 })(angular);
