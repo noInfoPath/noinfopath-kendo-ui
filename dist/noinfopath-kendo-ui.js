@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 0.0.4
+ *	@version 0.0.5
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -289,8 +289,12 @@ noInfoPath.kendo = {};
                                     });
                             },
                             "noForm": function(attrs){
-                                var noForms = $injector.get("noForms");
-                                return $q.resolve(noForms);
+                                var noFormConfig = $injector.get("noFormConfig");
+
+                                return noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope)
+                                    .then(function(config){
+                                        return noInfoPath.getItem(config, attrs.noForm);
+                                    });
                             }
                         };
 
@@ -298,7 +302,6 @@ noInfoPath.kendo = {};
                     if(attrs.noConfig){
                         configurationType = "noConfig";
                     }else if(attrs.noForm){
-                        if(!attrs.noComponent) throw "noGrid, using a noForm configuration, requires a noComponent attribute";
                         configurationType = "noForm";
                     }else{
                         throw "noKendoGrid requires either a noConfig or noForm attribute";
@@ -329,6 +332,7 @@ noInfoPath.kendo = {};
                         */
                         config.noKendoGrid.change = function(){
                             var dsCfg = config.noDataSource ? config.noDataSource : config,
+                                noGrid = config.noGrid ? config.noGrid : config,
                                 data = this.dataItem(this.select()),
                                 params = {};
 
