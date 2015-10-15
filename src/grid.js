@@ -61,7 +61,7 @@
         *   }
         * ```
 		*/
-        .directive("noKendoGrid", ['$injector', '$state','$q','lodash','noKendoDataSourceFactory', function($injector, $state, $q, _, noKendoDataSourceFactory){
+        .directive("noKendoGrid", ['$injector', '$http', '$state','$q','lodash', 'noLoginService', 'noKendoDataSourceFactory', function($injector, $http, $state, $q, _, noLoginService, noKendoDataSourceFactory){
             return {
                 link: function(scope, el, attrs){
                     var configurationType,
@@ -96,70 +96,110 @@
                         throw "noKendoGrid requires either a noConfig or noForm attribute";
                     }
 
+
                     function configure(config, params){
                         var dsCfg = config.noDataSource ? config.noDataSource : config,
-                            provider = $injector.get(dsCfg.dataProvider),
-                            db = provider.getDatabase(dsCfg.databaseName),
-                            entity = db[dsCfg.entityName],
                             dataSource;
 
-                        if(!entity) throw dsCfg.entityName + " not found in provider " + dsCfg.dataProvider;
+                        //if(!entity) throw dsCfg.entityName + " not found in provider " + dsCfg.dataProvider;
 
 
-                        dataSource = noKendoDataSourceFactory.create(dsCfg, entity, params);
+                        dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, params);
+
 
                         config.noKendoGrid.dataSource = dataSource;
 
-                        config.noKendoGrid.selectable = "row";
 
-                        /*
-                        *   ##### change() event handler
-                        *
-                        *   Listens on the Kendo UI Grid components change event
-                        *   and transitions the user to the ```toState``` specified
-                        *   in the noConfig node for this directive.
-                        */
-                        config.noKendoGrid.change = function(){
-                            var dsCfg = config.noDataSource ? config.noDataSource : config,
-                                noGrid = config.noGrid ? config.noGrid : config,
-                                data = this.dataItem(this.select()),
-                                params = {};
+                        if(config.noKendoGrid.selectable === undefined || config.noKendoGrid.selectable){ //When Truthy because we always want row selection.
+                            config.noKendoGrid.selectable= "row";
 
-                            params[config.primaryKey] = data[dsCfg.primaryKey];
+                            /*
+                            *   ##### change() event handler
+                            *
+                            *   Listens on the Kendo UI Grid components change event
+                            *   and transitions the user to the ```toState``` specified
+                            *   in the noConfig node for this directive.
+                            */
+                            config.noKendoGrid.change = function(){
+                                var dsCfg = config.noDataSource ? config.noDataSource : config,
+                                    noGrid = config.noGrid ? config.noGrid : config,
+                                    data = this.dataItem(this.select()),
+                                    params = {},
+                                    toState = config.noGrid ? config.noGrid.toState : config.toState,
+                                    primaryKey = config.noGrid ? config.noGrid.primaryKey : config.primaryKey;
 
-                            params = angular.merge(params, $state.params);
+                                params[primaryKey] = data[dsCfg.primaryKey];
 
-                            if(config.toState){
-                                $state.go(config.toState, params);
-                            }else{
-                                var tableName = this.dataSource.transport.tableName;
-                                scope.$root.$broadcast("noGrid::change+" + tableName, data);
-                            }
-                        };
+                                params = angular.merge(params, $state.params);
+
+                                if(toState){
+                                    $state.go(toState, params);
+                                }else{
+                                    console.warn("TODO: Test this for a bug. Transport is not a property of dataSource.");
+                                    var tableName = this.dataSource.transport.tableName;
+                                    scope.$root.$broadcast("noGrid::change+" + tableName, data);
+                                    //console.log("Boo");
+                                }
+                            };
+
+                        }
 
                         var grid = el.kendoGrid(config.noKendoGrid).data("kendoGrid");
 
                     }
 
+                    function getEditorTemplate(config){
+                        return $http.get(config.template)
+                            .then(function(resp){
+                                config.template = kendo.template(resp.data);
+                            })
+                            .catch(function(err){
+                                throw err;
+                            });
+                    }
+
+                    function handleWaitForAndConfigure(config){
+                        var dsCfg = config.noDataSource ? config.noDataSource : config;
+
+                        if(dsCfg.waitFor){
+                            if(dsCfg.waitFor.source === "scope"){
+                                scope.$watch(dsCfg.waitFor.property, function(newval, oldval, scope){
+                                    if(newval){
+                                        configure(config, scope);
+                                    }
+                                });
+                            }else{
+                                configure(config, scope);
+                            }
+                        }else{
+                            configure(config, scope);
+                        }
+                    }
+
                     cfgFn[configurationType](attrs)
                         .then(function(config){
-                            var dsCfg = config.noDataSource ? config.noDataSource : config;
 
-                            if(dsCfg.waitFor){
-                                if(dsCfg.waitFor.source === "scope"){
-                                    scope.$watch(dsCfg.waitFor.property, function(newval, oldval, scope){
-                                        if(newval){
-                                            configure(config, scope);
-                                        }
+                            /*
+                            *   ##### kendoGrid.editable
+                            *
+                            *   When this property is truthy and an object, noKendoGrid Directive
+                            *   will look for the template property. When found, it will be
+                            *   expected to be a string, that is the url to the editor template.
+                            *   When this occurs the directive must wait for the template
+                            *   before continuing with the grid initialization process.
+                            *
+                            */
+                            if(angular.isObject(config.noKendoGrid.editable) && config.noKendoGrid.editable.template){
+                                getEditorTemplate(config.noKendoGrid.editable)
+                                    .then(function(){
+                                        handleWaitForAndConfigure(config);
+                                    })
+                                    .catch(function(err){
+                                        console.error(err);
                                     });
-                                }else{
-                                    configure(config);
-                                }
                             }else{
-                                configure(config);
+                                handleWaitForAndConfigure(config);
                             }
-
-
                         })
                         .catch(function(err){
                             console.error(err);

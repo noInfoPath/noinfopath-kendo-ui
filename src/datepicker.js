@@ -1,29 +1,32 @@
 //datepicker.js
 (function(angular, undefined){
     angular.module("noinfopath.kendo.ui")
-        .directive("noKendoDatePicker", ["noConfig", function(noConfig){
+        .directive("noKendoDatePicker", ["noFormConfig", "$state", function(noFormConfig, $state){
             function _link(scope, el, attrs){
-                var config = noInfoPath.getItem(noConfig.current, attrs.noConfig),
-                    input = angular.element("<input type=\"date\">"),
-                    datePicker;
+                return noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope)
+                    .then(function(config){
+                        var input = angular.element("<input type=\"date\">"),
+                            datePicker;
 
-                noInfoPath.setItem(scope, config.ngModel, new Date());
+                        config = noInfoPath.getItem(config, attrs.noForm);
 
-                config.options.change = function(){
-                    noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(this.value()));
-                };
+                        noInfoPath.setItem(scope, config.ngModel,new Date());
 
-                scope.$watch(config.ngModel, function(newval){
-                    if(newval){
-                        datePicker.value(newval);
-                    }
-                });
+                        config.options.change = function(){
+                            noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(this.value()));
+                        };
 
-                el.append(input);
+                        scope.$watch(config.ngModel, function(newval){
+                            if(newval){
+                                datePicker.value(newval);
+                            }
+                        });
 
-                datePicker = input.kendoDatePicker(config.options).data("kendoDatePicker");
+                        el.append(input);
 
+                        datePicker = input.kendoDatePicker(config.options).data("kendoDatePicker");
 
+                    });
 
             }
 

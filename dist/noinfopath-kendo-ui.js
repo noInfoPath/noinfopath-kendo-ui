@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 0.0.5
+ *	@version 0.0.6
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -92,13 +92,57 @@ noInfoPath.kendo = {};
 		Kendo's data aware widgets to work with NoInfoPath's data providers,
 		like the IndexedDB, WebSql and HTTP implementations.
 	*/
-		.factory("noKendoDataSourceFactory", ["$injector", "noQueryParser", function($injector, noQueryParser){
+		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", function($injector, $q, noQueryParser, noTransactionCache){
 			function KendoDataSourceService(){
-				this.create = function (config, noTable, params){
+				this.create = function (userId, config, scope){
                     //console.warn("TODO: Implement config.noDataSource and ???");
 					if(!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
-					if(!noTable) throw "kendoDataSourceService::create requires a no noTable object as the second parameter";
-					//if(noTable.constructor.name !== "NoTable") throw "noTable parameter is expected to be of type NoTable";
+
+                    function create(options){
+                        var noTrans = noTransactionCache.beginTransaction(userId, config, scope);
+
+                        noTrans.upsert(options.data)
+                            .then(noTransactionCache.endTransaction.bind(noTrans, noTrans))
+                            .then(options.success)
+                            .catch(function(err){
+                                options.error(err);
+                            });
+
+                    }
+
+                    function read(options){
+                        var provider = $injector.get(config.noDataSource.dataProvider),
+                            db = provider.getDatabase(config.noDataSource.databaseName),
+                            noTable = db[config.noDataSource.entityName];
+
+                        noTable.noRead.apply(null, noQueryParser.parse(options.data))
+                           .then(options.success)
+                           .catch(options.error);
+                    }
+
+                    function update(options){
+                        var noTrans = noTransactionCache.beginTransaction(userId, config, scope);
+
+                        noTrans.upsert(options.data)
+                            .then(noTransactionCache.endTransaction.bind(noTrans, noTrans))
+                            .then(options.success)
+                            .catch(options.error);
+
+                    }
+
+                    function destroy(options){
+                        var noTrans = noTransactionCache.beginTransaction(userId, config, scope);
+
+                        noTrans.destory(options.data)
+                            .then(noTransactionCache.endTransaction.bind(noTrans, noTrans))
+                            .then(options.success)
+                            .catch(options.error);
+
+                    }
+
+                    function errors(err){
+                        console.error(err);
+                    }
 
 					var parsers = {
                             "date": function(data){
@@ -108,28 +152,12 @@ noInfoPath.kendo = {};
                         ds = angular.merge({
                         serverFiltering: true,
                         serverPaging: true,
+                        serverSorting: true,
 						transport: {
-							create: function(options){
-								noTable.noCreate(options.data)
-									.then(options.success)
-									.catch(options.error);
-							},
-							read: function(options){
-
-								noTable.noRead.apply(null, noQueryParser.parse(options.data))
-									.then(options.success)
-									.catch(options.error);
-							},
-							update: function(options){
-								noTable.noUpdate(options.data)
-									.then(options.success)
-									.catch(options.error);
-							},
-							destroy: function(options){
-								noTable.noDestroy(options.data)
-									.then(options.success)
-									.catch(options.error);
-							}
+							create: create,
+							read: read,
+							update: update,
+							destroy: destroy
 						},
 						schema: {
 							data: function(data){
@@ -138,8 +166,10 @@ noInfoPath.kendo = {};
 							total: function(data){
 								return data.total;
 							}
+
 						}
 					}, config.noKendoDataSource),
+                    dsCfg = config.noDataSource ? config.noDataSource : config,
                     kds;
 
                     /**
@@ -169,12 +199,12 @@ noInfoPath.kendo = {};
                     *   data source location.  $scope or $stateParams for
                     *   exmaple.
                     */
-                    if(config.filter){
+                    if(dsCfg.filter){
 
                         var filters = [];
 
-                        for(var fi in config.filter){
-                            var filter = angular.copy(config.filter[fi]), source;
+                        for(var fi in dsCfg.filter){
+                            var filter = angular.copy(dsCfg.filter[fi]), source;
 
                             if(angular.isObject(filter.value)){
 
@@ -183,7 +213,7 @@ noInfoPath.kendo = {};
                                 */
                                 if(filter.value.source === "scope") {
                                     //console.warn("TODO: Need to handle use case where scope is passed in from a directive.");
-                                    source = params;
+                                    source = scope;
                                 }else{
                                     source = $injector.get(filter.value.source);
                                 }
@@ -272,7 +302,7 @@ noInfoPath.kendo = {};
         *   }
         * ```
 		*/
-        .directive("noKendoGrid", ['$injector', '$state','$q','lodash','noKendoDataSourceFactory', function($injector, $state, $q, _, noKendoDataSourceFactory){
+        .directive("noKendoGrid", ['$injector', '$http', '$state','$q','lodash', 'noLoginService', 'noKendoDataSourceFactory', function($injector, $http, $state, $q, _, noLoginService, noKendoDataSourceFactory){
             return {
                 link: function(scope, el, attrs){
                     var configurationType,
@@ -307,70 +337,110 @@ noInfoPath.kendo = {};
                         throw "noKendoGrid requires either a noConfig or noForm attribute";
                     }
 
+
                     function configure(config, params){
                         var dsCfg = config.noDataSource ? config.noDataSource : config,
-                            provider = $injector.get(dsCfg.dataProvider),
-                            db = provider.getDatabase(dsCfg.databaseName),
-                            entity = db[dsCfg.entityName],
                             dataSource;
 
-                        if(!entity) throw dsCfg.entityName + " not found in provider " + dsCfg.dataProvider;
+                        //if(!entity) throw dsCfg.entityName + " not found in provider " + dsCfg.dataProvider;
 
 
-                        dataSource = noKendoDataSourceFactory.create(dsCfg, entity, params);
+                        dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, params);
+
 
                         config.noKendoGrid.dataSource = dataSource;
 
-                        config.noKendoGrid.selectable = "row";
 
-                        /*
-                        *   ##### change() event handler
-                        *
-                        *   Listens on the Kendo UI Grid components change event
-                        *   and transitions the user to the ```toState``` specified
-                        *   in the noConfig node for this directive.
-                        */
-                        config.noKendoGrid.change = function(){
-                            var dsCfg = config.noDataSource ? config.noDataSource : config,
-                                noGrid = config.noGrid ? config.noGrid : config,
-                                data = this.dataItem(this.select()),
-                                params = {};
+                        if(config.noKendoGrid.selectable === undefined || config.noKendoGrid.selectable){ //When Truthy because we always want row selection.
+                            config.noKendoGrid.selectable= "row";
 
-                            params[config.primaryKey] = data[dsCfg.primaryKey];
+                            /*
+                            *   ##### change() event handler
+                            *
+                            *   Listens on the Kendo UI Grid components change event
+                            *   and transitions the user to the ```toState``` specified
+                            *   in the noConfig node for this directive.
+                            */
+                            config.noKendoGrid.change = function(){
+                                var dsCfg = config.noDataSource ? config.noDataSource : config,
+                                    noGrid = config.noGrid ? config.noGrid : config,
+                                    data = this.dataItem(this.select()),
+                                    params = {},
+                                    toState = config.noGrid ? config.noGrid.toState : config.toState,
+                                    primaryKey = config.noGrid ? config.noGrid.primaryKey : config.primaryKey;
 
-                            params = angular.merge(params, $state.params);
+                                params[primaryKey] = data[dsCfg.primaryKey];
 
-                            if(config.toState){
-                                $state.go(config.toState, params);
-                            }else{
-                                var tableName = this.dataSource.transport.tableName;
-                                scope.$root.$broadcast("noGrid::change+" + tableName, data);
-                            }
-                        };
+                                params = angular.merge(params, $state.params);
+
+                                if(toState){
+                                    $state.go(toState, params);
+                                }else{
+                                    console.warn("TODO: Test this for a bug. Transport is not a property of dataSource.");
+                                    var tableName = this.dataSource.transport.tableName;
+                                    scope.$root.$broadcast("noGrid::change+" + tableName, data);
+                                    //console.log("Boo");
+                                }
+                            };
+
+                        }
 
                         var grid = el.kendoGrid(config.noKendoGrid).data("kendoGrid");
 
                     }
 
+                    function getEditorTemplate(config){
+                        return $http.get(config.template)
+                            .then(function(resp){
+                                config.template = kendo.template(resp.data);
+                            })
+                            .catch(function(err){
+                                throw err;
+                            });
+                    }
+
+                    function handleWaitForAndConfigure(config){
+                        var dsCfg = config.noDataSource ? config.noDataSource : config;
+
+                        if(dsCfg.waitFor){
+                            if(dsCfg.waitFor.source === "scope"){
+                                scope.$watch(dsCfg.waitFor.property, function(newval, oldval, scope){
+                                    if(newval){
+                                        configure(config, scope);
+                                    }
+                                });
+                            }else{
+                                configure(config, scope);
+                            }
+                        }else{
+                            configure(config, scope);
+                        }
+                    }
+
                     cfgFn[configurationType](attrs)
                         .then(function(config){
-                            var dsCfg = config.noDataSource ? config.noDataSource : config;
 
-                            if(dsCfg.waitFor){
-                                if(dsCfg.waitFor.source === "scope"){
-                                    scope.$watch(dsCfg.waitFor.property, function(newval, oldval, scope){
-                                        if(newval){
-                                            configure(config, scope);
-                                        }
+                            /*
+                            *   ##### kendoGrid.editable
+                            *
+                            *   When this property is truthy and an object, noKendoGrid Directive
+                            *   will look for the template property. When found, it will be
+                            *   expected to be a string, that is the url to the editor template.
+                            *   When this occurs the directive must wait for the template
+                            *   before continuing with the grid initialization process.
+                            *
+                            */
+                            if(angular.isObject(config.noKendoGrid.editable) && config.noKendoGrid.editable.template){
+                                getEditorTemplate(config.noKendoGrid.editable)
+                                    .then(function(){
+                                        handleWaitForAndConfigure(config);
+                                    })
+                                    .catch(function(err){
+                                        console.error(err);
                                     });
-                                }else{
-                                    configure(config);
-                                }
                             }else{
-                                configure(config);
+                                handleWaitForAndConfigure(config);
                             }
-
-
                         })
                         .catch(function(err){
                             console.error(err);
@@ -386,29 +456,32 @@ noInfoPath.kendo = {};
 //datepicker.js
 (function(angular, undefined){
     angular.module("noinfopath.kendo.ui")
-        .directive("noKendoDatePicker", ["noConfig", function(noConfig){
+        .directive("noKendoDatePicker", ["noFormConfig", "$state", function(noFormConfig, $state){
             function _link(scope, el, attrs){
-                var config = noInfoPath.getItem(noConfig.current, attrs.noConfig),
-                    input = angular.element("<input type=\"date\">"),
-                    datePicker;
+                return noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope)
+                    .then(function(config){
+                        var input = angular.element("<input type=\"date\">"),
+                            datePicker;
 
-                noInfoPath.setItem(scope, config.ngModel, new Date());
+                        config = noInfoPath.getItem(config, attrs.noForm);
 
-                config.options.change = function(){
-                    noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(this.value()));
-                };
+                        noInfoPath.setItem(scope, config.ngModel,new Date());
 
-                scope.$watch(config.ngModel, function(newval){
-                    if(newval){
-                        datePicker.value(newval);
-                    }
-                });
+                        config.options.change = function(){
+                            noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(this.value()));
+                        };
 
-                el.append(input);
+                        scope.$watch(config.ngModel, function(newval){
+                            if(newval){
+                                datePicker.value(newval);
+                            }
+                        });
 
-                datePicker = input.kendoDatePicker(config.options).data("kendoDatePicker");
+                        el.append(input);
 
+                        datePicker = input.kendoDatePicker(config.options).data("kendoDatePicker");
 
+                    });
 
             }
 

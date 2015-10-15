@@ -1,5 +1,5 @@
 # noinfopath-kendo-ui
-@version 0.0.5
+@version 0.0.6
 
 ## Overview
 NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -151,4 +151,13 @@ OR
   Listens on the Kendo UI Grid components change event
   and transitions the user to the ```toState``` specified
   in the noConfig node for this directive.
+
+  ##### kendoGrid.editable
+
+  When this property is truthy and an object, noKendoGrid Directive
+  will look for the template property. When found, it will be
+  expected to be a string, that is the url to the editor template.
+  When this occurs the directive must wait for the template
+  before continuing with the grid initialization process.
+
 

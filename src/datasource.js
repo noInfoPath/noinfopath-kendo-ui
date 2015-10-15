@@ -17,13 +17,57 @@
 		Kendo's data aware widgets to work with NoInfoPath's data providers,
 		like the IndexedDB, WebSql and HTTP implementations.
 	*/
-		.factory("noKendoDataSourceFactory", ["$injector", "noQueryParser", function($injector, noQueryParser){
+		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", function($injector, $q, noQueryParser, noTransactionCache){
 			function KendoDataSourceService(){
-				this.create = function (config, noTable, params){
+				this.create = function (userId, config, scope){
                     //console.warn("TODO: Implement config.noDataSource and ???");
 					if(!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
-					if(!noTable) throw "kendoDataSourceService::create requires a no noTable object as the second parameter";
-					//if(noTable.constructor.name !== "NoTable") throw "noTable parameter is expected to be of type NoTable";
+
+                    function create(options){
+                        var noTrans = noTransactionCache.beginTransaction(userId, config, scope);
+
+                        noTrans.upsert(options.data)
+                            .then(noTransactionCache.endTransaction.bind(noTrans, noTrans))
+                            .then(options.success)
+                            .catch(function(err){
+                                options.error(err);
+                            });
+
+                    }
+
+                    function read(options){
+                        var provider = $injector.get(config.noDataSource.dataProvider),
+                            db = provider.getDatabase(config.noDataSource.databaseName),
+                            noTable = db[config.noDataSource.entityName];
+
+                        noTable.noRead.apply(null, noQueryParser.parse(options.data))
+                           .then(options.success)
+                           .catch(options.error);
+                    }
+
+                    function update(options){
+                        var noTrans = noTransactionCache.beginTransaction(userId, config, scope);
+
+                        noTrans.upsert(options.data)
+                            .then(noTransactionCache.endTransaction.bind(noTrans, noTrans))
+                            .then(options.success)
+                            .catch(options.error);
+
+                    }
+
+                    function destroy(options){
+                        var noTrans = noTransactionCache.beginTransaction(userId, config, scope);
+
+                        noTrans.destory(options.data)
+                            .then(noTransactionCache.endTransaction.bind(noTrans, noTrans))
+                            .then(options.success)
+                            .catch(options.error);
+
+                    }
+
+                    function errors(err){
+                        console.error(err);
+                    }
 
 					var parsers = {
                             "date": function(data){
@@ -33,28 +77,12 @@
                         ds = angular.merge({
                         serverFiltering: true,
                         serverPaging: true,
+                        serverSorting: true,
 						transport: {
-							create: function(options){
-								noTable.noCreate(options.data)
-									.then(options.success)
-									.catch(options.error);
-							},
-							read: function(options){
-
-								noTable.noRead.apply(null, noQueryParser.parse(options.data))
-									.then(options.success)
-									.catch(options.error);
-							},
-							update: function(options){
-								noTable.noUpdate(options.data)
-									.then(options.success)
-									.catch(options.error);
-							},
-							destroy: function(options){
-								noTable.noDestroy(options.data)
-									.then(options.success)
-									.catch(options.error);
-							}
+							create: create,
+							read: read,
+							update: update,
+							destroy: destroy
 						},
 						schema: {
 							data: function(data){
@@ -63,8 +91,10 @@
 							total: function(data){
 								return data.total;
 							}
+
 						}
 					}, config.noKendoDataSource),
+                    dsCfg = config.noDataSource ? config.noDataSource : config,
                     kds;
 
                     /**
@@ -94,12 +124,12 @@
                     *   data source location.  $scope or $stateParams for
                     *   exmaple.
                     */
-                    if(config.filter){
+                    if(dsCfg.filter){
 
                         var filters = [];
 
-                        for(var fi in config.filter){
-                            var filter = angular.copy(config.filter[fi]), source;
+                        for(var fi in dsCfg.filter){
+                            var filter = angular.copy(dsCfg.filter[fi]), source;
 
                             if(angular.isObject(filter.value)){
 
@@ -108,7 +138,7 @@
                                 */
                                 if(filter.value.source === "scope") {
                                     //console.warn("TODO: Need to handle use case where scope is passed in from a directive.");
-                                    source = params;
+                                    source = scope;
                                 }else{
                                     source = $injector.get(filter.value.source);
                                 }
