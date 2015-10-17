@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 0.0.6
+ *	@version 0.0.7
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -144,9 +144,18 @@ noInfoPath.kendo = {};
                         console.error(err);
                     }
 
-					var parsers = {
+					var yesNo = [
+                        "No",
+                        "Yes"
+                        ],
+                        parsers = {
                             "date": function(data){
                                 return new Date(data);
+                            },
+                            "ReverseYesNo": function(data){
+                                var v = data === 0 ? 1 : 0;
+
+                                return yesNo[v];
                             }
                         },
                         ds = angular.merge({
@@ -185,8 +194,8 @@ noInfoPath.kendo = {};
                         for(var f in fields){
                             var field = fields[f];
 
-                            if(field.type && field.parse) {
-                                field.parse = parsers[field.type];
+                            if(field.parse) {
+                                field.parse = parsers[field.parse];
                             }
                         }
                     }

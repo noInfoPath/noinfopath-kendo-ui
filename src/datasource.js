@@ -69,9 +69,18 @@
                         console.error(err);
                     }
 
-					var parsers = {
+					var yesNo = [
+                        "No",
+                        "Yes"
+                        ],
+                        parsers = {
                             "date": function(data){
                                 return new Date(data);
+                            },
+                            "ReverseYesNo": function(data){
+                                var v = data === 0 ? 1 : 0;
+
+                                return yesNo[v];
                             }
                         },
                         ds = angular.merge({
@@ -110,8 +119,8 @@
                         for(var f in fields){
                             var field = fields[f];
 
-                            if(field.type && field.parse) {
-                                field.parse = parsers[field.type];
+                            if(field.parse) {
+                                field.parse = parsers[field.parse];
                             }
                         }
                     }
