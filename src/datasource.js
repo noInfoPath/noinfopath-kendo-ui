@@ -69,6 +69,15 @@
                         console.error(err);
                     }
 
+					function watch(filterCfg, newval, oldval, scope){
+                        var grid = scope.noGrid;
+
+                        this.value = newval;
+
+                        grid.dataSource.read();
+                        grid.refresh();
+                    }
+
 					var yesNo = [
                         "No",
                         "Yes"
@@ -138,15 +147,12 @@
                         var filters = [];
 
                         for(var fi in dsCfg.filter){
-                            var filter = angular.copy(dsCfg.filter[fi]), source;
+                            var filterCfg = dsCfg.filter[fi],
+                                filter = angular.copy(filterCfg), source;
 
                             if(angular.isObject(filter.value)){
 
-                                /*
-                                 *  ```scoped``` passed in from underlying directive as ```params```.
-                                */
                                 if(filter.value.source === "scope") {
-                                    //console.warn("TODO: Need to handle use case where scope is passed in from a directive.");
                                     source = scope;
                                 }else{
                                     source = $injector.get(filter.value.source);
@@ -155,8 +161,13 @@
                                 filter.value = noInfoPath.getItem(source, filter.value.property);
 
                                 filters.push(filter);
+
+                                if(filterCfg.value.watch && ["scope", "$scope", "$rootScope"].indexOf(filterCfg.value.source) > -1){
+                                    source.$watch(filterCfg.value.property, watch.bind(filter, filterCfg));
+                                }
                             }
                         }
+
 
                         ds.filter = filters;
                         //grid.dataSource.filter(filters);

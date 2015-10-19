@@ -1,5 +1,5 @@
 # noinfopath-kendo-ui
-@version 0.0.7
+@version 0.0.8
 
 ## Overview
 NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -85,8 +85,6 @@ like the IndexedDB, WebSql and HTTP implementations.
   it supports dynamic value binding from any injectable
   data source location.  $scope or $stateParams for
   exmaple.
-
- ```scoped``` passed in from underlying directive as ```params```.
 
 ## noKendoGrid (no-kendo-grid) Directive
 

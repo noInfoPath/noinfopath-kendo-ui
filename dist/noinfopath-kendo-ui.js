@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 0.0.7
+ *	@version 0.0.8
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -144,6 +144,15 @@ noInfoPath.kendo = {};
                         console.error(err);
                     }
 
+					function watch(filterCfg, newval, oldval, scope){
+                        var grid = scope.noGrid;
+
+                        this.value = newval;
+
+                        grid.dataSource.read();
+                        grid.refresh();
+                    }
+
 					var yesNo = [
                         "No",
                         "Yes"
@@ -213,15 +222,12 @@ noInfoPath.kendo = {};
                         var filters = [];
 
                         for(var fi in dsCfg.filter){
-                            var filter = angular.copy(dsCfg.filter[fi]), source;
+                            var filterCfg = dsCfg.filter[fi],
+                                filter = angular.copy(filterCfg), source;
 
                             if(angular.isObject(filter.value)){
 
-                                /*
-                                 *  ```scoped``` passed in from underlying directive as ```params```.
-                                */
                                 if(filter.value.source === "scope") {
-                                    //console.warn("TODO: Need to handle use case where scope is passed in from a directive.");
                                     source = scope;
                                 }else{
                                     source = $injector.get(filter.value.source);
@@ -230,8 +236,13 @@ noInfoPath.kendo = {};
                                 filter.value = noInfoPath.getItem(source, filter.value.property);
 
                                 filters.push(filter);
+
+                                if(filterCfg.value.watch && ["scope", "$scope", "$rootScope"].indexOf(filterCfg.value.source) > -1){
+                                    source.$watch(filterCfg.value.property, watch.bind(filter, filterCfg));
+                                }
                             }
                         }
+
 
                         ds.filter = filters;
                         //grid.dataSource.filter(filters);
@@ -385,16 +396,14 @@ noInfoPath.kendo = {};
                                 if(toState){
                                     $state.go(toState, params);
                                 }else{
-                                    console.warn("TODO: Test this for a bug. Transport is not a property of dataSource.");
-                                    var tableName = this.dataSource.transport.tableName;
-                                    scope.$root.$broadcast("noGrid::change+" + tableName, data);
-                                    //console.log("Boo");
+                                    var tableName =dsCfg.entityName;
+                                    scope.$emit("noGrid::change+" + tableName, data);
                                 }
                             };
 
                         }
 
-                        var grid = el.kendoGrid(config.noKendoGrid).data("kendoGrid");
+                        scope.noGrid = el.kendoGrid(config.noKendoGrid).data("kendoGrid");
 
                     }
 
@@ -406,6 +415,23 @@ noInfoPath.kendo = {};
                             .catch(function(err){
                                 throw err;
                             });
+                    }
+
+                    function getRowTemplate(config){
+                        return $http.get(config.noGrid.rowTemplateUrl)
+                            .then(function(resp){
+                                var tmp = angular.element(resp.data);
+
+                                config.noKendoGrid.rowTemplate = tmp[0].outerHTML;
+
+                                tmp.addClass("k-alt");
+
+                                config.noKendoGrid.altRowTemplate = tmp[0].outerHTML;
+                            })
+                            .catch(function(err){
+                                throw err;
+                            });
+
                     }
 
                     function handleWaitForAndConfigure(config){
@@ -428,6 +454,7 @@ noInfoPath.kendo = {};
 
                     cfgFn[configurationType](attrs)
                         .then(function(config){
+                            var promises = [];
 
                             /*
                             *   ##### kendoGrid.editable
@@ -439,8 +466,18 @@ noInfoPath.kendo = {};
                             *   before continuing with the grid initialization process.
                             *
                             */
+
+
                             if(angular.isObject(config.noKendoGrid.editable) && config.noKendoGrid.editable.template){
-                                getEditorTemplate(config.noKendoGrid.editable)
+                                promises.push(getEditorTemplate(config.noKendoGrid.editable));
+                            }
+
+                            if(config.noGrid.rowTemplateUrl){
+                                promises.push(getRowTemplate(config));
+                            }
+
+                            if(promises.length){
+                                $q.all(promises)
                                     .then(function(){
                                         handleWaitForAndConfigure(config);
                                     })
