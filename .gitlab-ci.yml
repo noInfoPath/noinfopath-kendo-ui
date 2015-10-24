@@ -2,4 +2,5 @@ test1:
     script: 
         - npm install
         - bower install
+        - vncserver
         - grunt karma:continuous
