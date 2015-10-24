@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 0.0.8
+ *	@version 0.0.10
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -322,7 +322,7 @@ noInfoPath.kendo = {};
         *   }
         * ```
 		*/
-        .directive("noKendoGrid", ['$injector', '$http', '$state','$q','lodash', 'noLoginService', 'noKendoDataSourceFactory', function($injector, $http, $state, $q, _, noLoginService, noKendoDataSourceFactory){
+        .directive("noKendoGrid", ['$injector', '$compile', '$timeout', '$http', '$state','$q','lodash', 'noLoginService', 'noKendoDataSourceFactory', function($injector, $compile, $timeout, $http, $state, $q, _, noLoginService, noKendoDataSourceFactory){
             return {
                 link: function(scope, el, attrs){
                     var configurationType,
@@ -418,19 +418,25 @@ noInfoPath.kendo = {};
                     }
 
                     function getRowTemplate(config){
-                        return $http.get(config.noGrid.rowTemplateUrl)
-                            .then(function(resp){
-                                var tmp = angular.element(resp.data);
+                        return $q(function(resolve, reject){
+                            $http.get(config.noGrid.rowTemplateUrl)
+                                .then(function(resp){
+                                    var tmp = angular.element($compile(resp.data)(scope));
 
-                                config.noKendoGrid.rowTemplate = tmp[0].outerHTML;
+                                    $timeout(function(){
+                                        config.noKendoGrid.rowTemplate = tmp[0].outerHTML;
 
-                                tmp.addClass("k-alt");
+                                        tmp.addClass("k-alt");
 
-                                config.noKendoGrid.altRowTemplate = tmp[0].outerHTML;
-                            })
-                            .catch(function(err){
-                                throw err;
-                            });
+                                        config.noKendoGrid.altRowTemplate = tmp[0].outerHTML;
+
+                                        resolve();
+                                    }, 20);
+                                })
+                                .catch(function(err){
+                                    reject(err);
+                                });
+                        });
 
                     }
 
@@ -472,7 +478,7 @@ noInfoPath.kendo = {};
                                 promises.push(getEditorTemplate(config.noKendoGrid.editable));
                             }
 
-                            if(config.noGrid.rowTemplateUrl){
+                            if(config.noGrid && config.noGrid.rowTemplateUrl){
                                 promises.push(getRowTemplate(config));
                             }
 
