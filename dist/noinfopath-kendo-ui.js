@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.0
+ *	@version 1.0.1
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -159,7 +159,7 @@ noInfoPath.kendo = {};
                         ],
                         parsers = {
                             "date": function(data){
-                                return new Date(data);
+								return data ? new Date(data) : "";
                             },
                             "ReverseYesNo": function(data){
                                 var v = data === 0 ? 1 : 0;

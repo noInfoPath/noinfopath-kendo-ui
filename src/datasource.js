@@ -84,7 +84,7 @@
                         ],
                         parsers = {
                             "date": function(data){
-                                return new Date(data);
+								return data ? new Date(data) : "";
                             },
                             "ReverseYesNo": function(data){
                                 var v = data === 0 ? 1 : 0;
