@@ -1,6 +1,8 @@
+variables:
+  CHROME_BIN: "/usr/bin/google-chrome-stable"
+
 test1:
     script: 
         - npm install
         - bower install
-        - vncserver
         - grunt karma:continuous
