@@ -1,5 +1,5 @@
 {
-	"name": "@noinfopath/noinfopath-kendo-ui",
+	"name": "noinfopath/noinfopath-kendo-ui",
 	"version": "1.0.1",
 	"description": "noInfoPath wrapper around Kendo UI",
 	"main": "noinfopath-kendo-ui.js",
