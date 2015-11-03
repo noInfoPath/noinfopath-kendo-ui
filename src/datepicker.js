@@ -18,7 +18,7 @@
 
                         scope.$watch(config.ngModel, function(newval){
                             if(newval){
-                                datePicker.value(newval);
+                                datePicker.value(new Date(newval));
                             }
                         });
 

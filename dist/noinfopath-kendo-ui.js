@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.1
+ *	@version 1.0.2
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -525,7 +525,7 @@ noInfoPath.kendo = {};
 
                         scope.$watch(config.ngModel, function(newval){
                             if(newval){
-                                datePicker.value(newval);
+                                datePicker.value(new Date(newval));
                             }
                         });
 
