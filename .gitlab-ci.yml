@@ -5,4 +5,4 @@ test1:
     script: 
         - npm install
         - bower install
-        - grunt karma:continuous
+        - xvfb-run grunt karma:continuous
