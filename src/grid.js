@@ -142,14 +142,21 @@
 
                         }
 
-                        scope.noGrid = el.kendoGrid(config.noKendoGrid).data("kendoGrid");
+						if(config.noGrid.editable){
+							var prov = $injector.get(config.noGrid.editable.provider),
+								fn = prov[config.noGrid.editable.function];
+
+							config.noKendoGrid.edit = fn;
+						}
+
+						scope.noGrid = el.kendoGrid(config.noKendoGrid).data("kendoGrid");
 
                     }
 
                     function getEditorTemplate(config){
                         return $http.get(config.template)
                             .then(function(resp){
-                                config.template = kendo.template(resp.data);
+                                config.template = kendo.template($compile(resp.data)(scope).html());
                             })
                             .catch(function(err){
                                 throw err;
