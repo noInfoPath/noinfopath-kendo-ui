@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.3
+ *	@version 1.0.4
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -403,7 +403,7 @@ noInfoPath.kendo = {};
 
                         }
 
-						if(config.noGrid.editable){
+						if(config.noGrid && config.noGrid.editable && config.noGrid.editable.provider){
 							var prov = $injector.get(config.noGrid.editable.provider),
 								fn = prov[config.noGrid.editable.function];
 
