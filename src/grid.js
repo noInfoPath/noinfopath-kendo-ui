@@ -142,7 +142,7 @@
 
                         }
 
-						if(config.noGrid.editable){
+						if(config.noGrid && config.noGrid.editable && config.noGrid.editable.provider){
 							var prov = $injector.get(config.noGrid.editable.provider),
 								fn = prov[config.noGrid.editable.function];
 
