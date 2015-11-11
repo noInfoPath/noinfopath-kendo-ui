@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.5
+ *	@version 1.0.6
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -524,7 +524,7 @@ noInfoPath.kendo = {};
 
                         config = noInfoPath.getItem(config, attrs.noForm);
 
-                        noInfoPath.setItem(scope, config.ngModel,new Date());
+                        noInfoPath.setItem(scope, config.ngModel, null); //default display is empty
 
                         config.options.change = function(){
                             noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(this.value()));

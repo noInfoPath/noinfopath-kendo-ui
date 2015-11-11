@@ -10,7 +10,7 @@
 
                         config = noInfoPath.getItem(config, attrs.noForm);
 
-                        noInfoPath.setItem(scope, config.ngModel,new Date());
+                        noInfoPath.setItem(scope, config.ngModel, null); //default display is empty
 
                         config.options.change = function(){
                             noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(this.value()));
