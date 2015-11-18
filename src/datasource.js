@@ -17,14 +17,36 @@
 		Kendo's data aware widgets to work with NoInfoPath's data providers,
 		like the IndexedDB, WebSql and HTTP implementations.
 	*/
-		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", function($injector, $q, noQueryParser, noTransactionCache){
+		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "lodash", function($injector, $q, noQueryParser, noTransactionCache, _){
 			function KendoDataSourceService(){
+				// function normalizeTransactions(config){
+				//
+				// 	var noTransactions = config.noDataSource.noTransaction;
+				//
+				// 	for(var t in noTransactions){
+				// 		var transaction = noTransactions[t];
+				//
+				// 		if(_.isBoolean(transaction)){
+				// 			noTransactions[t] = [{entityName: config.noDataSource.entityName}];
+				// 		}
+				// 	}
+				// }
+
 				this.create = function (userId, config, scope){
                     //console.warn("TODO: Implement config.noDataSource and ???");
 					if(!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
 
+					// normalizeTransactions(config);
+					console.log(config);
+
                     function create(options){
-                        var noTrans = noTransactionCache.beginTransaction(userId, config, scope);
+
+
+                        var noTrans = noTransactionCache.beginTransaction(userId, config, scope),
+							entityName = config.noDataSource.noTransaction.create[0].entityName,
+							scopeData = scope[entityName] ? scope[entityName] : {};
+
+						options.data = angular.merge(options.data, scopeData);
 
                         noTrans.upsert(options.data)
                             .then(noTransactionCache.endTransaction.bind(noTrans, noTrans))
@@ -46,7 +68,11 @@
                     }
 
                     function update(options){
-                        var noTrans = noTransactionCache.beginTransaction(userId, config, scope);
+                        var noTrans = noTransactionCache.beginTransaction(userId, config, scope),
+							entityName = config.noDataSource.noTransaction.create[0].entityName,
+							scopeData = scope[entityName] ? scope[entityName] : {};
+
+						options.data = angular.merge(options.data, scopeData);
 
                         noTrans.upsert(options.data)
                             .then(noTransactionCache.endTransaction.bind(noTrans, noTrans))
