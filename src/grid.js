@@ -146,7 +146,7 @@
 							var prov = $injector.get(config.noGrid.editable.provider),
 								fn = prov[config.noGrid.editable.function];
 
-							config.noKendoGrid.edit = fn;
+							config.noKendoGrid.edit = fn.bind(config, scope);
 						}
 
 						scope.noGrid = el.kendoGrid(config.noKendoGrid).data("kendoGrid");
