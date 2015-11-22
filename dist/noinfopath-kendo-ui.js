@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.7
+ *	@version 1.0.8
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -269,9 +269,22 @@ noInfoPath.kendo = {};
                             }
                         }
 
+						//In the case of a user wanting filters and sorts to persist across states this check makes sure that userFilters/sorts are
+						//enabled in no-forms.json. At each grid load, this will check to see if any filters/sorts have been persisted and load them
+						//for the user automatically.
+						if((dsCfg.filter.userFilters || dsCfg.userFilters) && $state.current.data && $state.current.data.entities){
 
-                        ds.filter = filters;
-                        //grid.dataSource.filter(filters);
+							var entityName = $state.params.entity ? $state.params.entity : $state.current.name;
+
+							if($state.current.data.entities[entityName]){
+								filters = $state.current.data.entities[entityName].filters;
+								sort = $state.current.data.entities[entityName].sort;
+							}
+						}
+
+						ds.filter = filters;
+						ds.sort = sort;
+						//grid.dataSource.filter(filters);
                     }
 
                     kds = new kendo.data.DataSource(ds);
@@ -437,6 +450,19 @@ noInfoPath.kendo = {};
 						}
 
 						scope.noGrid = el.kendoGrid(config.noKendoGrid).data("kendoGrid");
+
+                        //A stateChangeStart event is captured on each state change. We will then check to make sure that the fromState name is the same as the one
+                        //in the no-forms.json. We then grab the name of the state, make a new object on the scope and persist any filter or sort data in this object.
+                        scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
+                            if(fromState.name === config.noGrid.stateName){
+
+                                var normalizedName = noInfoPath.kendo.normalizedRouteName(fromParams.entity, fromState.name);
+
+                                fromState.data.entities[normalizedName] = {};
+                                fromState.data.entities[normalizedName].filters = scope.noGrid.dataSource.filter();
+                                fromState.data.entities[normalizedName].sort = scope.noGrid.dataSource.sort();
+                            }
+            			});
 
                     }
 
