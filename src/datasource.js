@@ -17,7 +17,7 @@
 		Kendo's data aware widgets to work with NoInfoPath's data providers,
 		like the IndexedDB, WebSql and HTTP implementations.
 	*/
-		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "lodash", function($injector, $q, noQueryParser, noTransactionCache, _){
+		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "lodash", "$state", function($injector, $q, noQueryParser, noTransactionCache, _, $state){
 			function KendoDataSourceService(){
 				// function normalizeTransactions(config){
 				//
@@ -170,7 +170,8 @@
                     */
                     if(dsCfg.filter){
 
-                        var filters = [];
+                        var filters = [],
+							sort = [];
 
                         for(var fi in dsCfg.filter){
                             var filterCfg = dsCfg.filter[fi],
