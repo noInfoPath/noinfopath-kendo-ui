@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.8
+ *	@version 1.0.9
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -65,6 +65,12 @@
 //Establish noInfoPath.kendo namespace.
 noInfoPath.kendo = {};
 
+noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState){
+    var normalizedName = fromParams ? fromParams : fromState;
+
+    return normalizedName;
+};
+
 (function(angular, undefined){
  	"use strict";
 
@@ -92,7 +98,7 @@ noInfoPath.kendo = {};
 		Kendo's data aware widgets to work with NoInfoPath's data providers,
 		like the IndexedDB, WebSql and HTTP implementations.
 	*/
-		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "lodash", function($injector, $q, noQueryParser, noTransactionCache, _){
+		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "lodash", "$state", function($injector, $q, noQueryParser, noTransactionCache, _, $state){
 			function KendoDataSourceService(){
 				// function normalizeTransactions(config){
 				//
@@ -245,7 +251,8 @@ noInfoPath.kendo = {};
                     */
                     if(dsCfg.filter){
 
-                        var filters = [];
+                        var filters = [],
+							sort = [];
 
                         for(var fi in dsCfg.filter){
                             var filterCfg = dsCfg.filter[fi],
