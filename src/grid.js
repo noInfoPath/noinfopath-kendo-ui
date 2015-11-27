@@ -151,6 +151,19 @@
 
 						scope.noGrid = el.kendoGrid(config.noKendoGrid).data("kendoGrid");
 
+                        //A stateChangeStart event is captured on each state change. We will then check to make sure that the fromState name is the same as the one
+                        //in the no-forms.json. We then grab the name of the state, make a new object on the scope and persist any filter or sort data in this object.
+                        scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
+                            if(fromState.name === config.noGrid.stateName){
+
+                                var normalizedName = noInfoPath.kendo.normalizedRouteName(fromParams.entity, fromState.name);
+
+                                fromState.data.entities[normalizedName] = {};
+                                fromState.data.entities[normalizedName].filters = scope.noGrid.dataSource.filter();
+                                fromState.data.entities[normalizedName].sort = scope.noGrid.dataSource.sort();
+                            }
+            			});
+
                     }
 
                     function getEditorTemplate(config){

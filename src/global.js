@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.7
+ *	@version 1.0.9
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -64,6 +64,12 @@
 
 //Establish noInfoPath.kendo namespace.
 noInfoPath.kendo = {};
+
+noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState){
+    var normalizedName = fromParams ? fromParams : fromState;
+
+    return normalizedName;
+};
 
 (function(angular, undefined){
  	"use strict";

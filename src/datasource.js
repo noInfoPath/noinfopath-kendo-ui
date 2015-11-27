@@ -17,7 +17,7 @@
 		Kendo's data aware widgets to work with NoInfoPath's data providers,
 		like the IndexedDB, WebSql and HTTP implementations.
 	*/
-		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "lodash", function($injector, $q, noQueryParser, noTransactionCache, _){
+		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "lodash", "$state", function($injector, $q, noQueryParser, noTransactionCache, _, $state){
 			function KendoDataSourceService(){
 				// function normalizeTransactions(config){
 				//
@@ -170,7 +170,8 @@
                     */
                     if(dsCfg.filter){
 
-                        var filters = [];
+                        var filters = [],
+							sort = [];
 
                         for(var fi in dsCfg.filter){
                             var filterCfg = dsCfg.filter[fi],
@@ -194,9 +195,22 @@
                             }
                         }
 
+						//In the case of a user wanting filters and sorts to persist across states this check makes sure that userFilters/sorts are
+						//enabled in no-forms.json. At each grid load, this will check to see if any filters/sorts have been persisted and load them
+						//for the user automatically.
+						if((dsCfg.filter.userFilters || dsCfg.userFilters) && $state.current.data && $state.current.data.entities){
 
-                        ds.filter = filters;
-                        //grid.dataSource.filter(filters);
+							var entityName = $state.params.entity ? $state.params.entity : $state.current.name;
+
+							if($state.current.data.entities[entityName]){
+								filters = $state.current.data.entities[entityName].filters;
+								sort = $state.current.data.entities[entityName].sort;
+							}
+						}
+
+						ds.filter = filters;
+						ds.sort = sort;
+						//grid.dataSource.filter(filters);
                     }
 
                     kds = new kendo.data.DataSource(ds);
