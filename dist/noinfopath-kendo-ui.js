@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.10
+ *	@version 1.0.11
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -597,6 +597,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState){
 							fn3 = prov3[config.noGrid.rowTemplate.method];
 
 						kgCfg.rowTemplate = fn3.call(scope, kgCfg);
+                        kgCfg.altRowTemplate = fn3.call(scope, kgCfg, true);
 
 						kgCfg.dataBound = function(e)
 						{
@@ -792,13 +793,14 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState){
 
 	.service("noKendoRowTemplates", [function()
 	{
-		this.scaffold = function(cfg, data)
+		this.scaffold = function(cfg, alt)
 		{
 			var holder = angular.element("<div></div>"),
 				outerRow = angular.element("<tr data-uid=\"#= uid #\"></tr>"),
 				outerCol = angular.element("<td class=\"no-p\" colspan=\"" + cfg.columns.length + "\"></td>"),
 				table = angular.element("<table class=\"fcfn-row-template\"></table>"),
-				row = angular.element("<tr></tr>");
+				row = angular.element("<tr></tr>"),
+                colgroup = angular.element("<colgroup></colgroup>");
 
 			// <tr data-uid="a40f44b9-d598-464d-b19e-7a3c07e1e485" role="row"><td role="gridcell"> Crossing </td>
 			// <td role="gridcell">Do Not Sow</td><td role="gridcell">3</td><td role="gridcell"></td><td role="gridcell">
@@ -806,18 +808,29 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState){
 			// <a class="k-button k-button-icontext k-grid-edit" href="#"><span class="k-icon k-edit"></span>Edit</a>
 			// <a class="k-button k-button-icontext k-grid-delete" href="#"><span class="k-icon k-delete"></span>Delete</a>
 			// </td></tr>
+
+            if(alt){
+                outerRow.addClass("k-alt");
+            }
+
 			holder.append(outerRow);
 			outerRow.append(outerCol);
 			outerCol.append(table);
-			//table.append(this.noGrid.table.find("colgroup").clone());
+			table.append(colgroup);
 			table.append(row);
 
 
 			for (var c in cfg.columns)
 			{
 				var col = cfg.columns[c],
-					colTpl = angular.element("<td></td>");
+					colTpl = angular.element("<td></td>"),
+                    colg = angular.element("<col></col>");
 
+                if(col.width){
+                    colg.css("width", col.width);
+                }
+
+                colgroup.append(colg);
 				if (col.command)
 				{
 					colTpl.append("<a class=\"k-button k-button-icontext k-grid-edit\" href=\"##\"><span class=\"k-icon k-edit\"></span>Edit</a>");
