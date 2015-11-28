@@ -279,18 +279,22 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState){
 						//In the case of a user wanting filters and sorts to persist across states this check makes sure that userFilters/sorts are
 						//enabled in no-forms.json. At each grid load, this will check to see if any filters/sorts have been persisted and load them
 						//for the user automatically.
-						if((dsCfg.filter.userFilters || dsCfg.userFilters) && $state.current.data && $state.current.data.entities){
+                        var entityName = $state.params.entity ? $state.params.entity : $state.current.name;
 
-							var entityName = $state.params.entity ? $state.params.entity : $state.current.name;
-
+						if(dsCfg.userFilters && $state.current.data && $state.current.data.entities){
 							if($state.current.data.entities[entityName]){
 								filters = $state.current.data.entities[entityName].filters;
-								sort = $state.current.data.entities[entityName].sort;
 							}
 						}
 
+                        if(dsCfg.defaultSort && $state.current.data && $state.current.data.entities){
+                            if($state.current.data.entities[entityName]){
+                                sort = $state.current.data.entities[entityName].sort;
+                                ds.sort = sort;
+                            }
+						}
+
 						ds.filter = filters;
-						ds.sort = sort;
 						//grid.dataSource.filter(filters);
                     }
 
