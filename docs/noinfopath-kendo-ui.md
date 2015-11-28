@@ -1,5 +1,5 @@
 # noinfopath-kendo-ui
-@version 1.0.9
+@version 1.0.11
 
 ## Overview
 NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -149,6 +149,21 @@ OR
   Listens on the Kendo UI Grid components change event
   and transitions the user to the ```toState``` specified
   in the noConfig node for this directive.
+
+  `noFormOptionsKey` is required because it identifies where to get he configuration from
+  to configure the noComponent when the time comes.
+
+#### Filter and Sort Options  Persistence
+
+A stateChangeStart event is captured on each state change. We will then check to make
+sure that the fromState name is the same as the one in the no-forms.json. We then
+grab the name of the state, make a new object on the scope and persist any filter or
+sort data in this object.
+
+#### noDataSource::waitFor property
+
+A noDataSource object can ```waitFor``` a property on the scope to be
+Truthy before continuing with the grid's configuration proccess.
 
   ##### kendoGrid.editable
 
