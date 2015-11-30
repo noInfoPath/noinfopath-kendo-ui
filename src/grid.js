@@ -231,8 +231,8 @@
 						var prov3 = $injector.get(config.noGrid.rowTemplate.provider),
 							fn3 = prov3[config.noGrid.rowTemplate.method];
 
-						kgCfg.rowTemplate = fn3.call(scope, kgCfg);
-                        kgCfg.altRowTemplate = fn3.call(scope, kgCfg, true);
+						kgCfg.rowTemplate = fn3.call(scope, kgCfg, config.noGrid);
+                        kgCfg.altRowTemplate = fn3.call(scope, kgCfg, config.noGrid, true);
 
 						kgCfg.dataBound = function(e)
 						{
@@ -428,7 +428,7 @@
 
 	.service("noKendoRowTemplates", [function()
 	{
-		this.scaffold = function(cfg, alt)
+		this.scaffold = function(cfg, noGrid, alt)
 		{
 			var holder = angular.element("<div></div>"),
 				outerRow = angular.element("<tr data-uid=\"#= uid #\"></tr>"),
@@ -490,7 +490,9 @@
 				row.append(colTpl);
 			}
 
-			table.append("<tr><td class=\"no-p\" colspan=\"" + cfg.columns.length + "\"><div class=\"fcfn-record-stats\"> <div class=\"clearfix pull-right\"> <div class=\"pull-left no-m-r-\">Created by #= CreatedBy # on #= kendo.format(\"{0:g}\", DateCreated) # <span class=\"no-p-sm\">|</span></div> <div class=\"pull-left\">Modified by #= ModifiedBy # on #= kendo.format(\"{0:g}\", ModifiedDate) #</div> </div> </div></td></tr>");
+			if(noGrid.rowTemplate.recordStats === undefined || noGrid.rowTemplate.recordStats === true){
+				table.append("<tr><td class=\"no-p\" colspan=\"" + cfg.columns.length + "\"><div class=\"fcfn-record-stats\"> <div class=\"clearfix pull-right\"> <div class=\"pull-left no-m-r-\">Created by #= CreatedBy # on #= kendo.format(\"{0:g}\", DateCreated) # <span class=\"no-p-sm\">|</span></div> <div class=\"pull-left\">Modified by #= ModifiedBy # on #= kendo.format(\"{0:g}\", ModifiedDate) #</div> </div> </div></td></tr>");
+			}
 
 			var t = holder.html();
 			return kendo.template(t);
