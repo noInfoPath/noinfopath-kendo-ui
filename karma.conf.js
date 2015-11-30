@@ -23,7 +23,7 @@ module.exports = function(config) {
         'lib/js/kendo/kendo.all.min.js',
         'node_modules/noinfopath/dist/noinfopath.js',
         'node_modules/noinfopath-helpers/src/noinfopath-helpers.js',
-        'node_modules/@noinfopath/noinfopath-data/node_modules/@noinfopath/noinfopath-logger/dist/noinfopath-logger.js',
+        'node_modules/@noinfopath/noinfopath-logger/dist/noinfopath-logger.js',
         'node_modules/@noinfopath/noinfopath-data/dist/noinfopath-dexie.js',
         'node_modules/@noinfopath/noinfopath-data/dist/noinfopath-data.js',
         'src/global.js',
