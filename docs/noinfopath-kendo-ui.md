@@ -1,5 +1,5 @@
 # noinfopath-kendo-ui
-@version 1.0.13
+@version 1.0.14
 
 ## Overview
 NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -84,7 +84,11 @@ like the IndexedDB, WebSql and HTTP implementations.
   The `filter` property requires special processing because
   it supports dynamic value binding from any injectable
   data source location.  $scope or $stateParams for
-  exmaple.
+  example.
+
+In the case of a user wanting filters and sorts to persist across states this check makes sure that userFilters/sorts are
+enabled in no-forms.json. At each grid load, this will check to see if any filters/sorts have been persisted and load them
+for the user automatically.
 
 ## noKendoGrid (no-kendo-grid) Directive
 
