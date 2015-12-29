@@ -188,10 +188,19 @@
                      *   it supports dynamic value binding from any injectable
                      *   data source location.  $scope or $stateParams for
                      *   example.
+					 *
+					 *   Filters now supports filterLogic. A sibling to filter in the
+					 *   datasource configuration, it allows the user to specify
+					 *   if the filters that are configured within the no-forms.json
+					 *   should be evaluated as an 'and' or an 'or'. The 'and' logic
+					 *   is the default is no filterLogic is defined.
                      */
                     if (dsCfg.filter) {
 
-                        var filters = [];
+                        var filters = {};
+
+						filters.logic = dsCfg.filterLogic ? dsCfg.filterLogic : "and";
+						filters.filters = [];
 
                         for (var fi in dsCfg.filter) {
                             var filterCfg = dsCfg.filter[fi],
@@ -208,7 +217,7 @@
 
                                 filter.value = noInfoPath.getItem(source, filter.value.property);
 
-                                filters.push(filter);
+                                filters.filters.push(filter);
 
                                 if (filterCfg.value.watch && ["scope", "$scope", "$rootScope"].indexOf(filterCfg.value.source) > -1) {
                                     source.$watch(filterCfg.value.property, watch.bind(filter, filterCfg));
