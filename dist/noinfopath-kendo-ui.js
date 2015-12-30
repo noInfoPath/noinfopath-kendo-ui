@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.15
+ *	@version 1.0.16
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -850,11 +850,14 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState){
                 return noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope)
                     .then(function(config){
                         var input = angular.element("<input type=\"date\">"),
-                            datePicker;
+                            datePicker,
+                            defaultDate;
 
                         config = noInfoPath.getItem(config, attrs.noForm);
 
-                        noInfoPath.setItem(scope, config.ngModel, null); //default display is empty
+                        defaultDate = noInfoPath.getItem(scope, config.ngModel);
+
+                        noInfoPath.setItem(scope, config.ngModel, defaultDate ? defaultDate : null); //default display is empty
 
                         config.options.change = function(){
                             noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(this.value()));
