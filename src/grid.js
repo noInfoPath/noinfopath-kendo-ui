@@ -1,6 +1,5 @@
 //grid.js
-(function(angular, undefined)
-{
+(function(angular, undefined) {
 	angular.module("noinfopath.kendo.ui")
 
 	/**
@@ -62,39 +61,31 @@
 	 *   }
 	 * ```
 	 */
-	.directive("noKendoGrid", ['$injector', '$compile', '$timeout', '$http', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", function($injector, $compile, $timeout, $http, $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource)
-	{
+	.directive("noKendoGrid", ['$injector', '$compile', '$timeout', '$http', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", function($injector, $compile, $timeout, $http, $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource) {
 		return {
-			link: function(scope, el, attrs)
-			{
+			link: function(scope, el, attrs) {
 				var configurationType,
 					cfgFn = {
-						"noConfig": function(attrs)
-						{
+						"noConfig": function(attrs) {
 							var noConfig = $injector.get("noConfig");
 							return noConfig.whenReady()
-								.then(function()
-								{
+								.then(function() {
 									return noInfoPath.getItem(noConfig.current, attrs.noConfig);
 								})
-								.catch(function(err)
-								{
+								.catch(function(err) {
 									console.error(err);
 									return $q.reject(err); //Log in re-throw.
 								});
 						},
-						"noForm": function(attrs)
-						{
+						"noForm": function(attrs) {
 							var noFormConfig = $injector.get("noFormConfig");
 
 							return noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope)
-								.then(function(config)
-								{
+								.then(function(config) {
 									return noInfoPath.getItem(config, attrs.noForm);
 								});
 						},
-						"noLookup": function(noFormKey, container, options)
-						{
+						"noLookup": function(noFormKey, container, options) {
 							//console.log(this);
 
 							var lu = noInfoPath.getItem(this, noFormKey),
@@ -121,8 +112,7 @@
 
 							console.warn("TODO: add dropdown to the container, based on options.");
 						},
-						"hide": function(noFormKey, container, options)
-						{
+						"hide": function(noFormKey, container, options) {
 							container.prev(".k-edit-label")
 								.addClass("ng-hide");
 							container.addClass("ng-hide");
@@ -130,8 +120,7 @@
 						}
 					};
 
-				function configure(config, params)
-				{
+				function configure(config, params) {
 					var dsCfg = config.noDataSource ? config.noDataSource : config,
 						kgCfg = angular.copy(config.noKendoGrid),
 						dataSource;
@@ -145,8 +134,7 @@
 					kgCfg.dataSource = dataSource;
 
 
-					if (kgCfg.selectable === undefined || kgCfg.selectable)
-					{ //When Truthy because we always want row selection.
+					if (kgCfg.selectable === undefined || kgCfg.selectable) { //When Truthy because we always want row selection.
 						kgCfg.selectable = "row";
 
 						/*
@@ -156,8 +144,7 @@
 						 *   and transitions the user to the ```toState``` specified
 						 *   in the noConfig node for this directive.
 						 */
-						kgCfg.change = function()
-						{
+						kgCfg.change = function() {
 							var dsCfg = config.noDataSource ? config.noDataSource : config,
 								noGrid = config.noGrid ? config.noGrid : config,
 								data = this.dataItem(this.select()),
@@ -169,12 +156,9 @@
 
 							params = angular.merge(params, $state.params);
 
-							if (toState)
-							{
+							if (toState) {
 								$state.go(toState, params);
-							}
-							else
-							{
+							} else {
 								var tableName = dsCfg.entityName;
 								scope.$emit("noGrid::change+" + tableName, data);
 							}
@@ -182,32 +166,31 @@
 
 					}
 
-					if (config.noGrid && config.noGrid.editable)
-					{
-						if (config.noGrid.editable.provider)
-						{
+					if (config.noGrid && config.noGrid.editable) {
+						if (config.noGrid.editable.provider) {
 							var prov = $injector.get(config.noGrid.editable.provider),
 								fn = prov[config.noGrid.editable.function];
 
 							kgCfg.edit = fn.bind(config, scope);
-						}
-						else
-						{
+
+                            kgCfg.save = function(e){
+                                $timeout(function(){
+									e.sender.dataSource.read();
+								});
+                            };
+						} else {
 							//This will assume that if there is no `provider` then the value of `editable`
 							//is simply true. If so then the default MO is `inline editor`. In this case
 							//We need to check the `columns` array for columns that have a custom editor
 							//type defined.
-							if (kgCfg.columns && kgCfg.columns.length)
-							{
+							if (kgCfg.columns && kgCfg.columns.length) {
 								var columns = kgCfg.columns;
 
-								for (var ci = 0; ci < columns.length; ci++)
-								{
+								for (var ci = 0; ci < columns.length; ci++) {
 									var col = columns[ci],
 										fn2;
 
-									if (col.editor)
-									{
+									if (col.editor) {
 										//TODO: need to provide reference to editor initailizer.
 										if (!col.editor.type) throw "col.editor.type is a required configuration value.";
 										if (!col.editor.noFormOptionsKey) throw "col.editor.noFormOptionsKey is a required configuration value.";
@@ -226,27 +209,23 @@
 					}
 
 
-					if (config.noGrid.rowTemplate && angular.isObject(config.noGrid.rowTemplate))
-					{
+					if (config.noGrid.rowTemplate && angular.isObject(config.noGrid.rowTemplate)) {
 						var prov3 = $injector.get(config.noGrid.rowTemplate.provider),
 							fn3 = prov3[config.noGrid.rowTemplate.method];
 
 						kgCfg.rowTemplate = fn3.call(scope, kgCfg, config.noGrid);
-                        kgCfg.altRowTemplate = fn3.call(scope, kgCfg, config.noGrid, true);
+						kgCfg.altRowTemplate = fn3.call(scope, kgCfg, config.noGrid, true);
 
-						kgCfg.dataBound = function(e)
-						{
+						kgCfg.dataBound = function(e) {
 							//console.log(e);
 							angular.element(".k-grid-edit")
-								.click(function(e)
-								{
+								.click(function(e) {
 									e.preventDefault();
 									scope.noGrid.editRow(this.closest("tr[data-uid]"));
 									return false;
 								});
 							angular.element(".k-grid-delete")
-								.click(function(e)
-								{
+								.click(function(e) {
 									e.preventDefault();
 									scope.noGrid.removeRow(this.closest("tr[data-uid]"));
 									return false;
@@ -265,10 +244,8 @@
 					 * grab the name of the state, make a new object on the scope and persist any filter or
 					 * sort data in this object.
 					 */
-					scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams)
-					{
-						if (fromState.name === config.noGrid.stateName)
-						{
+					scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+						if (fromState.name === config.noGrid.stateName) {
 
 							var normalizedName = noInfoPath.kendo.normalizedRouteName(fromParams.entity, fromState.name);
 
@@ -279,31 +256,24 @@
 					});
 				}
 
-				function getEditorTemplate(config)
-				{
+				function getEditorTemplate(config) {
 					return $http.get(config.template)
-						.then(function(resp)
-						{
+						.then(function(resp) {
 							config.template = kendo.template($compile(resp.data)(scope)
 								.html());
 						})
-						.catch(function(err)
-						{
+						.catch(function(err) {
 							throw err;
 						});
 				}
 
-				function getRowTemplate(config)
-				{
-					return $q(function(resolve, reject)
-					{
+				function getRowTemplate(config) {
+					return $q(function(resolve, reject) {
 						$http.get(config.noGrid.rowTemplateUrl)
-							.then(function(resp)
-							{
+							.then(function(resp) {
 								var tmp = angular.element($compile(resp.data)(scope));
 
-								$timeout(function()
-								{
+								$timeout(function() {
 									config.noKendoGrid.rowTemplate = tmp[0].outerHTML;
 
 									tmp.addClass("k-alt");
@@ -313,16 +283,14 @@
 									resolve();
 								}, 20);
 							})
-							.catch(function(err)
-							{
+							.catch(function(err) {
 								reject(err);
 							});
 					});
 
 				}
 
-				function handleWaitForAndConfigure(config)
-				{
+				function handleWaitForAndConfigure(config) {
 					var dsCfg = config.noDataSource ? config.noDataSource : config;
 
 					/*
@@ -332,45 +300,31 @@
 					 * Truthy before continuing with the grid's configuration proccess.
 					 */
 
-					if (dsCfg.waitFor)
-					{
-						if (dsCfg.waitFor.source === "scope")
-						{
-							scope.$watch(dsCfg.waitFor.property, function(newval, oldval, scope)
-							{
-								if (newval)
-								{
+					if (dsCfg.waitFor) {
+						if (dsCfg.waitFor.source === "scope") {
+							scope.$watch(dsCfg.waitFor.property, function(newval, oldval, scope) {
+								if (newval) {
 									configure(config, scope);
 								}
 							});
-						}
-						else
-						{
+						} else {
 							configure(config, scope);
 						}
-					}
-					else
-					{
+					} else {
 						configure(config, scope);
 					}
 				}
 
-				if (attrs.noConfig)
-				{
+				if (attrs.noConfig) {
 					configurationType = "noConfig";
-				}
-				else if (attrs.noForm)
-				{
+				} else if (attrs.noForm) {
 					configurationType = "noForm";
-				}
-				else
-				{
+				} else {
 					throw "noKendoGrid requires either a noConfig or noForm attribute";
 				}
 
 				cfgFn[configurationType](attrs)
-					.then(function(config)
-					{
+					.then(function(config) {
 						var promises = [];
 
 						/*
@@ -385,35 +339,27 @@
 						 */
 
 
-						if (angular.isObject(config.noKendoGrid.editable) && config.noKendoGrid.editable.template)
-						{
+						if (angular.isObject(config.noKendoGrid.editable) && config.noKendoGrid.editable.template) {
 							promises.push(getEditorTemplate(config.noKendoGrid.editable));
 						}
 
-						if (config.noGrid && config.noGrid.rowTemplateUrl && angular.isString(config.noGrid.rowTemplateUrl))
-						{
+						if (config.noGrid && config.noGrid.rowTemplateUrl && angular.isString(config.noGrid.rowTemplateUrl)) {
 							promises.push(getRowTemplate(config));
 						}
 
-						if (promises.length)
-						{
+						if (promises.length) {
 							$q.all(promises)
-								.then(function()
-								{
+								.then(function() {
 									handleWaitForAndConfigure(config);
 								})
-								.catch(function(err)
-								{
+								.catch(function(err) {
 									console.error(err);
 								});
-						}
-						else
-						{
+						} else {
 							handleWaitForAndConfigure(config);
 						}
 					})
-					.catch(function(err)
-					{
+					.catch(function(err) {
 						console.error(err);
 					});
 
@@ -426,16 +372,14 @@
 
 	}])
 
-	.service("noKendoRowTemplates", [function()
-	{
-		this.scaffold = function(cfg, noGrid, alt)
-		{
+	.service("noKendoRowTemplates", [function() {
+		this.scaffold = function(cfg, noGrid, alt) {
 			var holder = angular.element("<div></div>"),
 				outerRow = angular.element("<tr data-uid=\"#= uid #\"></tr>"),
 				outerCol = angular.element("<td class=\"no-p\" colspan=\"" + cfg.columns.length + "\"></td>"),
 				table = angular.element("<table class=\"fcfn-row-template\"></table>"),
 				row = angular.element("<tr></tr>"),
-                colgroup = angular.element("<colgroup></colgroup>");
+				colgroup = angular.element("<colgroup></colgroup>");
 
 			// <tr data-uid="a40f44b9-d598-464d-b19e-7a3c07e1e485" role="row"><td role="gridcell"> Crossing </td>
 			// <td role="gridcell">Do Not Sow</td><td role="gridcell">3</td><td role="gridcell"></td><td role="gridcell">
@@ -444,9 +388,9 @@
 			// <a class="k-button k-button-icontext k-grid-delete" href="#"><span class="k-icon k-delete"></span>Delete</a>
 			// </td></tr>
 
-            if(alt){
-                outerRow.addClass("k-alt");
-            }
+			if (alt) {
+				outerRow.addClass("k-alt");
+			}
 
 			holder.append(outerRow);
 			outerRow.append(outerCol);
@@ -455,32 +399,25 @@
 			table.append(row);
 
 
-			for (var c in cfg.columns)
-			{
+			for (var c in cfg.columns) {
 				var col = cfg.columns[c],
 					colTpl = angular.element("<td></td>"),
-                    colg = angular.element("<col></col>");
+					colg = angular.element("<col></col>");
 
-                if(col.width){
-                    colg.css("width", col.width);
-                }
+				if (col.width) {
+					colg.css("width", col.width);
+				}
 
-                colgroup.append(colg);
-				if (col.command)
-				{
+				colgroup.append(colg);
+				if (col.command) {
 					colTpl.append("<a class=\"k-button k-button-icontext k-grid-edit\" href=\"##\"><span class=\"k-icon k-edit\"></span>Edit</a>");
 					colTpl.append("<a class=\"k-button k-button-icontext k-grid-delete\" href=\"##\"><span class=\"k-icon k-delete\"></span>Delete</a>");
 
-				}
-				else
-				{
-					if (col.template)
-					{
+				} else {
+					if (col.template) {
 						colTpl.text(col.template);
 
-					}
-					else
-					{
+					} else {
 						colTpl.text("#=" + col.field + "#");
 
 					}
@@ -490,7 +427,7 @@
 				row.append(colTpl);
 			}
 
-			if(noGrid.rowTemplate.recordStats === undefined || noGrid.rowTemplate.recordStats === true){
+			if (noGrid.rowTemplate.recordStats === undefined || noGrid.rowTemplate.recordStats === true) {
 				table.append("<tr><td class=\"no-p\" colspan=\"" + cfg.columns.length + "\"><div class=\"fcfn-record-stats\"> <div class=\"clearfix pull-right\"> <div class=\"pull-left no-m-r-\">Created by #= CreatedBy # on #= kendo.format(\"{0:g}\", DateCreated) # <span class=\"no-p-sm\">|</span></div> <div class=\"pull-left\">Modified by #= ModifiedBy # on #= kendo.format(\"{0:g}\", ModifiedDate) #</div> </div> </div></td></tr>");
 			}
 

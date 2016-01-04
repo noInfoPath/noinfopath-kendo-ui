@@ -1,5 +1,5 @@
 # noinfopath-kendo-ui
-@version 1.0.16
+@version 1.0.17
 
 ## Overview
 NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -182,5 +182,12 @@ Truthy before continuing with the grid's configuration proccess.
   expected to be a string, that is the url to the editor template.
   When this occurs the directive must wait for the template
   before continuing with the grid initialization process.
+
+
+  #### @property binding
+
+  Angular scope for setting and getting the date
+  picker's value.  Otherwise, using kendo model for
+  getting and setting data.
 
 

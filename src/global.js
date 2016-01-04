@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.16
+ *	@version 1.0.17
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -19,7 +19,7 @@
  *	- ngLodash
  *	- noinfopath
  *	- noinfopath.data
-*/
+ */
 
 /**
  *	## Development Dependencies
@@ -51,7 +51,7 @@
  *	- karma-verbose-reporter
  *	- noinfopath-helpers
  *	- phantomjs
-*/
+ */
 
 /**
  *	## Developers' Remarks
@@ -60,19 +60,19 @@
  *	|---|----|----|
  *	|Jeff|2015-08-08T16:38:00Z|Creating a new NoInfoPath module.|
  *	|Jeff|2015-09-15T11:10:00Z|Implemented noKendoGrid with noKendoDataSource, which integrates with the NoInfoPath Data Providers.|
-*/
+ */
 
 //Establish noInfoPath.kendo namespace.
 noInfoPath.kendo = {};
 
-noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState){
-    var normalizedName = fromParams ? fromParams : fromState;
+noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
+	var normalizedName = fromParams ? fromParams : fromState;
 
-    return normalizedName;
+	return normalizedName;
 };
 
-(function(angular, undefined){
- 	"use strict";
+(function(angular, undefined) {
+	"use strict";
 
 	angular.module("noinfopath.kendo.ui", ['ui.router'])
 
