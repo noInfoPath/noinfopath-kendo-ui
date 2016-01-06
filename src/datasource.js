@@ -207,7 +207,8 @@
 							}
 						}, config.noKendoDataSource),
 						dsCfg = config.noDataSource ? config.noDataSource : config,
-						kds;
+						kds,
+						name = $state.params.entity ? $state.params.entity : $state.current.name;
 
 					/**
 					 *   #### Schema Model
@@ -283,15 +284,15 @@
 						//grid.dataSource.filter(filters);
 					}
 
-					if (dsCfg.preserveUserFilters && $state.current.data.entities.filters) {
+					if (dsCfg.preserveUserFilters && $state.current.data.entities[name] && $state.current.data.entities[name].filters) {
 
-						ds.filter = angular.merge({}, ds.filter, $state.current.data.entities.filters);
+						ds.filter = angular.merge({}, $state.current.data.entities[name].filters, ds.filter);
 
 					}
 
-					if (dsCfg.preserveUserSort && $state.current.data.entities.sort) {
+					if (dsCfg.preserveUserSort &&  $state.current.data.entities[name] && $state.current.data.entities[name].sort) {
 
-						ds.sort = $state.current.data.entities.sort;
+						ds.sort = $state.current.data.entities[name].sort;
 
 					}
 
