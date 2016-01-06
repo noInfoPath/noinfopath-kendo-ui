@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.18
+ *	@version 1.0.19
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -365,13 +365,13 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						//grid.dataSource.filter(filters);
 					}
 
-					if (dsCfg.preserveUserFilters && $state.current.data.entities[name] && $state.current.data.entities[name].filters) {
+					if (dsCfg.preserveUserFilters && $state.current.data.entities && $state.current.data.entities[name] && $state.current.data.entities[name].filters) {
 
 						ds.filter = angular.merge({}, $state.current.data.entities[name].filters, ds.filter);
 
 					}
 
-					if (dsCfg.preserveUserSort &&  $state.current.data.entities[name] && $state.current.data.entities[name].sort) {
+					if (dsCfg.preserveUserSort && $state.current.data.entities && $state.current.data.entities[name] && $state.current.data.entities[name].sort) {
 
 						ds.sort = $state.current.data.entities[name].sort;
 
