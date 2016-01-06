@@ -284,13 +284,13 @@
 						//grid.dataSource.filter(filters);
 					}
 
-					if (dsCfg.preserveUserFilters && $state.current.data.entities[name] && $state.current.data.entities[name].filters) {
+					if (dsCfg.preserveUserFilters && $state.current.data.entities && $state.current.data.entities[name] && $state.current.data.entities[name].filters) {
 
 						ds.filter = angular.merge({}, $state.current.data.entities[name].filters, ds.filter);
 
 					}
 
-					if (dsCfg.preserveUserSort &&  $state.current.data.entities[name] && $state.current.data.entities[name].sort) {
+					if (dsCfg.preserveUserSort && $state.current.data.entities && $state.current.data.entities[name] && $state.current.data.entities[name].sort) {
 
 						ds.sort = $state.current.data.entities[name].sort;
 
