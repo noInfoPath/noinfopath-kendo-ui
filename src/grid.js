@@ -63,6 +63,7 @@
 	 */
 	.directive("noKendoGrid", ['$injector', '$compile', '$timeout', '$http', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", function($injector, $compile, $timeout, $http, $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource) {
 		return {
+			scope: true,
 			link: function(scope, el, attrs) {
 				var configurationType,
 					cfgFn = {
@@ -252,6 +253,18 @@
 							fromState.data.entities[normalizedName] = {};
 							fromState.data.entities[normalizedName].filters = scope.noGrid.dataSource.filter();
 							fromState.data.entities[normalizedName].sort = scope.noGrid.dataSource.sort();
+						}
+					});
+
+					/**
+					 * #### noGrid refresh to make sure grids are initliazed.
+					 *
+					 * This fix was intended to remedy the scrollable issue when grids were located in
+					 * "hidden" elements, such as inactive tabs.
+					*/
+					scope.$on('noTabs::Change', function(e, t, p) {
+						if(scope.noGrid.element.attr("no-form") === p.find("no-kendo-grid").attr("no-form")){
+							scope.noGrid.dataSource.read();
 						}
 					});
 				}

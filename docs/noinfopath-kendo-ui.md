@@ -1,5 +1,5 @@
 # noinfopath-kendo-ui
-@version 1.0.19
+@version 1.0.20
 
 ## Overview
 NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -169,6 +169,11 @@ A stateChangeStart event is captured on each state change. We will then check to
 sure that the fromState name is the same as the one in the no-forms.json. We then
 grab the name of the state, make a new object on the scope and persist any filter or
 sort data in this object.
+
+#### noGrid refresh to make sure grids are initliazed.
+
+This fix was intended to remedy the scrollable issue when grids were located in
+"hidden" elements, such as inactive tabs.
 
 #### noDataSource::waitFor property
 
