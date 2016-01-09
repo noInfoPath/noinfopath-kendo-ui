@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.20
+ *	@version 1.0.21
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -106,11 +106,11 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				function toKendoModel(scope, entityName, data) {
 					return $q(function(resolve, reject) {
 						try {
-							var kmodel =  scope[entityName];
+							var kmodel = scope[entityName];
 
 							// for (var k in data) {
 							// 	var d = data[k];
-                            //
+							//
 							// 	if (d) {
 							// 		kmodel[k] = d;
 							// 	}
@@ -124,6 +124,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					});
 				}
 
+				//deprecated
 				function updateAngularScope(scopeData, config, kmodel) {
 					return $q(function(resolve, reject) {
 						try {
@@ -145,25 +146,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					});
 				}
 
-				// function normalizeTransactions(config){
-				//
-				// 	var noTransactions = config.noDataSource.noTransaction;
-				//
-				// 	for(var t in noTransactions){
-				// 		var transaction = noTransactions[t];
-				//
-				// 		if(_.isBoolean(transaction)){
-				// 			noTransactions[t] = [{entityName: config.noDataSource.entityName}];
-				// 		}
-				// 	}
-				// }
-
 				this.create = function(userId, config, scope) {
 					//console.warn("TODO: Implement config.noDataSource and ???");
 					if (!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
-
-					// normalizeTransactions(config);
-					//console.log(config);
 
 					function create(options) {
 
@@ -599,7 +584,6 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						}
 					}
 
-
 					if (config.noGrid.rowTemplate && angular.isObject(config.noGrid.rowTemplate)) {
 						var prov3 = $injector.get(config.noGrid.rowTemplate.provider),
 							fn3 = prov3[config.noGrid.rowTemplate.method];
@@ -635,7 +619,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					 * grab the name of the state, make a new object on the scope and persist any filter or
 					 * sort data in this object.
 					 */
-					scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+					scope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
 						if (fromState.name === config.noGrid.stateName) {
 
 							var normalizedName = noInfoPath.kendo.normalizedRouteName(fromParams.entity, fromState.name);
@@ -646,17 +630,25 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						}
 					});
 
+					function refresh() {
+						var grid = scope.noGrid.element.closest(".ng-hide"),
+							isVisible = !grid.length;
+
+						if(isVisible){
+							scope.noGrid.dataSource.read();
+						}
+
+					}
+
 					/**
 					 * #### noGrid refresh to make sure grids are initliazed.
 					 *
 					 * This fix was intended to remedy the scrollable issue when grids were located in
 					 * "hidden" elements, such as inactive tabs.
 					*/
-					scope.$on('noTabs::Change', function(e, t, p) {
-						if(scope.noGrid.element.attr("no-form") === p.find("no-kendo-grid").attr("no-form")){
-							scope.noGrid.dataSource.read();
-						}
-					});
+					scope.$on("noTabs::Change", refresh);
+
+					scope.$on("noSync::dataReceived", refresh);
 				}
 
 				function getEditorTemplate(config) {
@@ -735,7 +727,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						 *
 						 *   When this property is truthy and an object, noKendoGrid Directive
 						 *   will look for the template property. When found, it will be
-						 *   expected to be a string, that is the url to the editor template.
+						 *   expected to be a string that is the url to the editor template.
 						 *   When this occurs the directive must wait for the template
 						 *   before continuing with the grid initialization process.
 						 *

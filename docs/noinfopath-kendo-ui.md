@@ -1,5 +1,5 @@
 # noinfopath-kendo-ui
-@version 1.0.20
+@version 1.0.21
 
 ## Overview
 NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -184,7 +184,7 @@ Truthy before continuing with the grid's configuration proccess.
 
   When this property is truthy and an object, noKendoGrid Directive
   will look for the template property. When found, it will be
-  expected to be a string, that is the url to the editor template.
+  expected to be a string that is the url to the editor template.
   When this occurs the directive must wait for the template
   before continuing with the grid initialization process.
 

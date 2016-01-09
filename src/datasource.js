@@ -25,11 +25,11 @@
 				function toKendoModel(scope, entityName, data) {
 					return $q(function(resolve, reject) {
 						try {
-							var kmodel =  scope[entityName];
+							var kmodel = scope[entityName];
 
 							// for (var k in data) {
 							// 	var d = data[k];
-                            //
+							//
 							// 	if (d) {
 							// 		kmodel[k] = d;
 							// 	}
@@ -43,6 +43,7 @@
 					});
 				}
 
+				//deprecated
 				function updateAngularScope(scopeData, config, kmodel) {
 					return $q(function(resolve, reject) {
 						try {
@@ -64,25 +65,9 @@
 					});
 				}
 
-				// function normalizeTransactions(config){
-				//
-				// 	var noTransactions = config.noDataSource.noTransaction;
-				//
-				// 	for(var t in noTransactions){
-				// 		var transaction = noTransactions[t];
-				//
-				// 		if(_.isBoolean(transaction)){
-				// 			noTransactions[t] = [{entityName: config.noDataSource.entityName}];
-				// 		}
-				// 	}
-				// }
-
 				this.create = function(userId, config, scope) {
 					//console.warn("TODO: Implement config.noDataSource and ???");
 					if (!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
-
-					// normalizeTransactions(config);
-					//console.log(config);
 
 					function create(options) {
 

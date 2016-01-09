@@ -209,7 +209,6 @@
 						}
 					}
 
-
 					if (config.noGrid.rowTemplate && angular.isObject(config.noGrid.rowTemplate)) {
 						var prov3 = $injector.get(config.noGrid.rowTemplate.provider),
 							fn3 = prov3[config.noGrid.rowTemplate.method];
@@ -245,7 +244,7 @@
 					 * grab the name of the state, make a new object on the scope and persist any filter or
 					 * sort data in this object.
 					 */
-					scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+					scope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
 						if (fromState.name === config.noGrid.stateName) {
 
 							var normalizedName = noInfoPath.kendo.normalizedRouteName(fromParams.entity, fromState.name);
@@ -256,17 +255,25 @@
 						}
 					});
 
+					function refresh() {
+						var grid = scope.noGrid.element.closest(".ng-hide"),
+							isVisible = !grid.length;
+
+						if(isVisible){
+							scope.noGrid.dataSource.read();
+						}
+
+					}
+
 					/**
 					 * #### noGrid refresh to make sure grids are initliazed.
 					 *
 					 * This fix was intended to remedy the scrollable issue when grids were located in
 					 * "hidden" elements, such as inactive tabs.
 					*/
-					scope.$on('noTabs::Change', function(e, t, p) {
-						if(scope.noGrid.element.attr("no-form") === p.find("no-kendo-grid").attr("no-form")){
-							scope.noGrid.dataSource.read();
-						}
-					});
+					scope.$on("noTabs::Change", refresh);
+
+					scope.$on("noSync::dataReceived", refresh);
 				}
 
 				function getEditorTemplate(config) {
@@ -345,7 +352,7 @@
 						 *
 						 *   When this property is truthy and an object, noKendoGrid Directive
 						 *   will look for the template property. When found, it will be
-						 *   expected to be a string, that is the url to the editor template.
+						 *   expected to be a string that is the url to the editor template.
 						 *   When this occurs the directive must wait for the template
 						 *   before continuing with the grid initialization process.
 						 *
