@@ -255,12 +255,15 @@
 						}
 					});
 
-					function refresh() {
-						var grid = scope.noGrid.element.closest(".ng-hide"),
-							isVisible = !grid.length;
+					function refresh(e, t, p) {
+						var grid = p ? p.find("no-kendo-grid").data("kendoGrid") : null;
 
-						if(isVisible){
-							scope.noGrid.dataSource.read();
+
+						//  = scope.noGrid.element.closest(".ng-hide"),
+						// 	isVisible = !grid.length;
+
+						if(grid){
+							grid.dataSource.read();
 						}
 
 					}
