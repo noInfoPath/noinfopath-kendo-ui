@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.21
+ *	@version 1.0.22
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -630,12 +630,15 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						}
 					});
 
-					function refresh() {
-						var grid = scope.noGrid.element.closest(".ng-hide"),
-							isVisible = !grid.length;
+					function refresh(e, t, p) {
+						var grid = p ? p.find("no-kendo-grid").data("kendoGrid") : null;
 
-						if(isVisible){
-							scope.noGrid.dataSource.read();
+
+						//  = scope.noGrid.element.closest(".ng-hide"),
+						// 	isVisible = !grid.length;
+
+						if(grid){
+							grid.dataSource.read();
 						}
 
 					}
