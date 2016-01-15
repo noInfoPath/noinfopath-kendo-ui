@@ -262,10 +262,13 @@
 						//  = scope.noGrid.element.closest(".ng-hide"),
 						// 	isVisible = !grid.length;
 
+						if(!grid){
+							grid = el.data("kendoGrid");
+						}
+
 						if(grid){
 							grid.dataSource.read();
 						}
-
 					}
 
 					/**
