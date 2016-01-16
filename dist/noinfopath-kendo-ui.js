@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.22
+ *	@version 1.0.23
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -633,14 +633,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					function refresh(e, t, p) {
 						var grid = p ? p.find("no-kendo-grid").data("kendoGrid") : null;
 
-
-						//  = scope.noGrid.element.closest(".ng-hide"),
-						// 	isVisible = !grid.length;
-
 						if(grid){
 							grid.dataSource.read();
 						}
-
 					}
 
 					/**
@@ -651,7 +646,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					*/
 					scope.$on("noTabs::Change", refresh);
 
-					scope.$on("noSync::dataReceived", refresh);
+					scope.$on("noSync::dataReceived", function(theGrid){
+						theGrid.dataSource.read();
+					}.bind(null, scope.noGrid));
 				}
 
 				function getEditorTemplate(config) {

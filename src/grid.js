@@ -258,14 +258,6 @@
 					function refresh(e, t, p) {
 						var grid = p ? p.find("no-kendo-grid").data("kendoGrid") : null;
 
-
-						//  = scope.noGrid.element.closest(".ng-hide"),
-						// 	isVisible = !grid.length;
-
-						if(!grid){
-							grid = el.data("kendoGrid");
-						}
-
 						if(grid){
 							grid.dataSource.read();
 						}
@@ -279,7 +271,9 @@
 					*/
 					scope.$on("noTabs::Change", refresh);
 
-					scope.$on("noSync::dataReceived", refresh);
+					scope.$on("noSync::dataReceived", function(theGrid){
+						theGrid.dataSource.read();
+					}.bind(null, scope.noGrid));
 				}
 
 				function getEditorTemplate(config) {
