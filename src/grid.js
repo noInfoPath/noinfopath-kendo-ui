@@ -277,6 +277,9 @@
 				}
 
 				function getEditorTemplate(config) {
+					// Since we save form configuration on the scope with nif-forms, we need to see if the already compiled kendo template replaced the template route or not.
+					if (angular.isString(config.template))
+					{
 					return $http.get(config.template)
 						.then(function(resp) {
 							config.template = kendo.template($compile(resp.data)(scope)
@@ -285,7 +288,12 @@
 						.catch(function(err) {
 							throw err;
 						});
+					}
+					else {
+						return config.template;
+					}
 				}
+
 
 				function getRowTemplate(config) {
 					return $q(function(resolve, reject) {
