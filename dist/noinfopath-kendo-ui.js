@@ -652,9 +652,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				}
 
 				function getEditorTemplate(config) {
-					// Since we save form configuration on the scope with nif-forms, we need to see if the already compiled kendo template replaced the template route or not.
-					if (angular.isString(config.template))
-					{
+
 					return $http.get(config.template)
 						.then(function(resp) {
 							config.template = kendo.template($compile(resp.data)(scope)
@@ -663,10 +661,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						.catch(function(err) {
 							throw err;
 						});
-					}
-					else {
-						return config.template;
-					}
+
 				}
 
 
@@ -727,8 +722,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				}
 
 				cfgFn[configurationType](attrs)
-					.then(function(config) {
-						var promises = [];
+					.then(function(inConfig) {
+						var promises = [],
+							config = angular.copy(inConfig);
 
 						/*
 						 *   ##### kendoGrid.editable
