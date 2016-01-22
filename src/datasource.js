@@ -114,7 +114,7 @@
 							scopeData = scope[entityName] ? scope[entityName] : {},
 							tmpRec = {};
 
-						options.data = angular.merge(options.data, scopeData);
+						options.data = angular.merge(scopeData, options.data);
 
 						noTrans.upsert(options.data)
 							.then(toKendoModel.bind(null, scope, entityName))
