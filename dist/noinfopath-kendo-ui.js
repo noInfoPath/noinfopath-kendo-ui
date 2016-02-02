@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.22
+ *	@version 1.0.24
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -195,7 +195,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 							scopeData = scope[entityName] ? scope[entityName] : {},
 							tmpRec = {};
 
-						options.data = angular.merge(options.data, scopeData);
+						options.data = angular.merge(scopeData, options.data);
 
 						noTrans.upsert(options.data)
 							.then(toKendoModel.bind(null, scope, entityName))
@@ -633,14 +633,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					function refresh(e, t, p) {
 						var grid = p ? p.find("no-kendo-grid").data("kendoGrid") : null;
 
-
-						//  = scope.noGrid.element.closest(".ng-hide"),
-						// 	isVisible = !grid.length;
-
 						if(grid){
 							grid.dataSource.read();
 						}
-
 					}
 
 					/**
@@ -651,10 +646,13 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					*/
 					scope.$on("noTabs::Change", refresh);
 
-					scope.$on("noSync::dataReceived", refresh);
+					scope.$on("noSync::dataReceived", function(theGrid){
+						theGrid.dataSource.read();
+					}.bind(null, scope.noGrid));
 				}
 
 				function getEditorTemplate(config) {
+
 					return $http.get(config.template)
 						.then(function(resp) {
 							config.template = kendo.template($compile(resp.data)(scope)
@@ -663,7 +661,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						.catch(function(err) {
 							throw err;
 						});
+
 				}
+
 
 				function getRowTemplate(config) {
 					return $q(function(resolve, reject) {
@@ -722,8 +722,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				}
 
 				cfgFn[configurationType](attrs)
-					.then(function(config) {
-						var promises = [];
+					.then(function(inConfig) {
+						var promises = [],
+							config = angular.copy(inConfig);
 
 						/*
 						 *   ##### kendoGrid.editable

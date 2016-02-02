@@ -258,14 +258,9 @@
 					function refresh(e, t, p) {
 						var grid = p ? p.find("no-kendo-grid").data("kendoGrid") : null;
 
-
-						//  = scope.noGrid.element.closest(".ng-hide"),
-						// 	isVisible = !grid.length;
-
 						if(grid){
 							grid.dataSource.read();
 						}
-
 					}
 
 					/**
@@ -276,10 +271,13 @@
 					*/
 					scope.$on("noTabs::Change", refresh);
 
-					scope.$on("noSync::dataReceived", refresh);
+					scope.$on("noSync::dataReceived", function(theGrid){
+						theGrid.dataSource.read();
+					}.bind(null, scope.noGrid));
 				}
 
 				function getEditorTemplate(config) {
+
 					return $http.get(config.template)
 						.then(function(resp) {
 							config.template = kendo.template($compile(resp.data)(scope)
@@ -288,7 +286,9 @@
 						.catch(function(err) {
 							throw err;
 						});
+
 				}
+
 
 				function getRowTemplate(config) {
 					return $q(function(resolve, reject) {
@@ -347,8 +347,9 @@
 				}
 
 				cfgFn[configurationType](attrs)
-					.then(function(config) {
-						var promises = [];
+					.then(function(inConfig) {
+						var promises = [],
+							config = angular.copy(inConfig);
 
 						/*
 						 *   ##### kendoGrid.editable
