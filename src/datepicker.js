@@ -93,7 +93,7 @@
 						    internalDate = noInfoPath.toDbDate(new Date());
                         }
 
-                        datePicker.value(internalDate);
+                        datePicker.value(new Date(internalDate));
 						//when the internal date is falsey set it to null for Kendo compatibility
 						//default display is empty
 						//noInfoPath.setItem(scope, config.ngModel, internalDate ? internalDate : null);
