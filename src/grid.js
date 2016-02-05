@@ -177,6 +177,7 @@
                             kgCfg.save = function(e){
                                 $timeout(function(){
 									e.sender.dataSource.read();
+									scope.$broadcast("noKendoGrid::dataChanged", config.noGrid.editable.scopeKey);
 								});
                             };
 						} else {
