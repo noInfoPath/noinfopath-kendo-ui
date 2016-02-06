@@ -1,7 +1,7 @@
 //datepicker.js
 (function(angular, undefined) {
 	angular.module("noinfopath.kendo.ui")
-		.directive("noKendoDatePicker", ["noFormConfig", "$state", function(noFormConfig, $state) {
+		.directive("noKendoDatePicker", ["noFormConfig", "$state", "$timeout", function(noFormConfig, $state, $timeout) {
 			function _link(scope, el, attrs) {
 				return noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope)
 					.then(function(config) {
@@ -9,16 +9,7 @@
 							datePicker,
 							internalDate;
 
-						if(attrs.$attr.required)
-						{
-							input.attr("required", "true");
-						}
-
-
-
 						config = noInfoPath.getItem(config, attrs.noForm);
-
-
 
 						//input.attr("value", internalDate);
 
@@ -80,8 +71,9 @@
 							});
 
                             datePicker.bind("change", function(){
-
     						    noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(this.value()));
+								//this will solve the issue of the data not appearing on the scope
+								scope.$apply();
     						});
 
                             internalDate = noInfoPath.getItem(scope, config.ngModel);
@@ -94,6 +86,12 @@
                         }
 
                         datePicker.value(new Date(internalDate));
+						
+						//fixing the issue where the data is not on the scope on initValue load
+						noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(internalDate));
+						$timeout(function() {
+						  scope.$apply();
+					  	});
 						//when the internal date is falsey set it to null for Kendo compatibility
 						//default display is empty
 						//noInfoPath.setItem(scope, config.ngModel, internalDate ? internalDate : null);
@@ -102,10 +100,26 @@
 
 			}
 
+			function _compile(el, attrs) {
+				if(attrs.$attr.required){
+					el.removeAttr("required");
+					var inputHidden = angular.element("<input />");
+
+					inputHidden.attr("type", "hidden");
+					inputHidden.attr("required", "required");
+
+					inputHidden.attr("ng-model", attrs.ngModel);
+					inputHidden.attr("name", attrs.noModel);
+
+					el.append(inputHidden);
+				}
+				return _link;
+			}
+
 
 			directive = {
 				restrict: "E",
-				link: _link,
+				compile: _compile,
 				scope: false
 			};
 
