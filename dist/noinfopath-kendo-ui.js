@@ -911,6 +911,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
                             datePicker.bind("change", function(){
     						    noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(this.value()));
+								//this will solve the issue of the data not appearing on the scope
 								scope.$apply();
     						});
 
@@ -924,6 +925,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
                         }
 
                         datePicker.value(new Date(internalDate));
+						
+						//fixing the issue where the data is not on the scope on initValue load
 						noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(internalDate));
 						$timeout(function() {
 						  scope.$apply();
