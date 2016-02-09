@@ -66,12 +66,16 @@
 
 							scope.$watch(config.ngModel, function(newval, oldval) {
 								if (newval != oldval) {
-									datePicker.value(new Date(newval));
+									if(newval !== null){
+										datePicker.value(new Date(newval));
+									}
 								}
 							});
 
-                            datePicker.bind("change", function(){
-    						    noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(this.value()));
+							datePicker.bind("change", function(){
+								var newDate = angular.isDate(this.value()) ? noInfoPath.toDbDate(this.value()) : null;
+
+    						    noInfoPath.setItem(scope, config.ngModel, newDate);
 								//this will solve the issue of the data not appearing on the scope
 								scope.$apply();
     						});
@@ -86,7 +90,7 @@
                         }
 
                         datePicker.value(new Date(internalDate));
-						
+
 						//fixing the issue where the data is not on the scope on initValue load
 						noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(internalDate));
 						$timeout(function() {
