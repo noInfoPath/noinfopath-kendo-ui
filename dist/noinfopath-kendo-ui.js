@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.28
+ *	@version 1.0.29
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -234,8 +234,10 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 						this.value = newval;
 
-						grid.dataSource.read();
-						grid.refresh();
+						if(grid){
+							grid.dataSource.read();
+							grid.refresh();
+						}
 					}
 
 					var yesNo = [
