@@ -153,8 +153,10 @@
 
 						this.value = newval;
 
-						grid.dataSource.read();
-						grid.refresh();
+						if(grid){
+							grid.dataSource.read();
+							grid.refresh();
+						}
 					}
 
 					var yesNo = [
