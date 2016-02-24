@@ -210,6 +210,17 @@
 						}
 					}
 
+					if (config.noGrid && config.noGrid.nestedGrid) {
+						kgCfg.detailInit = function(e){
+							var compiledGrid = $compile("<no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid>")(scope);
+							$(compiledGrid).appendTo(e.detailCell);
+						};
+
+						kgCfg.dataBound = function() {
+                            this.expandRow(this.tbody.find("tr.k-master-row").first());
+                        };
+					}
+
 					if (config.noGrid.rowTemplate && angular.isObject(config.noGrid.rowTemplate)) {
 						var prov3 = $injector.get(config.noGrid.rowTemplate.provider),
 							fn3 = prov3[config.noGrid.rowTemplate.method];

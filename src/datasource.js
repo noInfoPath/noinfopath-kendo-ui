@@ -102,7 +102,7 @@
 							}
 
 						}
-						noTable.noRead.apply(null, noQueryParser.parse(options.data))
+						noTable.noRead.apply(noTable, noQueryParser.parse(options.data))
 							.then(options.success)
 							.catch(options.error);
 					}
