@@ -17,5 +17,8 @@
   "dependencies": {
     "ng-lodash": "~0.2.0",
     "jquery": "~2.1.4"
+  },
+  "devDependencies": {
+    "angular-ui-router": "~0.2.18"
   }
 }
