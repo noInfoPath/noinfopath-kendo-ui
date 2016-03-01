@@ -18,7 +18,7 @@ module.exports = function(config) {
         'bower_components/jquery/dist/jquery.js',
         'node_modules/angular/angular.js',
         'node_modules/angular-mocks/angular-mocks.js',
-        'node_modules/ui-router/release/angular-ui-router.js',
+        'node_modules/angular-ui-router/release/angular-ui-router.js',
         'bower_components/ng-lodash/build/ng-lodash.js',
         'lib/js/kendo/kendo.all.min.js',
         'node_modules/noinfopath/dist/noinfopath.js',
