@@ -170,16 +170,27 @@
 					if (config.noGrid && config.noGrid.editable) {
 						if (config.noGrid.editable.provider) {
 							var prov = $injector.get(config.noGrid.editable.provider),
-								fn = prov[config.noGrid.editable.function];
+								provFn = config.noGrid.editable.function,
+								fnEdit, fnSave;
 
-							kgCfg.edit = fn.bind(config, scope);
+							if (angular.isObject(provFn)) {
+								if (provFn.edit) {
+									kgCfg.edit = prov[provFn.edit].bind(config, scope);
+								}
+								if (provFn.save) {
+									kgCfg.save = prov[provFn.save].bind(config, scope);
+								}
+							} else {
+								kgCfg.edit = prov[provFn].bind(config, scope);
 
-                            kgCfg.save = function(e){
-                                $timeout(function(){
-									e.sender.dataSource.read();
-									scope.$broadcast("noKendoGrid::dataChanged", config.noGrid.editable.scopeKey);
-								});
-                            };
+								kgCfg.save = function(e) {
+									$timeout(function() {
+										e.sender.dataSource.read();
+										scope.$broadcast("noKendoGrid::dataChanged", config.noGrid.editable.scopeKey);
+									});
+								};
+							}
+
 						} else {
 							//This will assume that if there is no `provider` then the value of `editable`
 							//is simply true. If so then the default MO is `inline editor`. In this case
@@ -211,14 +222,14 @@
 					}
 
 					if (config.noGrid && config.noGrid.nestedGrid) {
-						kgCfg.detailInit = function(e){
+						kgCfg.detailInit = function(e) {
 							var compiledGrid = $compile("<no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid>")(scope);
 							$(compiledGrid).appendTo(e.detailCell);
 						};
 
 						kgCfg.dataBound = function() {
-                            this.expandRow(this.tbody.find("tr.k-master-row").first());
-                        };
+							this.expandRow(this.tbody.find("tr.k-master-row").first());
+						};
 					}
 
 					if (config.noGrid.rowTemplate && angular.isObject(config.noGrid.rowTemplate)) {
@@ -246,18 +257,24 @@
 					}
 
 					if (kgCfg.columns) {
-						for(var kci = 0; kci < kgCfg.columns.length; kci++){
+						for (var kci = 0; kci < kgCfg.columns.length; kci++) {
 							var kcol = kgCfg.columns[kci];
-							if(kcol.command) {
-								for(var cmi=0; cmi < kcol.command.length; cmi++){
+							if (kcol.command) {
+								for (var cmi = 0; cmi < kcol.command.length; cmi++) {
 									var command = kcol.command[cmi];
 
-									if( angular.isObject(command.click)) {
+									if (angular.isObject(command.click)) {
 										var prov1 = $injector.get(command.click.provider);
 										command.click = prov1[command.click.function];
 									}
 								}
 							}
+						}
+					}
+
+					if (kgCfg.toolbar) {
+						if (angular.isString(kgCfg.toolbar)) {
+							kgCfg.toolbar = kendo.template(kgCfg.toolbar);
 						}
 					}
 
@@ -286,7 +303,7 @@
 					function refresh(e, t, p) {
 						var grid = p ? p.find("no-kendo-grid").data("kendoGrid") : null;
 
-						if(grid){
+						if (grid) {
 							grid.dataSource.read();
 						}
 					}
@@ -296,10 +313,10 @@
 					 *
 					 * This fix was intended to remedy the scrollable issue when grids were located in
 					 * "hidden" elements, such as inactive tabs.
-					*/
+					 */
 					scope.$on("noTabs::Change", refresh);
 
-					scope.$on("noSync::dataReceived", function(theGrid){
+					scope.$on("noSync::dataReceived", function(theGrid) {
 						theGrid.dataSource.read();
 					}.bind(null, scope.noGrid));
 				}
@@ -422,7 +439,7 @@
 
 
 
-	}])
+  }])
 
 	.service("noKendoRowTemplates", [function() {
 		this.scaffold = function(cfg, noGrid, alt) {
@@ -486,5 +503,5 @@
 			var t = holder.html();
 			return kendo.template(t);
 		};
-	}]);
+  }]);
 })(angular);
