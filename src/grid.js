@@ -170,26 +170,26 @@
           if (config.noGrid && config.noGrid.editable) {
             if (config.noGrid.editable.provider) {
               var prov = $injector.get(config.noGrid.editable.provider),
-								provFn = config.noGrid.editable.function,
+                provFn = config.noGrid.editable.function,
                 fnEdit, fnSave;
 
-							if(angular.isObject(provFn)){
-								if (provFn.edit){
-									kgCfg.edit = prov[provFn.edit].bind(config, scope);
-								}
-								if (provFn.save){
-									kgCfg.save = prov[provFn.save].bind(config, scope);
-								}
-							} else {
-								kgCfg.edit = prov[provFn].bind(config, scope);
+              if (angular.isObject(provFn)) {
+                if (provFn.edit) {
+                  kgCfg.edit = prov[provFn.edit].bind(config, scope);
+                }
+                if (provFn.save) {
+                  kgCfg.save = prov[provFn.save].bind(config, scope);
+                }
+              } else {
+                kgCfg.edit = prov[provFn].bind(config, scope);
 
-								kgCfg.save = function(e) {
-	                $timeout(function() {
-	                  e.sender.dataSource.read();
-	                  scope.$broadcast("noKendoGrid::dataChanged", config.noGrid.editable.scopeKey);
-	                });
-	              };
-							}
+                kgCfg.save = function(e) {
+                  $timeout(function() {
+                    e.sender.dataSource.read();
+                    scope.$broadcast("noKendoGrid::dataChanged", config.noGrid.editable.scopeKey);
+                  });
+                };
+              }
 
             } else {
               //This will assume that if there is no `provider` then the value of `editable`
