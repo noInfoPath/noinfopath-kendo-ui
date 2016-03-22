@@ -154,7 +154,7 @@
 						this.value = newval;
 
 						if(grid){
-							grid.dataSource.read();
+							grid.dataSource.page(0);
 							grid.refresh();
 						}
 					}
