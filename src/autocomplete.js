@@ -1,88 +1,78 @@
 //autocomplete.js
-(function(angular, undefined){
-    angular.module("noinfopath.ui")
+(function(angular, undefined) {
+	angular.module("noinfopath.kendo.ui")
+		.directive("noKendoAutoComplete", ["$compile", "noFormConfig", "$state", "noLoginService", "noKendoDataSourceFactory", "lodash", function($compile, noFormConfig, $state, noLoginService, noKendoDataSourceFactory, _) {
+			function configure(config, scope, el) {
+				var kendoOptions = config.noKendoAutoComplete.options,
+					dsCfg = config.noDataSource ? config.noDataSource : config,
+					dataSource;
 
-        .directive("noAutoComplete", ['$injector', '$parse', '$state', 'noAppStatus', function($injector, $parse, $state, noAppStatus){
-            return {
-                restrict: "A",
-                compile: function(el, attrs){                    
-                    var _ngModel = el.attr("no-ng-model"), 
-                        _noNgModel = _ngModel + "_display";
+				//if(!entity) throw dsCfg.entityName + " not found in provider " + dsCfg.dataProvider;
 
-                    if(!_ngModel) throw "noAutoComplete requires attribite ng-model.";
+				dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope);
 
-                    attrs.ngModel = _noNgModel;
-                    attrs.noNgModel = _ngModel;
+				kendoOptions.dataSource = dataSource;
 
-                    el.attr("ng-model", _noNgModel);
-                    el.attr("no-ng-model", _ngModel);
+				kendoOptions.change = function(e) {
+					var value = this.dataItem( this.current() );
 
-                    return function (scope, el, attrs){
-                        if(!attrs.noAutoComplete) throw "noAutoComplete requires a value. The value should be noKendo."
-                        if(!attrs.noDataSource) throw "noAutoComplete requires a noDataSource attribute."
-                        
-                        // noAppStatus.whenReady()
-                        //     .then(_start)
-                        //     .catch(function(err){
-                        //         console.error(err);
-                        //     });
+					if(!value) {
+						value = {};
+						value[kendoOptions.dataTextField] = this.value();
+					}
 
-                        function _bind(ds, config){
-                            var componentBinder = $injector.get(attrs.noAutoComplete);
-
-                            var options = {
-                                valuePrimitive: true, 
-                                dataTextField: attrs.noTextField,
-                                filter: attrs.noComparison,
-                                dataSource: ds,
-                                select: function(e){
-                                    var item = this.dataItem(e.item), 
-                                        val = item ? item[attrs.noValueField] : undefined,
-                                        txt = item ? item[attrs.noTextField]: "";
+					noInfoPath.setItem(scope, config.noKendoAutoComplete.ngModel, value);
+				};
 
 
-                                    scope.$apply(function(){
-                                        window.noInfoPath.setItem(scope, attrs.noNgModel, val);
-                                        window.noInfoPath.setItem(scope, attrs.ngModel, txt);
-                                    });
 
-                                   // scope[attrs.noNgModel] = 
-                                },
-                                change: function(e){
-                                    //scope.coolertrial.SelectionID = scope.coolertrial.SelectionID_.SelectionID;
-                                    if(el.val() != window.noInfoPath.getItem(scope, attrs.ngModel)){
-                                        window.noInfoPath.setItem(scope, attrs.noNgModel, undefined);
-                                        window.noInfoPath.setItem(scope, attrs.ngModel, "");                                       
-                                    }
-                                }                     
-                            };
-                          
-                            el.empty();
+				if (config.noKendoAutoComplete.waitFor) {
+					scope.$watch(config.noKendoAutoComplete.waitFor.property, function(newval) {
+						if (newval) {
+							var values = _.pluck(newval, config.noKendoAutoComplete.waitFor.pluck);
 
-                            componentBinder.noAutoComplete(el, options);
-                            el.closest("span").removeClass("k-widget k-autocomplete k-header k-state-default form-control"); 
-                        }
+							noInfoPath.setItem(scope, config.noKendoAutoComplete.ngModel, values);
 
-                        function _start(){
-                            if(!$state.current.data) throw "Current state ($state.current.data) is expected to exist.";
-                            if(!$state.current.data.noDataSources) throw "Current state is expected to have a noDataSource configuration.";
+							scope[config.scopeKey + "_autoComplete"].value(values);
+						}
+					});
+				}
 
-                            var ds = new window.noInfoPath.noDataSource(attrs.noAutoComplete, $state.current.data.noDataSources[attrs.noDataSource], $state.params, scope);
 
-                            _bind(ds, $state.current.data);
-                        }
+				scope[config.scopeKey + "_autoComplete"] = el.find("input").kendoAutoComplete(kendoOptions).data("kendoAutoComplete");
 
-                        _start();
-                    };
+			}
 
-                    
-                }
+			function _link(scope, el, attrs) {
+				noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope)
+					.then(function(config) {
+						var input = angular.element("<input type=\"text\"/>");
 
-            }
-        }])
-    ;
+						config = noInfoPath.getItem(config, attrs.noForm);
 
-    var noInfoPath = {};
+						//input.attr("ng-model", config.noKendoAutoComplete.ngModel);
 
-    window.noInfoPath = angular.extend(window.noInfoPath || {}, noInfoPath);
+						el.append(input);
+
+						el.html($compile(el.html())(scope));
+
+						configure(config, scope, el);
+
+					});
+
+			}
+
+
+			directive = {
+				restrict: "E",
+				link: _link,
+				scope: false
+			};
+
+			return directive;
+
+
+
+		}]);
+
 })(angular);

@@ -13,7 +13,8 @@ module.exports = function(grunt) {
                     'src/datasource.js',
                     'src/grid.js',
                     'src/datepicker.js',
-					'src/multiselect.js'
+					'src/multiselect.js',
+					'src/autocomplete.js'
 		        ],
 		        dest: 'dist/noinfopath-kendo-ui.js'
 		    },
