@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.36
+ *	@version 1.0.37
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -600,7 +600,15 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 					if (config.noGrid && config.noGrid.nestedGrid) {
 						kgCfg.detailInit = function(e) {
-							var compiledGrid = $compile("<no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid>")(scope);
+							var compiledGrid;
+
+							if(angular.isObject(config.noGrid.nestedGrid)){
+								scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
+								compiledGrid = $compile("<no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid>")(scope);
+							} else {
+								compiledGrid = $compile("<no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid>")(scope);
+							}
+
 							$(compiledGrid).appendTo(e.detailCell);
 						};
 
@@ -910,11 +918,10 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
                             internalDate = new Date(noInfoPath.getItem(scope, config.ngModel));
                         }
-						//config.options.value =  config.kendoModel;
 
-						// config.options.change = function(){
-						//     //noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(this.value()));
-						// };
+						if(config.disabled === true){
+							input.attr("disabled", true);
+						}
 
 
 						//Add input element to DOM.
@@ -953,6 +960,13 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 								if (newval != oldval) {
 									if(newval !== null){
 										datePicker.value(new Date(newval));
+									} else if (config.initValue === true){
+										noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(new Date()));
+
+										// if something overwrites the value of the date picker
+										// (loading of a record with null data for example) this
+										// will default to a new date if the initValue parameter is true.
+										// Assume that if a date has an initValue that the field is required.
 									}
 								}
 							});
