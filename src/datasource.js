@@ -18,7 +18,7 @@
 			Kendo's data aware widgets to work with NoInfoPath's data providers,
 			like the IndexedDB, WebSql and HTTP implementations.
 		*/
-		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "lodash", "$state", function($injector, $q, noQueryParser, noTransactionCache, _, $state) {
+		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "noDynamicFilters", "lodash", "$state", function($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state) {
 
 			function KendoDataSourceService() {
 
@@ -65,7 +65,7 @@
 					});
 				}
 
-				this.create = function(userId, config, scope) {
+				this.create = function(_, userId, config, scope) {
 					//console.warn("TODO: Implement config.noDataSource and ???");
 					if (!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
 
@@ -85,7 +85,7 @@
 
 					}
 
-					function read(options) {
+					function read(_, options) {
 						var provider = $injector.get(config.noDataSource.dataProvider),
 							db = provider.getDatabase(config.noDataSource.databaseName),
 							noTable = db[config.noDataSource.entityName];
@@ -102,6 +102,19 @@
 							}
 
 						}
+
+						if(options.data.filter && !options.data.filter.logic){
+							for(var f in config.noDataSource.filter){
+								var filterCfg = config.noDataSource.filter[f],
+									filter = options.data.filter.filters[f];
+
+								filter.logic = filterCfg.logic;
+							}
+
+						}else{
+							options.data.filter.logic = _.first(_.pluck(config.noDataSource.filter, "logic"));
+						}
+
 						noTable.noRead.apply(noTable, noQueryParser.parse(options.data))
 							.then(options.success)
 							.catch(options.error);
@@ -149,11 +162,14 @@
 					}
 
 					function watch(filterCfg, newval, oldval, scope) {
-						var grid = scope.noGrid;
+						var grid = scope.noGrid, filters, filter;
 
 						this.value = newval;
 
-						if(grid){
+						if (grid) {
+							filters = grid.dataSource.filter();
+							filter =  _.find(filters.filters, {field: filterCfg.field});
+							if(filter) { filter.value = newval; }
 							grid.dataSource.page(0);
 							grid.refresh();
 						}
@@ -179,7 +195,7 @@
 							serverSorting: true,
 							transport: {
 								create: create,
-								read: read,
+								read: read.bind(null,_),
 								update: update,
 								destroy: destroy
 							},
@@ -230,46 +246,10 @@
 					 *   should be evaluated as an 'and' or an 'or'. The 'and' logic
 					 *   is the default is no filterLogic is defined.
 					 */
-					if (dsCfg.filter) {
 
-						var filters = {};
 
-						filters.logic = dsCfg.filterLogic ? dsCfg.filterLogic : "and";
-						filters.filters = [];
+					 ds.filter = noDynamicFilters.configure(dsCfg, scope, watch);
 
-						for (var fi in dsCfg.filter) {
-							var filterCfg = dsCfg.filter[fi],
-								filter = angular.copy(filterCfg),
-								source;
-
-							if (angular.isObject(filter.value)) {
-
-								if (filter.value.source === "scope") {
-									source = scope;
-								} else {
-									source = $injector.get(filter.value.source);
-								}
-
-								filter.value = noInfoPath.getItem(source, filter.value.property);
-
-								filters.filters.push(filter);
-
-								if (filterCfg.value.watch && ["scope", "$scope", "$rootScope"].indexOf(filterCfg.value.source) > -1) {
-									source.$watch(filterCfg.value.property, watch.bind(filter, filterCfg));
-								}
-							}
-						}
-
-						/*
-						 * In the case of a user wanting filters and sorts to persist across states this check makes sure that userFilters/sorts are
-						 * enabled in no-forms.json. At each grid load, this will check to see if any filters/sorts have been persisted and load them
-						 * for the user automatically.
-						 */
-						var entityName = $state.params.entity ? $state.params.entity : $state.current.name;
-
-						ds.filter = filters;
-						//grid.dataSource.filter(filters);
-					}
 
 					if (dsCfg.preserveUserFilters && $state.current.data.entities && $state.current.data.entities[name] && $state.current.data.entities[name].filters) {
 
@@ -286,7 +266,7 @@
 					kds = new kendo.data.DataSource(ds);
 
 					return kds;
-				};
+				}.bind(this, _);
 
 			}
 

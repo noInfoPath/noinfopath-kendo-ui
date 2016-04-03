@@ -1,6 +1,6 @@
 {
   "name": "@noinfopath/noinfopath-kendo-ui",
-  "version": "1.0.37",
+  "version": "1.0.38",
   "description": "noInfoPath wrapper around Kendo UI",
   "main": "noinfopath-kendo-ui.js",
   "directories": {
@@ -16,7 +16,6 @@
   "author": "noInfoPath <info@noInfoPath.org> (http://www.noinfopath.org/)",
   "license": "MIT",
   "devDependencies": {
-    "angular-mocks": "^1.3.8",
     "grunt": "^0.4.5",
     "grunt-bumpup": "^0.6.2",
     "grunt-contrib-concat": "^0.5.1",
@@ -42,13 +41,13 @@
     "phantomjs": "^1.9.15"
   },
   "dependencies": {
-    "@noinfopath/noinfopath-data": "^1.0.22",
+    "@noinfopath/noinfopath-data": "^1.1.33",
     "@noinfopath/noinfopath-logger": "^1.0.1",
-    "angular": "^1.4.8",
-    "angular-mocks": "^1.4.8",
+    "angular": "1.4.8",
+    "angular-mocks": "1.4.8",
     "angular-ui-router": "^0.2.18",
     "jsdoc": "^3.4.0",
     "noinfopath": "^0.2.5",
-    "phantomjs": "^1.9.19"
+    "phantomjs": "^1.9.20"
   }
 }
