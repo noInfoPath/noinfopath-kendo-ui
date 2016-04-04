@@ -223,7 +223,15 @@
 
 					if (config.noGrid && config.noGrid.nestedGrid) {
 						kgCfg.detailInit = function(e) {
-							var compiledGrid = $compile("<no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid>")(scope);
+							var compiledGrid;
+
+							if(angular.isObject(config.noGrid.nestedGrid)){
+								scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
+								compiledGrid = $compile("<no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid>")(scope);
+							} else {
+								compiledGrid = $compile("<no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid>")(scope);
+							}
+
 							$(compiledGrid).appendTo(e.detailCell);
 						};
 

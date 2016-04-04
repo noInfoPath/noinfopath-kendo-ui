@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.39
+ *	@version 1.0.40
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -589,7 +589,15 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 					if (config.noGrid && config.noGrid.nestedGrid) {
 						kgCfg.detailInit = function(e) {
-							var compiledGrid = $compile("<no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid>")(scope);
+							var compiledGrid;
+
+							if(angular.isObject(config.noGrid.nestedGrid)){
+								scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
+								compiledGrid = $compile("<no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid>")(scope);
+							} else {
+								compiledGrid = $compile("<no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid>")(scope);
+							}
+
 							$(compiledGrid).appendTo(e.detailCell);
 						};
 
@@ -1107,10 +1115,13 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 					if(!value) {
 						value = {};
-						value[kendoOptions.dataTextField] = this.value();
 					}
 
+					value[kendoOptions.dataTextField] = this.value();
+
 					noInfoPath.setItem(scope, config.noKendoAutoComplete.ngModel, value);
+
+					scope.$apply();
 				};
 
 
