@@ -18,10 +18,13 @@
 
 					if(!value) {
 						value = {};
-						value[kendoOptions.dataTextField] = this.value();
 					}
 
+					value[kendoOptions.dataTextField] = this.value();
+
 					noInfoPath.setItem(scope, config.noKendoAutoComplete.ngModel, value);
+
+					scope.$apply();
 				};
 
 
