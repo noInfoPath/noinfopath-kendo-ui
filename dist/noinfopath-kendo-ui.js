@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.38
+ *	@version 1.0.39
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -184,16 +184,18 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 						}
 
-						if(options.data.filter && !options.data.filter.logic){
-							for(var f in config.noDataSource.filter){
-								var filterCfg = config.noDataSource.filter[f],
-									filter = options.data.filter.filters[f];
+						if (options.data.filter) {
+							if (options.data.filter.logic) {
+								options.data.filter.logic = _.first(_.pluck(config.noDataSource.filter, "logic"));
+							} else {
+								for (var f in config.noDataSource.filter) {
+									var filterCfg = config.noDataSource.filter[f],
+										filter = options.data.filter.filters[f];
 
-								filter.logic = filterCfg.logic;
+									filter.logic = filterCfg.logic;
+								}
+
 							}
-
-						}else{
-							options.data.filter.logic = _.first(_.pluck(config.noDataSource.filter, "logic"));
 						}
 
 						noTable.noRead.apply(noTable, noQueryParser.parse(options.data))
@@ -243,14 +245,19 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					}
 
 					function watch(filterCfg, newval, oldval, scope) {
-						var grid = scope.noGrid, filters, filter;
+						var grid = scope.noGrid,
+							filters, filter;
 
 						this.value = newval;
 
 						if (grid) {
 							filters = grid.dataSource.filter();
-							filter =  _.find(filters.filters, {field: filterCfg.field});
-							if(filter) { filter.value = newval; }
+							filter = _.find(filters.filters, {
+								field: filterCfg.field
+							});
+							if (filter) {
+								filter.value = newval;
+							}
 							grid.dataSource.page(0);
 							grid.refresh();
 						}
@@ -276,7 +283,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 							serverSorting: true,
 							transport: {
 								create: create,
-								read: read.bind(null,_),
+								read: read.bind(null, _),
 								update: update,
 								destroy: destroy
 							},
@@ -328,8 +335,10 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					 *   is the default is no filterLogic is defined.
 					 */
 
-
-					 ds.filter = noDynamicFilters.configure(dsCfg, scope, watch);
+					var tmpFilters = noDynamicFilters.configure(dsCfg, scope, watch);
+					ds.filter = tmpFilters ? {
+						filters: tmpFilters
+					} : undefined;
 
 
 					if (dsCfg.preserveUserFilters && $state.current.data.entities && $state.current.data.entities[name] && $state.current.data.entities[name].filters) {
@@ -352,7 +361,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			}
 
 			return new KendoDataSourceService();
-		}]);
+					}]);
 })(angular, kendo);
 
 //grid.js
