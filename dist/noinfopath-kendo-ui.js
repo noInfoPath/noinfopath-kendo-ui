@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.0.40
+ *	@version 1.2.1
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -765,46 +765,44 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					throw "noKendoGrid requires either a noConfig or noForm attribute";
 				}
 
-				cfgFn[configurationType](attrs)
-					.then(function(inConfig) {
-						var promises = [],
-							config = angular.copy(inConfig);
+				function finish(inConfig) {
+					var promises = [],
+						config = angular.copy(inConfig);
 
-						/*
-						 *   ##### kendoGrid.editable
-						 *
-						 *   When this property is truthy and an object, noKendoGrid Directive
-						 *   will look for the template property. When found, it will be
-						 *   expected to be a string that is the url to the editor template.
-						 *   When this occurs the directive must wait for the template
-						 *   before continuing with the grid initialization process.
-						 *
-						 */
+					/*
+					 *   ##### kendoGrid.editable
+					 *
+					 *   When this property is truthy and an object, noKendoGrid Directive
+					 *   will look for the template property. When found, it will be
+					 *   expected to be a string that is the url to the editor template.
+					 *   When this occurs the directive must wait for the template
+					 *   before continuing with the grid initialization process.
+					 *
+					 */
 
 
-						if (angular.isObject(config.noKendoGrid.editable) && config.noKendoGrid.editable.template) {
-							promises.push(getEditorTemplate(config.noKendoGrid.editable));
-						}
+					if (angular.isObject(config.noKendoGrid.editable) && config.noKendoGrid.editable.template) {
+						promises.push(getEditorTemplate(config.noKendoGrid.editable));
+					}
 
-						if (config.noGrid && config.noGrid.rowTemplateUrl && angular.isString(config.noGrid.rowTemplateUrl)) {
-							promises.push(getRowTemplate(config));
-						}
+					if (config.noGrid && config.noGrid.rowTemplateUrl && angular.isString(config.noGrid.rowTemplateUrl)) {
+						promises.push(getRowTemplate(config));
+					}
 
-						if (promises.length) {
-							$q.all(promises)
-								.then(function() {
-									handleWaitForAndConfigure(config);
-								})
-								.catch(function(err) {
-									console.error(err);
-								});
-						} else {
-							handleWaitForAndConfigure(config);
-						}
-					})
-					.catch(function(err) {
-						console.error(err);
-					});
+					if (promises.length) {
+						$q.all(promises)
+							.then(function() {
+								handleWaitForAndConfigure(config);
+							})
+							.catch(function(err) {
+								console.error(err);
+							});
+					} else {
+						handleWaitForAndConfigure(config);
+					}
+				}
+
+				finish(cfgFn[configurationType](attrs));
 
 
 			}
@@ -884,115 +882,27 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 (function(angular, undefined) {
 	angular.module("noinfopath.kendo.ui")
 		.directive("noKendoDatePicker", ["noFormConfig", "$state", "$timeout", function(noFormConfig, $state, $timeout) {
-			function _link(scope, el, attrs) {
-				return noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope)
-					.then(function(config) {
-						var input = angular.element("<input type=\"date\">"),
-							datePicker,
-							internalDate;
-
-						config = noInfoPath.getItem(config, attrs.noForm);
-
-						//input.attr("value", internalDate);
-
-						//Kendo binding happens early.
-						if (config.binding === "kendo") {
-							input.attr("name", config.kendoModel);
-							input.attr("data-bind", "value: " + config.kendoModel);
-							config.options.change = function(data) {
-								var tmp = noInfoPath.getItem(scope, config.ngKendo);
-								tmp.set(config.kendoModel, this.value());
-								//noInfoPath.setItem(scope, config.ngKendo, this.value());
-							};
-
-							internalDate = new Date(noInfoPath.getItem(scope, config.ngModel));
-						}
-
-						if (config.disabled === true) {
-							input.attr("disabled", true);
-						}
-
-
-						//Add input element to DOM.
-						el.append(input);
-
-						//Create the Kendo date picker.
-						datePicker = input.kendoDatePicker(config.options).data("kendoDatePicker");
-
-						// internalDate = noInfoPath.getItem(scope, config.ngModel);
-						//
-						// if(internalDate) {
-						//     datePicker.value(new Date(internalDate));
-						// } else {
-						//     datePicker.value(null);
-						// }
-
-
-
-						//put back resolved
-						// noInfoPath.setItem(scope, config.ngModel, internalDate);
-						//
-
-						/*
-						 *   #### @property binding
-						 *
-						 *   When binding property is `ng` or undefined use
-						 *   Angular scope for setting and getting the date
-						 *   picker's value.  Otherwise, using kendo model for
-						 *   getting and setting data.
-						 *
-						 */
-						if (config.binding === "ng" || config.binding === undefined) {
-							datePicker.value(new Date(noInfoPath.getItem(scope, config.ngModel)));
-
-							scope.$watch(config.ngModel, function(newval, oldval) {
-								if (newval != oldval) {
-									if (newval !== null) {
-										datePicker.value(new Date(newval));
-									} else if (config.initValue === true) {
-										noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(new Date()));
-
-										// if something overwrites the value of the date picker
-										// (loading of a record with null data for example) this
-										// will default to a new date if the initValue parameter is true.
-										// Assume that if a date has an initValue that the field is required.
-									}
-								}
-							});
-
-							datePicker.bind("change", function() {
-								var newDate = angular.isDate(this.value()) ? noInfoPath.toDbDate(this.value()) : null;
-
-								noInfoPath.setItem(scope, config.ngModel, newDate);
-								//this will solve the issue of the data not appearing on the scope
-								scope.$apply();
-							});
-
-							internalDate = noInfoPath.getItem(scope, config.ngModel);
-						}
-
-
-
-						if ((config.initValue === undefined || config.initValue) && !internalDate) {
-							internalDate = noInfoPath.toDbDate(new Date());
-						}
-
-						datePicker.value(new Date(internalDate));
-
-						//fixing the issue where the data is not on the scope on initValue load
-						noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(internalDate));
-						$timeout(function() {
-							scope.$apply();
-						});
-						//when the internal date is falsey set it to null for Kendo compatibility
-						//default display is empty
-						//noInfoPath.setItem(scope, config.ngModel, internalDate ? internalDate : null);
-
-					});
-
-			}
-
 			function _compile(el, attrs) {
+				var config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
+					noForm = noInfoPath.getItem(config, attrs.noForm),
+					input = angular.element("<input type=\"date\">");
+
+				if (config.binding === "kendo") {
+					input.attr("name", config.kendoModel);
+					input.attr("data-bind", "value: " + config.kendoModel);
+					config.options.change = function(data) {
+						var tmp = noInfoPath.getItem(scope, config.ngKendo);
+						tmp.set(config.kendoModel, this.value());
+						//noInfoPath.setItem(scope, config.ngKendo, this.value());
+					};
+
+					internalDate = new Date(noInfoPath.getItem(scope, config.ngModel));
+				}
+
+				if (config.disabled === true) {
+					input.attr("disabled", true);
+				}
+
 				if (attrs.$attr.required) {
 					el.removeAttr("required");
 					var inputHidden = angular.element("<input />");
@@ -1005,7 +915,72 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 					el.append(inputHidden);
 				}
-				return _link;
+
+				el.append(input);
+
+				return _link.bind(null, noForm);
+			}
+
+			function _link(config, scope, el, attrs) {
+				var
+					datePicker,
+					internalDate;
+
+				//Create the Kendo date picker.
+				datePicker = el.find("input[type='date']").kendoDatePicker(config.options).data("kendoDatePicker");
+
+				/*
+				 *   #### @property binding
+				 *
+				 *   When binding property is `ng` or undefined use
+				 *   Angular scope for setting and getting the date
+				 *   picker's value.  Otherwise, using kendo model for
+				 *   getting and setting data.
+				 *
+				 */
+				if (config.binding === "ng" || config.binding === undefined) {
+					datePicker.value(new Date(noInfoPath.getItem(scope, config.ngModel)));
+
+					scope.$watch(config.ngModel, function(newval, oldval) {
+						if (newval != oldval) {
+							if (newval !== null) {
+								datePicker.value(new Date(newval));
+							} else if (config.initValue === true) {
+								noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(new Date()));
+
+								// if something overwrites the value of the date picker
+								// (loading of a record with null data for example) this
+								// will default to a new date if the initValue parameter is true.
+								// Assume that if a date has an initValue that the field is required.
+							}
+						}
+					});
+
+					datePicker.bind("change", function() {
+						var newDate = angular.isDate(this.value()) ? noInfoPath.toDbDate(this.value()) : null;
+
+						noInfoPath.setItem(scope, config.ngModel, newDate);
+						//this will solve the issue of the data not appearing on the scope
+						scope.$apply();
+					});
+
+					internalDate = noInfoPath.getItem(scope, config.ngModel);
+				}
+
+				if ((config.initValue === undefined || config.initValue) && !internalDate) {
+					internalDate = noInfoPath.toDbDate(new Date());
+				}
+
+				datePicker.value(new Date(internalDate));
+
+				//fixing the issue where the data is not on the scope on initValue load
+				noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(internalDate));
+
+				$timeout(function() {
+					scope.$apply();
+				});
+
+
 			}
 
 
@@ -1027,10 +1002,22 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 (function(angular, undefined) {
 	angular.module("noinfopath.kendo.ui")
 		.directive("noKendoMultiSelect", ["noFormConfig", "$state", "noLoginService", "noKendoDataSourceFactory", "lodash", function(noFormConfig, $state, noLoginService, noKendoDataSourceFactory, _) {
-			function configure(config, scope, el) {
+			function _compile(el, attrs) {
+				var noForm = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
+					config = noInfoPath.getItem(noForm, attrs.noForm),
+					input = angular.element("<select/>");
+
+
+				el.append(input);
+
+				return _link.bind(null, config);
+			}
+
+			function _link(config, scope, el, attrs) {
 				var kendoOptions = config.noKendoMultiSelect.options,
 					dsCfg = config.noDataSource ? config.noDataSource : config,
-					dataSource;
+					dataSource,
+					multiSelect;
 
 				//if(!entity) throw dsCfg.entityName + " not found in provider " + dsCfg.dataProvider;
 
@@ -1060,36 +1047,14 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			}
 
-			function _link(scope, el, attrs) {
-				return noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope)
-					.then(function(config) {
-						var input = angular.element("<select>"),
-							multiSelect;
-
-						config = noInfoPath.getItem(config, attrs.noForm);
-
-						//noInfoPath.setItem(scope, config.ngModel,new Date());
-
-
-
-						el.append(input);
-
-						configure(config, scope, el);
-
-					});
-
-			}
-
 
 			directive = {
 				restrict: "E",
-				link: _link,
+				compile: _compile,
 				scope: false
 			};
 
 			return directive;
-
-
 
 		}]);
 

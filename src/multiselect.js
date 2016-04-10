@@ -2,10 +2,22 @@
 (function(angular, undefined) {
 	angular.module("noinfopath.kendo.ui")
 		.directive("noKendoMultiSelect", ["noFormConfig", "$state", "noLoginService", "noKendoDataSourceFactory", "lodash", function(noFormConfig, $state, noLoginService, noKendoDataSourceFactory, _) {
-			function configure(config, scope, el) {
+			function _compile(el, attrs) {
+				var noForm = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
+					config = noInfoPath.getItem(noForm, attrs.noForm),
+					input = angular.element("<select/>");
+
+
+				el.append(input);
+
+				return _link.bind(null, config);
+			}
+
+			function _link(config, scope, el, attrs) {
 				var kendoOptions = config.noKendoMultiSelect.options,
 					dsCfg = config.noDataSource ? config.noDataSource : config,
-					dataSource;
+					dataSource,
+					multiSelect;
 
 				//if(!entity) throw dsCfg.entityName + " not found in provider " + dsCfg.dataProvider;
 
@@ -35,36 +47,14 @@
 
 			}
 
-			function _link(scope, el, attrs) {
-				return noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope)
-					.then(function(config) {
-						var input = angular.element("<select>"),
-							multiSelect;
-
-						config = noInfoPath.getItem(config, attrs.noForm);
-
-						//noInfoPath.setItem(scope, config.ngModel,new Date());
-
-
-
-						el.append(input);
-
-						configure(config, scope, el);
-
-					});
-
-			}
-
 
 			directive = {
 				restrict: "E",
-				link: _link,
+				compile: _compile,
 				scope: false
 			};
 
 			return directive;
-
-
 
 		}]);
 

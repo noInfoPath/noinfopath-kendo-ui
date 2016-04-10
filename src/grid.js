@@ -399,46 +399,44 @@
 					throw "noKendoGrid requires either a noConfig or noForm attribute";
 				}
 
-				cfgFn[configurationType](attrs)
-					.then(function(inConfig) {
-						var promises = [],
-							config = angular.copy(inConfig);
+				function finish(inConfig) {
+					var promises = [],
+						config = angular.copy(inConfig);
 
-						/*
-						 *   ##### kendoGrid.editable
-						 *
-						 *   When this property is truthy and an object, noKendoGrid Directive
-						 *   will look for the template property. When found, it will be
-						 *   expected to be a string that is the url to the editor template.
-						 *   When this occurs the directive must wait for the template
-						 *   before continuing with the grid initialization process.
-						 *
-						 */
+					/*
+					 *   ##### kendoGrid.editable
+					 *
+					 *   When this property is truthy and an object, noKendoGrid Directive
+					 *   will look for the template property. When found, it will be
+					 *   expected to be a string that is the url to the editor template.
+					 *   When this occurs the directive must wait for the template
+					 *   before continuing with the grid initialization process.
+					 *
+					 */
 
 
-						if (angular.isObject(config.noKendoGrid.editable) && config.noKendoGrid.editable.template) {
-							promises.push(getEditorTemplate(config.noKendoGrid.editable));
-						}
+					if (angular.isObject(config.noKendoGrid.editable) && config.noKendoGrid.editable.template) {
+						promises.push(getEditorTemplate(config.noKendoGrid.editable));
+					}
 
-						if (config.noGrid && config.noGrid.rowTemplateUrl && angular.isString(config.noGrid.rowTemplateUrl)) {
-							promises.push(getRowTemplate(config));
-						}
+					if (config.noGrid && config.noGrid.rowTemplateUrl && angular.isString(config.noGrid.rowTemplateUrl)) {
+						promises.push(getRowTemplate(config));
+					}
 
-						if (promises.length) {
-							$q.all(promises)
-								.then(function() {
-									handleWaitForAndConfigure(config);
-								})
-								.catch(function(err) {
-									console.error(err);
-								});
-						} else {
-							handleWaitForAndConfigure(config);
-						}
-					})
-					.catch(function(err) {
-						console.error(err);
-					});
+					if (promises.length) {
+						$q.all(promises)
+							.then(function() {
+								handleWaitForAndConfigure(config);
+							})
+							.catch(function(err) {
+								console.error(err);
+							});
+					} else {
+						handleWaitForAndConfigure(config);
+					}
+				}
+
+				finish(cfgFn[configurationType](attrs));
 
 
 			}
