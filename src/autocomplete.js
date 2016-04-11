@@ -2,14 +2,20 @@
 (function(angular, undefined) {
 	angular.module("noinfopath.kendo.ui")
 		.directive("noKendoAutoComplete", ["$compile", "noFormConfig", "$state", "noLoginService", "noKendoDataSourceFactory", "lodash", function($compile, noFormConfig, $state, noLoginService, noKendoDataSourceFactory, _) {
-			function configure(config, scope, el) {
+			function _compile(el, attrs) {
+				var config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope),
+					noForm = noInfoPath.getItem(config, attrs.noForm);
+					input = angular.element("<input type=\"text\"/>");
+
+				el.append(input);
+
+				return _link.bind(null, noForm);
+			}
+
+			function _link(config, scope, el, attrs) {
 				var kendoOptions = config.noKendoAutoComplete.options,
 					dsCfg = config.noDataSource ? config.noDataSource : config,
-					dataSource;
-
-				//if(!entity) throw dsCfg.entityName + " not found in provider " + dsCfg.dataProvider;
-
-				dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope);
+					dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope);
 
 				kendoOptions.dataSource = dataSource;
 
@@ -46,35 +52,14 @@
 
 			}
 
-			function _link(scope, el, attrs) {
-				noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope)
-					.then(function(config) {
-						var input = angular.element("<input type=\"text\"/>");
-
-						config = noInfoPath.getItem(config, attrs.noForm);
-
-						//input.attr("ng-model", config.noKendoAutoComplete.ngModel);
-
-						el.append(input);
-
-						el.html($compile(el.html())(scope));
-
-						configure(config, scope, el);
-
-					});
-
-			}
-
 
 			directive = {
 				restrict: "E",
-				link: _link,
+				compile: _compile,
 				scope: false
 			};
 
 			return directive;
-
-
 
 		}]);
 

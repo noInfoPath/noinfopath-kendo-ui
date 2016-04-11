@@ -280,5 +280,5 @@
 			}
 
 			return new KendoDataSourceService();
-					}]);
+	}]);
 })(angular, kendo);

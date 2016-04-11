@@ -1,5 +1,5 @@
 # noinfopath-kendo-ui
-@version 1.2.1
+@version 1.2.2
 
 ## Overview
 NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -150,6 +150,15 @@ OR
   }
 ```
 
+  ##### kendoGrid.editable
+
+  When this property is truthy and an object, noKendoGrid Directive
+  will look for the template property. When found, it will be
+  expected to be a string that is the url to the editor template.
+  When this occurs the directive must wait for the template
+  before continuing with the grid initialization process.
+
+
   ##### change() event handler
 
   Listens on the Kendo UI Grid components change event
@@ -158,6 +167,17 @@ OR
 
   `noFormOptionsKey` is required because it identifies where to get he configuration from
   to configure the noComponent when the time comes.
+
+	#### Nested grids
+
+The `nestedGrid` grid property can be an object or a string. When it is
+a string it is the key to the `noComponent` child node with a `noForm`
+configuration.
+
+When it is an object is because a filter needs to be defined on the grid.
+The `noForm` property contains the `noComponent` key, and filterProperty
+contains the name of the parent Kendo Grid column from which to get the filter
+value for the child grid.
 
 #### Filter and Sort Options  Persistence
 
@@ -175,15 +195,6 @@ This fix was intended to remedy the scrollable issue when grids were located in
 
 A noDataSource object can ```waitFor``` a property on the scope to be
 Truthy before continuing with the grid's configuration proccess.
-
-  ##### kendoGrid.editable
-
-  When this property is truthy and an object, noKendoGrid Directive
-  will look for the template property. When found, it will be
-  expected to be a string that is the url to the editor template.
-  When this occurs the directive must wait for the template
-  before continuing with the grid initialization process.
-
 
   #### @property binding
 
