@@ -119,12 +119,12 @@
 	 *   }
 	 * ```
 	 */
-	function NoKendoGridDirective($injector, $compile, /*$timeout, $http,*/noTemplateCache , $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource){
+	function NoKendoGridDirective($injector, $compile, $timeout, /*$http,*/noTemplateCache , $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource){
 
 		function getKendoGridEditorTemplate(config, scope) {
 			return noTemplateCache.get(config.template)
-				.then(function(resp){
-					config.template = kendo.template($compile(resp.data)(scope).html());
+				.then(function(tpl){
+					config.template = kendo.template($compile(tpl)(scope).html());
 				})
 				.catch(function(err) {
 					throw err;
@@ -133,20 +133,31 @@
 		}
 
 		function getKendoGridRowTemplate(config, scope) {
-			return noTemplateCache.get()
-				.then(function(resp){
-					var tmp = angular.element($compile(resp.data)(scope));
+			return $q(function(resolve, reject){
+				noTemplateCache.get(config.noGrid.rowTemplateUrl)
+					.then(function(tpl){
 
-					//$timeout(function() {
-					config.noKendoGrid.rowTemplate = tmp[0].outerHTML;
+						var tmp = angular.element(tpl),
+							nrs = tmp.find("no-record-stats");
 
-					tmp.addClass("k-alt");
+						if(nrs.length > 0){
+							noTemplateCache.get("no-record-stats-kendo.html")
+								.then(function(tpl){
+									nrs.append(tpl);
+									config.noKendoGrid.rowTemplate = tmp[0].outerHTML;
+									tmp.addClass("k-alt");
+									config.noKendoGrid.altRowTemplate = tmp[0].outerHTML;
+									resolve();
+								});
+						}else{
+							config.noKendoGrid.rowTemplate = tmp[0].outerHTML;
+							tmp.addClass("k-alt");
+							config.noKendoGrid.altRowTemplate = tmp[0].outerHTML;
+							resolve();
+						}
+					}).catch(reject);
 
-					config.noKendoGrid.altRowTemplate = tmp[0].outerHTML;
-
-						//resolve();
-					//}, 1);
-				});
+			});
 
 
 		}
@@ -194,6 +205,7 @@
 		}
 
 		function configure(config, scope, el, attrs, params) {
+			console.log("configure");
 			var dsCfg = config.noDataSource ? config.noDataSource : config,
 				kgCfg = angular.copy(config.noKendoGrid),
 				dataSource;
@@ -498,7 +510,7 @@
 
 	angular.module("noinfopath.kendo.ui")
 
-		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', '$http', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", NoKendoGridDirective])
+		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", NoKendoGridDirective])
 
 		.service("noKendoRowTemplates", [NoKendoRowTemplates]);
 

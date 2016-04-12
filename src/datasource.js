@@ -210,7 +210,7 @@
 								data: function(config, data) {
 									var outData = data.paged;
 
-									outData = noCalculatedFields.calculate(config, outData);
+									outData = noCalculatedFields.calculate(config.noDataSource, outData);
 
 									return outData;
 								}.bind(null, config),
