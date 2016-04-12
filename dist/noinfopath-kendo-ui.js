@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.2.3
+ *	@version 1.2.4
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -489,40 +489,36 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 	 *   }
 	 * ```
 	 */
-	function NoKendoGridDirective($injector, $compile, $timeout, $http, $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource){
+	function NoKendoGridDirective($injector, $compile, /*$timeout, $http,*/noTemplateCache , $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource){
 
 		function getKendoGridEditorTemplate(config, scope) {
-
-			return $http.get(config.template)
-				.then(function(resp) {
-					config.template = kendo.template($compile(resp.data)(scope)
-						.html());
+			return noTemplateCache.get(config.template)
+				.then(function(resp){
+					config.template = kendo.template($compile(resp.data)(scope).html());
 				})
 				.catch(function(err) {
 					throw err;
 				});
+
 		}
 
 		function getKendoGridRowTemplate(config, scope) {
-			return $q(function(resolve, reject) {
-				$http.get(config.noGrid.rowTemplateUrl)
-					.then(function(resp) {
-						var tmp = angular.element($compile(resp.data)(scope));
+			return noTemplateCache.get()
+				.then(function(resp){
+					var tmp = angular.element($compile(resp.data)(scope));
 
-						$timeout(function() {
-							config.noKendoGrid.rowTemplate = tmp[0].outerHTML;
+					//$timeout(function() {
+					config.noKendoGrid.rowTemplate = tmp[0].outerHTML;
 
-							tmp.addClass("k-alt");
+					tmp.addClass("k-alt");
 
-							config.noKendoGrid.altRowTemplate = tmp[0].outerHTML;
+					config.noKendoGrid.altRowTemplate = tmp[0].outerHTML;
 
-							resolve();
-						}, 1);
-					})
-					.catch(function(err) {
-						reject(err);
-					});
-			});
+						//resolve();
+					//}, 1);
+				});
+
+
 		}
 
 		function refreshKendoGrid(e, t, p) {
