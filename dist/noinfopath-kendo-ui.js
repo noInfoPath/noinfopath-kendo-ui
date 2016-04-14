@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.2.5
+ *	@version 1.2.6
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -924,6 +924,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					el.append(inputHidden);
 				}
 
+				el.empty();
 				el.append(input);
 
 				return _link.bind(null, noForm);
