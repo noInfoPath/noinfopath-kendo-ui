@@ -1,57 +1,5 @@
 //grid.js
 (function(angular, undefined) {
-	function getConfigMethod(type, $injector, $compile, $state){
-		var cfgFn = {
-			"noConfig": function($injector, attrs) {
-				var noConfig = $injector.get("noConfig");
-				return noConfig.whenReady()
-					.then(function() {
-						return noInfoPath.getItem(noConfig.current, attrs.noConfig);
-					})
-					.catch(function(err) {
-						console.error(err);
-						return $q.reject(err); //Log in re-throw.
-					});
-			}.bind(null, $injector),
-			"noForm": function($injector, $state, attrs) {
-				var noFormConfig = $injector.get("noFormConfig"),
-					config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
-					noForm = noInfoPath.getItem(config, attrs.noForm);
-
-				return angular.copy(noForm);
-			}.bind(null, $injector, $state),
-			"noLookup": function($compile, THIS, noFormKey, container, options) {
-				//console.log(this);
-
-				var lu = noInfoPath.getItem(THIS, noFormKey),
-					tpl = "<no-lookup no-form=\"" + noFormKey + "\"></no-lookup>",
-					comp;
-
-				noInfoPath.setItem(scope, THIS.options.noLookup.scopeKey, options.model);
-
-				comp = $compile(tpl)(scope);
-
-				container.append(comp);
-			}.bind(null, $compile)
-		},
-		method = cfgFn[type];
-
-		return method || cfgFn.noForm;
-	}
-
-	function resolveConfigType(attrs){
-		var configurationType;
-
-		if (attrs.noConfig) {
-			configurationType = "noConfig";
-		} else if (attrs.noForm) {
-			configurationType = "noForm";
-		} else {
-			throw "noKendoGrid requires either a noConfig or noForm attribute";
-		}
-
-		return configurationType;
-	}
 
 	function hide(noFormKey, container, options){
 		container.prev(".k-edit-label")
@@ -119,7 +67,7 @@
 	 *   }
 	 * ```
 	 */
-	function NoKendoGridDirective($injector, $compile, $timeout, /*$http,*/noTemplateCache , $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource){
+	function NoKendoGridDirective($injector, $compile, $timeout, /*$http,*/noTemplateCache , $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource, noKendoHelpers){
 
 		function getKendoGridEditorTemplate(config, scope) {
 			return noTemplateCache.get(config.template)
@@ -287,12 +235,12 @@
 								if (!col.editor.type) throw "col.editor.type is a required configuration value.";
 								if (!col.editor.noFormOptionsKey) throw "col.editor.noFormOptionsKey is a required configuration value.";
 
-								fn2 = cfgFn[col.editor.type];
+								fn2 = noKendoHelpers.getConfigMethod(col.editor.type);
 								/*
 								 *   `noFormOptionsKey` is required because it identifies where to get he configuration from
 								 *   to configure the noComponent when the time comes.
 								 */
-								col.editor = fn2.bind(angular.copy(col.editor), col.editor.noFormOptionsKey);
+								col.editor = fn2.bind(null,  col.editor.noFormOptionsKey, angular.copy(col.editor), scope);
 							}
 						}
 					}
@@ -437,7 +385,7 @@
 		}
 
 		function _compile(el, attrs){
-			var method = getConfigMethod(resolveConfigType(attrs), $injector, $compile, $state),
+			var method = noKendoHelpers.getConfigMethod(noKendoHelpers.resolveConfigType(attrs)),
 				noForm = method(attrs);
 
 			return _link.bind(null, noForm);
@@ -510,7 +458,7 @@
 
 	angular.module("noinfopath.kendo.ui")
 
-		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", NoKendoGridDirective])
+		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
 
 		.service("noKendoRowTemplates", [NoKendoRowTemplates]);
 

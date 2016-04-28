@@ -36,7 +36,6 @@
 					el.append(inputHidden);
 				}
 
-				el.empty();
 				el.append(input);
 
 				return _link.bind(null, noForm);

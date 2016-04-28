@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.2.6
+ *	@version 1.2.7
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -370,58 +370,6 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 //grid.js
 (function(angular, undefined) {
-	function getConfigMethod(type, $injector, $compile, $state){
-		var cfgFn = {
-			"noConfig": function($injector, attrs) {
-				var noConfig = $injector.get("noConfig");
-				return noConfig.whenReady()
-					.then(function() {
-						return noInfoPath.getItem(noConfig.current, attrs.noConfig);
-					})
-					.catch(function(err) {
-						console.error(err);
-						return $q.reject(err); //Log in re-throw.
-					});
-			}.bind(null, $injector),
-			"noForm": function($injector, $state, attrs) {
-				var noFormConfig = $injector.get("noFormConfig"),
-					config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
-					noForm = noInfoPath.getItem(config, attrs.noForm);
-
-				return angular.copy(noForm);
-			}.bind(null, $injector, $state),
-			"noLookup": function($compile, THIS, noFormKey, container, options) {
-				//console.log(this);
-
-				var lu = noInfoPath.getItem(THIS, noFormKey),
-					tpl = "<no-lookup no-form=\"" + noFormKey + "\"></no-lookup>",
-					comp;
-
-				noInfoPath.setItem(scope, THIS.options.noLookup.scopeKey, options.model);
-
-				comp = $compile(tpl)(scope);
-
-				container.append(comp);
-			}.bind(null, $compile)
-		},
-		method = cfgFn[type];
-
-		return method || cfgFn.noForm;
-	}
-
-	function resolveConfigType(attrs){
-		var configurationType;
-
-		if (attrs.noConfig) {
-			configurationType = "noConfig";
-		} else if (attrs.noForm) {
-			configurationType = "noForm";
-		} else {
-			throw "noKendoGrid requires either a noConfig or noForm attribute";
-		}
-
-		return configurationType;
-	}
 
 	function hide(noFormKey, container, options){
 		container.prev(".k-edit-label")
@@ -489,7 +437,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 	 *   }
 	 * ```
 	 */
-	function NoKendoGridDirective($injector, $compile, $timeout, /*$http,*/noTemplateCache , $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource){
+	function NoKendoGridDirective($injector, $compile, $timeout, /*$http,*/noTemplateCache , $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource, noKendoHelpers){
 
 		function getKendoGridEditorTemplate(config, scope) {
 			return noTemplateCache.get(config.template)
@@ -657,12 +605,12 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 								if (!col.editor.type) throw "col.editor.type is a required configuration value.";
 								if (!col.editor.noFormOptionsKey) throw "col.editor.noFormOptionsKey is a required configuration value.";
 
-								fn2 = cfgFn[col.editor.type];
+								fn2 = noKendoHelpers.getConfigMethod(col.editor.type);
 								/*
 								 *   `noFormOptionsKey` is required because it identifies where to get he configuration from
 								 *   to configure the noComponent when the time comes.
 								 */
-								col.editor = fn2.bind(angular.copy(col.editor), col.editor.noFormOptionsKey);
+								col.editor = fn2.bind(null,  col.editor.noFormOptionsKey, angular.copy(col.editor), scope);
 							}
 						}
 					}
@@ -807,7 +755,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		}
 
 		function _compile(el, attrs){
-			var method = getConfigMethod(resolveConfigType(attrs), $injector, $compile, $state),
+			var method = noKendoHelpers.getConfigMethod(noKendoHelpers.resolveConfigType(attrs)),
 				noForm = method(attrs);
 
 			return _link.bind(null, noForm);
@@ -880,7 +828,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 	angular.module("noinfopath.kendo.ui")
 
-		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", NoKendoGridDirective])
+		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
 
 		.service("noKendoRowTemplates", [NoKendoRowTemplates]);
 
@@ -924,7 +872,6 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					el.append(inputHidden);
 				}
 
-				el.empty();
 				el.append(input);
 
 				return _link.bind(null, noForm);
@@ -1120,6 +1067,137 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 
 				scope[config.scopeKey + "_autoComplete"] = el.find("input").kendoAutoComplete(kendoOptions).data("kendoAutoComplete");
+
+			}
+
+
+			directive = {
+				restrict: "E",
+				compile: _compile,
+				scope: false
+			};
+
+			return directive;
+
+		}]);
+
+})(angular);
+
+//helpers.js
+(function(angular) {
+
+	function NoKendoHelpersService($injector, $compile, $state) {
+		this.getConfigMethod = function(type) {
+			var cfgFn = {
+					"noConfig": function($injector, $compile, $state, attrs, editor) {
+						var noConfig = $injector.get("noConfig");
+						return noConfig.whenReady()
+							.then(function() {
+								return noInfoPath.getItem(noConfig.current, attrs.noConfig);
+							})
+							.catch(function(err) {
+								console.error(err);
+								return $q.reject(err); //Log in re-throw.
+							});
+					},
+					"noForm": function($injector, $compile, $state, attrs, editor) {
+						var noFormConfig = $injector.get("noFormConfig"),
+							config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
+							noForm = noInfoPath.getItem(config, attrs.noForm);
+
+						return angular.copy(noForm);
+					},
+					"noLookup": function($injector, $compile, $state, noFormKey, editor, scope, container, options) {
+						//console.log(this);
+
+						var noFormConfig = $injector.get("noFormConfig"),
+							config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
+							lu = noInfoPath.getItem(config, noFormKey),
+							tpl = "<no-kendo-lookup no-form=\"" + noFormKey + "\"></no-kendo-lookup>",
+							comp;
+
+
+						scope[lu.noLookup.scopeKey] = options.model;
+
+						//noInfoPath.setItem(scope, editor.options.noLookup.scopeKey, options.model);
+
+						comp = $compile(tpl)(scope);
+						container.append(comp);
+					}
+				},
+				method = cfgFn[type];
+
+			return (method || cfgFn.noForm).bind(null, $injector, $compile, $state);
+		};
+
+		this.resolveConfigType = function(attrs) {
+			var configurationType;
+
+			if (attrs.noConfig) {
+				configurationType = "noConfig";
+			} else if (attrs.noForm) {
+				configurationType = "noForm";
+			} else {
+				throw "noKendoGrid requires either a noConfig or noForm attribute";
+			}
+
+			return configurationType;
+		};
+	}
+
+	angular.module("noinfopath.kendo.ui")
+		.service("noKendoHelpers", ["$injector", "$compile", "$state", NoKendoHelpersService]);
+})(angular);
+
+//lookup.js
+(function(angular, undefined) {
+	angular.module("noinfopath.kendo.ui")
+		.directive("noKendoLookup", ["$compile", "noFormConfig", "$state", "noLoginService", "noKendoDataSourceFactory", "lodash", function($compile, noFormConfig, $state, noLoginService, noKendoDataSourceFactory, _) {
+			function _compile(el, attrs) {
+				var config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
+					noForm = noInfoPath.getItem(config, attrs.noForm);
+					select = angular.element("<select></select>");
+
+				el.append(select);
+
+				return _link.bind(null, noForm);
+			}
+
+			function _link(config, scope, el, attrs) {
+				var kendoOptions = config.noLookup.options ? config.noLookup.options : {dataTextField: config.noLookup.textField, dataValueField: config.noLookup.valueField},
+					dsCfg = config.noDataSource ? config.noDataSource : config,
+					dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope);
+
+				kendoOptions.dataSource = dataSource;
+				kendoOptions.value = noInfoPath.getItem(scope, config.noLookup.ngModel);
+
+				kendoOptions.change = function(e) {
+					var value = this.dataItem(this.current());
+
+					if (!value) {
+						value = {};
+					}
+
+					//value[kendoOptions.dataTextField] = this.value();
+
+					noInfoPath.setItem(scope, config.noLookup.ngModel, this.value());
+					scope[config.noLookup.scopeKey].dirty = true;
+					scope.$apply();
+				};
+
+				scope[config.scopeKey + "_lookup"] = el.find("select").kendoDropDownList(kendoOptions).data("kendoLookup");
+
+				// if (config.noKendoLookup.waitFor) {
+				// 	scope.$watch(config.noKendoLookup.waitFor.property, function(newval) {
+				// 		if (newval) {
+				// 			var values = _.pluck(newval, config.noKendoLookup.waitFor.pluck);
+				//
+				// 			noInfoPath.setItem(scope, config.noKendoLookup.ngModel, values);
+				//
+				// 			scope[config.scopeKey + "_lookup"].value(values);
+				// 		}
+				// 	});
+				// }
 
 			}
 
