@@ -357,6 +357,10 @@
 			scope.$on("noSync::dataReceived", function(theGrid) {
 				theGrid.dataSource.read();
 			}.bind(null, scope.noGrid));
+
+			scope.$on("noGrid::refresh", function(theGrid) {
+				theGrid.dataSource.read();
+			}.bind(null, scope.noGrid));
 		}
 
 		function handleWaitForAndConfigure(config, scope, el, attrs) {
