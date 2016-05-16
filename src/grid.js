@@ -135,7 +135,7 @@
 			return tpl;
 		}
 
-		function _selectable(config, kgCfg) {
+		function _selectable(config, kgCfg, scope) {
 			if (kgCfg.selectable === undefined || kgCfg.selectable) { //When Truthy because we always want row selection.
 				kgCfg.selectable = "row";
 
@@ -519,7 +519,7 @@
 			kgCfg.dataSource = dataSource;
 
 
-			_selectable(config, kgCfg);
+			_selectable(config, kgCfg, scope);
 
 			_editable(config, kgCfg, scope);
 

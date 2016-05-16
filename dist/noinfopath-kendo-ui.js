@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.2.9
+ *	@version 1.2.10
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -512,7 +512,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			return tpl;
 		}
 
-		function _selectable(config, kgCfg) {
+		function _selectable(config, kgCfg, scope) {
 			if (kgCfg.selectable === undefined || kgCfg.selectable) { //When Truthy because we always want row selection.
 				kgCfg.selectable = "row";
 
@@ -896,7 +896,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			kgCfg.dataSource = dataSource;
 
 
-			_selectable(config, kgCfg);
+			_selectable(config, kgCfg, scope);
 
 			_editable(config, kgCfg, scope);
 
