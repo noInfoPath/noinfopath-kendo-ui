@@ -1,7 +1,7 @@
 //grid.js
 (function(angular, undefined) {
 
-	function hide(noFormKey, container, options){
+	function hide(noFormKey, container, options) {
 		container.prev(".k-edit-label")
 			.addClass("ng-hide");
 		container.addClass("ng-hide");
@@ -67,11 +67,11 @@
 	 *   }
 	 * ```
 	 */
-	function NoKendoGridDirective($injector, $compile, $timeout, /*$http,*/noTemplateCache , $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource, noKendoHelpers){
+	function NoKendoGridDirective($injector, $compile, $timeout, /*$http,*/ noTemplateCache, $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource, noKendoHelpers) {
 
-		function getKendoGridEditorTemplate(config, scope) {
+		function _getKendoGridEditorTemplate(config, scope) {
 			return noTemplateCache.get(config.template)
-				.then(function(tpl){
+				.then(function(tpl) {
 					config.template = kendo.template($compile(tpl)(scope).html());
 				})
 				.catch(function(err) {
@@ -80,24 +80,24 @@
 
 		}
 
-		function getKendoGridRowTemplate(config, scope) {
-			return $q(function(resolve, reject){
+		function _getKendoGridRowTemplate(config, scope) {
+			return $q(function(resolve, reject) {
 				noTemplateCache.get(config.noGrid.rowTemplateUrl)
-					.then(function(tpl){
+					.then(function(tpl) {
 
 						var tmp = angular.element(tpl),
 							nrs = tmp.find("no-record-stats");
 
-						if(nrs.length > 0){
+						if (nrs.length > 0) {
 							noTemplateCache.get("no-record-stats-kendo.html")
-								.then(function(tpl){
+								.then(function(tpl) {
 									nrs.append(tpl);
 									config.noKendoGrid.rowTemplate = tmp[0].outerHTML;
 									tmp.addClass("k-alt");
 									config.noKendoGrid.altRowTemplate = tmp[0].outerHTML;
 									resolve();
 								});
-						}else{
+						} else {
 							config.noKendoGrid.rowTemplate = tmp[0].outerHTML;
 							tmp.addClass("k-alt");
 							config.noKendoGrid.altRowTemplate = tmp[0].outerHTML;
@@ -110,7 +110,7 @@
 
 		}
 
-		function refreshKendoGrid(e, t, p) {
+		function _refreshKendoGrid(e, t, p) {
 			var grid = p ? p.find("no-kendo-grid").data("kendoGrid") : null;
 
 			if (grid) {
@@ -118,50 +118,24 @@
 			}
 		}
 
-		function resolveKendoGridTemplates(config, scope, el, attrs) {
-			var promises = [];
+		function _resloveNoRecordsTemplate() {
+			var prov, meth, tpl;
 
-			/*
-			 *   ##### kendoGrid.editable
-			 *
-			 *   When this property is truthy and an object, noKendoGrid Directive
-			 *   will look for the template property. When found, it will be
-			 *   expected to be a string that is the url to the editor template.
-			 *   When this occurs the directive must wait for the template
-			 *   before continuing with the grid initialization process.
-			 *
-			 */
-			if (angular.isObject(config.noKendoGrid.editable) && config.noKendoGrid.editable.template) {
-				promises.push(getKendoGridEditorTemplate(config.noKendoGrid.editable, scope));
+			if (config.noGrid.noRecords.template) {
+				tpl = config.noGrid.noRecords.template;
 			}
 
-			if (config.noGrid && config.noGrid.rowTemplateUrl && angular.isString(config.noGrid.rowTemplateUrl)) {
-				promises.push(getKendoGridRowTemplate(config, scope));
+			if (config.noGrid.noRecords.templateProvider) {
+				prov = $injector.get(config.noGrid.noRecords.templateProvider);
+				meth = prov[config.noGrid.noRecords.method];
+
+				tpl = meth();
 			}
 
-			if (promises.length) {
-				$q.all(promises)
-					.then(function() {
-						handleWaitForAndConfigure(config, scope, el, attrs);
-					})
-					.catch(function(err) {
-						console.error(err);
-					});
-			} else {
-				handleWaitForAndConfigure(config, scope, el, attrs);
-			}
+			return tpl;
 		}
 
-		function configure(config, scope, el, attrs, params) {
-			console.log("configure");
-			var dsCfg = config.noDataSource ? config.noDataSource : config,
-				kgCfg = angular.copy(config.noKendoGrid),
-				dataSource;
-
-			dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope);
-
-			kgCfg.dataSource = dataSource;
-
+		function _selectable(config, kgCfg) {
 			if (kgCfg.selectable === undefined || kgCfg.selectable) { //When Truthy because we always want row selection.
 				kgCfg.selectable = "row";
 
@@ -194,6 +168,9 @@
 
 			}
 
+		}
+
+		function _editable(config, kgCfg, scope) {
 			if (config.noGrid && config.noGrid.editable) {
 				if (config.noGrid.editable.provider) {
 					var prov = $injector.get(config.noGrid.editable.provider),
@@ -240,44 +217,83 @@
 								 *   `noFormOptionsKey` is required because it identifies where to get he configuration from
 								 *   to configure the noComponent when the time comes.
 								 */
-								col.editor = fn2.bind(null,  col.editor.noFormOptionsKey, angular.copy(col.editor), scope);
+								col.editor = fn2.bind(null, col.editor.noFormOptionsKey, angular.copy(col.editor), scope);
 							}
 						}
 					}
 				}
 			}
 
-			if (config.noGrid && config.noGrid.nestedGrid) {
-				kgCfg.detailInit = function(e) {
-					var compiledGrid, tmpHtml;
+		}
 
-					/*
-					 * 	#### Nested grids
-					 *
-					 *	The `nestedGrid` grid property can be an object or a string. When it is
-					 *	a string it is the key to the `noComponent` child node with a `noForm`
-					 *	configuration.
-					 *
-					 *	When it is an object is because a filter needs to be defined on the grid.
-					 *	The `noForm` property contains the `noComponent` key, and filterProperty
-					 *	contains the name of the parent Kendo Grid column from which to get the filter
-					 *	value for the child grid.
-					*/
-					if(angular.isObject(config.noGrid.nestedGrid)){
-						scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
-						compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid></div>")(scope);
-					} else {
-						compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
-					}
 
-					//console.log(compiledGrid);
-					// angular.element(e.detailCell).append(tmpHtml);
-					//angular.element(e.detailCell).append(compiledGrid.html());
-					$(compiledGrid).appendTo(e.detailCell);
-				};
+		function _handleWaitForAndConfigure(config, scope, el, attrs) {
+			var dsCfg = config.noDataSource ? config.noDataSource : config;
 
+			/*
+			 * #### noDataSource::waitFor property
+			 *
+			 * A noDataSource object can ```waitFor``` a property on the scope to be
+			 * Truthy before continuing with the grid's configuration proccess.
+			 */
+
+			if (dsCfg.waitFor) {
+				if (dsCfg.waitFor.source === "scope") {
+					scope.$watch(dsCfg.waitFor.property, function(newval, oldval, scope) {
+						if (newval) {
+							_configure(config, scope, el, attrs, newval);
+						}
+					});
+				} else {
+					_configure(config, scope, el, attrs);
+				}
+			} else {
+				_configure(config, scope, el, attrs);
+			}
+		}
+
+		function _compile(el, attrs) {
+			var method = noKendoHelpers.getConfigMethod(noKendoHelpers.resolveConfigType(attrs)),
+				noForm = method(attrs);
+
+			return _link.bind(null, noForm);
+		}
+
+		function _link(config, scope, el, attrs) {
+			var promises = [];
+
+			/*
+			 *   ##### kendoGrid.editable
+			 *
+			 *   When this property is truthy and an object, noKendoGrid Directive
+			 *   will look for the template property. When found, it will be
+			 *   expected to be a string that is the url to the editor template.
+			 *   When this occurs the directive must wait for the template
+			 *   before continuing with the grid initialization process.
+			 *
+			 */
+			if (angular.isObject(config.noKendoGrid.editable) && config.noKendoGrid.editable.template) {
+				promises.push(_getKendoGridEditorTemplate(config.noKendoGrid.editable, scope));
 			}
 
+			if (config.noGrid && config.noGrid.rowTemplateUrl && angular.isString(config.noGrid.rowTemplateUrl)) {
+				promises.push(_getKendoGridRowTemplate(config, scope));
+			}
+
+			if (promises.length) {
+				$q.all(promises)
+					.then(function() {
+						_handleWaitForAndConfigure(config, scope, el, attrs);
+					})
+					.catch(function(err) {
+						console.error(err);
+					});
+			} else {
+				_handleWaitForAndConfigure(config, scope, el, attrs);
+			}
+		}
+
+		function _rowTemplate(config, kgCfg, scope, el) {
 			if (config.noGrid.rowTemplate && angular.isObject(config.noGrid.rowTemplate)) {
 				var prov3 = $injector.get(config.noGrid.rowTemplate.provider),
 					fn3 = prov3[config.noGrid.rowTemplate.method];
@@ -286,22 +302,18 @@
 				kgCfg.altRowTemplate = fn3.call(scope, kgCfg, config.noGrid, true);
 
 				kgCfg.dataBound = function(e) {
-					angular.element(".k-grid-edit")
-						.click(function(e) {
-							e.preventDefault();
-							scope.noGrid.editRow(this.closest("tr[data-uid]"));
-							return false;
-						});
-
-					angular.element(".k-grid-delete")
-						.click(function(e) {
-							e.preventDefault();
-							scope.noGrid.removeRow(this.closest("tr[data-uid]"));
-							return false;
-						});
+					_handleRowTemplate(scope, e);
+					_handleNoRecords(e, el);
+				};
+			} else {
+				kgCfg.dataBound = function(e) {
+					_handleNoRecords(e, el);
 				};
 			}
 
+		}
+
+		function _columns(kgCfg) {
 			if (kgCfg.columns) {
 				for (var kci = 0; kci < kgCfg.columns.length; kci++) {
 					var kcol = kgCfg.columns[kci];
@@ -318,15 +330,40 @@
 				}
 			}
 
+		}
+
+		function _toolbar(kgCfg) {
 			if (kgCfg.toolbar) {
 				if (angular.isString(kgCfg.toolbar)) {
 					kgCfg.toolbar = kendo.template(kgCfg.toolbar);
 				}
 			}
 
-			scope.noGrid = el.kendoGrid(kgCfg)
+		}
+
+		function _kendoize(config, kgCfg, scope, grid) {
+			scope.noGrid = grid.kendoGrid(kgCfg)
 				.data("kendoGrid");
 
+			scope.noGrid._id = noInfoPath.createUUID();
+			if(config.noGrid.referenceOnParentScopeAs){
+				noInfoPath.setItem(scope.$parent, config.noGrid.referenceOnParentScopeAs, scope.noGrid);
+			}
+		}
+
+		function _noRecords(config, el, grid, message) {
+			if (config.noGrid.noRecords) {
+				el.append(grid);
+				el.append(message);
+
+				message.html($compile(_resloveNoRecordsTemplate())(scope));
+			} else {
+				grid.removeClass("ng-hide");
+				el.append(grid);
+			}
+		}
+
+		function _configureEventHandlers(config, scope) {
 			/**
 			 * #### Filter and Sort Options  Persistence
 			 *
@@ -352,61 +389,164 @@
 			 * This fix was intended to remedy the scrollable issue when grids were located in
 			 * "hidden" elements, such as inactive tabs.
 			 */
-			scope.$on("noTabs::Change", refreshKendoGrid);
+			scope.$on("noTabs::Change", _refreshKendoGrid);
 
 			scope.$on("noSync::dataReceived", function(theGrid) {
 				theGrid.dataSource.read();
 			}.bind(null, scope.noGrid));
 
-			scope.$on("noGrid::refresh", function(theGrid) {
-				theGrid.dataSource.read();
+			scope.$on("noGrid::refresh", function(theGrid, e, targetGridID) {
+				if(theGrid._id === targetGridID)
+				{
+					theGrid.dataSource.read();
+				}
 			}.bind(null, scope.noGrid));
 		}
 
-		function handleWaitForAndConfigure(config, scope, el, attrs) {
-			var dsCfg = config.noDataSource ? config.noDataSource : config;
+		function _handleRowTemplate(scope, e) {
+			angular.element(".k-grid-edit").click(function(e) {
+				e.preventDefault();
+				scope.noGrid.editRow(this.closest("tr[data-uid]"));
+				return false;
+			});
 
-			/*
-			 * #### noDataSource::waitFor property
-			 *
-			 * A noDataSource object can ```waitFor``` a property on the scope to be
-			 * Truthy before continuing with the grid's configuration proccess.
-			 */
+			angular.element(".k-grid-delete").click(function(e) {
+				e.preventDefault();
+				scope.noGrid.removeRow(this.closest("tr[data-uid]"));
+				return false;
+			});
+		}
 
-			if (dsCfg.waitFor) {
-				if (dsCfg.waitFor.source === "scope") {
-					scope.$watch(dsCfg.waitFor.property, function(newval, oldval, scope) {
-						if (newval) {
-							configure(config, scope, el, attrs, newval);
-						}
-					});
+		function _handleNoRecords(e, el) {
+			var g = el.find("grid"),
+				p = el.find(".k-pager-wrap"),
+				m = el.find("message");
+
+			if (m.length) {
+				if (e.sender.dataItems().length) {
+					g.removeClass("ng-hide");
+					p.removeClass("ng-hide");
+					m.addClass("ng-hide");
 				} else {
-					configure(config, scope, el, attrs);
+					g.addClass("ng-hide");
+					p.addClass("ng-hide");
+					m.removeClass("ng-hide");
 				}
-			} else {
-				configure(config, scope, el, attrs);
+			}
+
+
+		}
+
+		function _detailRowExpand(config, kgCfg, scope) {
+
+			// "detailRow": {
+			// 	"templateProvider": "efrProjectService",
+			// 	"method": "bidItemAttributesSelector"
+
+			//detail row can only be used for one purpose; nestedGrid or provider method generated content.
+			//It  needs to be backwards compatible with
+			//with the legacy nestedGrid functionality.
+
+			// var detailElement = angular.element("<div>boo</div>");
+			//
+			// $(detailElement).appendTo(e.detailCell);
+
+			if (config.noGrid) {
+				if (config.noGrid.detailRow) {
+					//use detailRow code
+					kgCfg.detailInit = _detailRow.bind(this, config, kgCfg, scope);
+
+				} else if (config.noGrid.nestedGrid) {
+					kgCfg.detailInit = _nestedGrid.bind(this, config, kgCfg, scope);
+				}
 			}
 		}
 
-		function _compile(el, attrs){
-			var method = noKendoHelpers.getConfigMethod(noKendoHelpers.resolveConfigType(attrs)),
-				noForm = method(attrs);
+		function _nestedGrid(config, kgCfg, scope, e) {
+				var compiledGrid, tmpHtml;
 
-			return _link.bind(null, noForm);
+				/*
+				 * 	#### Nested grids
+				 *
+				 *	The `nestedGrid` grid property can be an object or a string. When it is
+				 *	a string it is the key to the `noComponent` child node with a `noForm`
+				 *	configuration.
+				 *
+				 *	When it is an object is because a filter needs to be defined on the grid.
+				 *	The `noForm` property contains the `noComponent` key, and filterProperty
+				 *	contains the name of the parent Kendo Grid column from which to get the filter
+				 *	value for the child grid.
+				 */
+				if (angular.isObject(config.noGrid.nestedGrid)) {
+					scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
+					compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid></div>")(scope);
+				} else {
+					compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
+				}
+
+				//console.log(compiledGrid);
+				// angular.element(e.detailCell).append(tmpHtml);
+				//angular.element(e.detailCell).append(compiledGrid.html());
+				$(compiledGrid).appendTo(e.detailCell);
+
+
 		}
 
-		function _link(config, scope, el, attrs){
-			resolveKendoGridTemplates(config, scope, el, attrs);
+		function _detailRow(config, kgCfg, scope, e){
+			var prov =  $injector.get(config.noGrid.detailRow.provider),
+				meth = prov[config.noGrid.detailRow.method];
+
+			meth(config, kgCfg, scope, e)
+				.then(function(tpl){
+					$($compile(tpl)(scope)).appendTo(e.detailCell);
+				})
+				.catch(function(err){
+					console.error(err);
+				});
+		}
+
+		function _configure(config, scope, el, attrs, params) {
+			console.log("configure");
+			var dsCfg = config.noDataSource ? config.noDataSource : config,
+				kgCfg = angular.copy(config.noKendoGrid),
+				grid = angular.element("<grid></grid>"),
+				message = angular.element("<message></message>"),
+				dataSource;
+
+
+			dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope);
+
+			kgCfg.dataSource = dataSource;
+
+
+			_selectable(config, kgCfg);
+
+			_editable(config, kgCfg, scope);
+
+			_detailRowExpand(config, kgCfg, scope);
+
+			_rowTemplate(config, kgCfg, scope, el);
+
+			_columns(kgCfg);
+
+			_toolbar(kgCfg);
+
+			_noRecords(config, el, grid, message);
+
+			_kendoize(config, kgCfg, scope, grid);
+
+			_configureEventHandlers(config, scope);
+
+
 		}
 
 		return {
 			scope: true,
 			compile: _compile
 		};
-
 	}
 
-	function NoKendoRowTemplates(){
+	function NoKendoRowTemplates() {
 		this.scaffold = function(cfg, noGrid, alt) {
 			var holder = angular.element("<div></div>"),
 				outerRow = angular.element("<tr data-uid=\"#= uid #\"></tr>"),
@@ -456,14 +596,15 @@
 			}
 
 			var t = holder.html();
+
 			return kendo.template(t);
 		};
 	}
 
 	angular.module("noinfopath.kendo.ui")
 
-		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
+	.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
 
-		.service("noKendoRowTemplates", [NoKendoRowTemplates]);
+	.service("noKendoRowTemplates", [NoKendoRowTemplates]);
 
 })(angular);

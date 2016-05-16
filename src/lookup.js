@@ -5,7 +5,7 @@
 			function _compile(el, attrs) {
 				var config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
 					noForm = noInfoPath.getItem(config, attrs.noForm);
-					select = angular.element("<select></select>");
+				select = angular.element("<select></select>");
 
 				el.append(select);
 
@@ -13,7 +13,10 @@
 			}
 
 			function _link(config, scope, el, attrs) {
-				var kendoOptions = config.noLookup.options ? config.noLookup.options : {dataTextField: config.noLookup.textField, dataValueField: config.noLookup.valueField},
+				var kendoOptions = config.noLookup.options ? config.noLookup.options : {
+						dataTextField: config.noLookup.textField,
+						dataValueField: config.noLookup.valueField
+					},
 					dsCfg = config.noDataSource ? config.noDataSource : config,
 					dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope);
 

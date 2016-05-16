@@ -128,6 +128,8 @@
 					THIS[schema.tableName] = new NoTable(schema, queryParser, queryBuilder);
 				}
 			}
+
+			
 		}]);
 })(angular);
 

@@ -69,6 +69,10 @@
 					//console.warn("TODO: Implement config.noDataSource and ???");
 					if (!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
 
+					var provider = $injector.get(config.noDataSource.dataProvider),
+						db = provider.getDatabase(config.noDataSource.databaseName),
+						noTable = db[config.noDataSource.entityName];
+
 					function create(options) {
 
 
@@ -118,7 +122,9 @@
 						}
 
 						noTable.noRead.apply(noTable, noQueryParser.parse(options.data))
-							.then(options.success)
+							.then(function(data){
+								options.success(data);
+							})
 							.catch(options.error);
 					}
 
@@ -201,6 +207,7 @@
 							serverPaging: true,
 							serverSorting: true,
 							transport: {
+								noTable: noTable,
 								create: create,
 								read: read.bind(null, _),
 								update: update,
