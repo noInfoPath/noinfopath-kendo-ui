@@ -171,46 +171,28 @@
 		}
 
 		function _editable(config, kgCfg, scope) {
-			if (config.noGrid && config.noGrid.editable) {
-				if (config.noGrid.editable.provider) {
-					var prov = $injector.get(config.noGrid.editable.provider),
-						provFn = config.noGrid.editable.function,
-						fnEdit, fnSave;
+			function _processColumns() {
+				//This will assume that if there is no `provider` then the value of `editable`
+				//is simply true. If so then the default MO is `inline editor`. In this case
+				//We need to check the `columns` array for columns that have a custom editor
+				//type defined.
+				if (kgCfg.columns && kgCfg.columns.length) {
+					var columns = kgCfg.columns;
 
-					if (angular.isObject(provFn)) {
-						if (provFn.edit) {
-							kgCfg.edit = prov[provFn.edit].bind(config, scope);
-						}
-						if (provFn.save) {
-							kgCfg.save = prov[provFn.save].bind(config, scope);
-						}
-					} else {
-						kgCfg.edit = prov[provFn].bind(config, scope);
+					for (var ci = 0; ci < columns.length; ci++) {
+						var col = columns[ci],
+							fn2;
 
-						kgCfg.save = function(e) {
-							$timeout(function() {
-								e.sender.dataSource.read();
-								scope.$broadcast("noKendoGrid::dataChanged", config.noGrid.editable.scopeKey);
-							});
-						};
-					}
+						if (col.editor) {
+							if(col.editor.type === "provider"){
+								var prov2 = $injector.get(col.editor.provider),
+									method = prov2[col.editor.method];
 
-				} else {
-					//This will assume that if there is no `provider` then the value of `editable`
-					//is simply true. If so then the default MO is `inline editor`. In this case
-					//We need to check the `columns` array for columns that have a custom editor
-					//type defined.
-					if (kgCfg.columns && kgCfg.columns.length) {
-						var columns = kgCfg.columns;
-
-						for (var ci = 0; ci < columns.length; ci++) {
-							var col = columns[ci],
-								fn2;
-
-							if (col.editor) {
+								col.editor = method;
+							}else{
 								//TODO: need to provide reference to editor initailizer.
-								if (!col.editor.type) throw "col.editor.type is a required configuration value.";
-								if (!col.editor.noFormOptionsKey) throw "col.editor.noFormOptionsKey is a required configuration value.";
+								if (!col.editor.type || col.editor.type !== "provider") throw "col.editor.type is a required configuration value.";
+								if (col.editor.type !== "provider" && !col.editor.noFormOptionsKey) throw "col.editor.noFormOptionsKey is a required configuration value.";
 
 								fn2 = noKendoHelpers.getConfigMethod(col.editor.type);
 								/*
@@ -218,14 +200,48 @@
 								 *   to configure the noComponent when the time comes.
 								 */
 								col.editor = fn2.bind(null, col.editor.noFormOptionsKey, angular.copy(col.editor), scope);
+
 							}
 						}
 					}
 				}
 			}
 
-		}
+			if (config.noGrid && config.noGrid.editable) {
+				if(angular.isObject(config.noGrid.editable)){
+					if (config.noGrid.editable.provider) {
+						var prov = $injector.get(config.noGrid.editable.provider),
+							provFn = config.noGrid.editable.function,
+							fnEdit, fnSave;
 
+						if (angular.isObject(provFn)) {
+							if (provFn.edit) {
+								kgCfg.edit = prov[provFn.edit].bind(config, scope);
+							}
+							if (provFn.save) {
+								kgCfg.save = prov[provFn.save].bind(config, scope);
+							}
+						} else {
+							kgCfg.edit = prov[provFn].bind(config, scope);
+
+							kgCfg.save = function(e) {
+								$timeout(function() {
+									e.sender.dataSource.read();
+									scope.$broadcast("noKendoGrid::dataChanged", config.noGrid.editable.scopeKey);
+								});
+							};
+						}
+
+					} else {
+						_processColumns();
+					}
+
+				}else{
+					_processColumns();
+				}
+			}
+
+		}
 
 		function _handleWaitForAndConfigure(config, scope, el, attrs) {
 			var dsCfg = config.noDataSource ? config.noDataSource : config;

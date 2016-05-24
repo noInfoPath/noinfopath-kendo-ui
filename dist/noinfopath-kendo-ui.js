@@ -203,7 +203,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						}
 
 						noTable.noRead.apply(noTable, noQueryParser.parse(options.data))
-							.then(function(data){
+							.then(function(data) {
 								options.success(data);
 							})
 							.catch(options.error);
@@ -548,46 +548,28 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		}
 
 		function _editable(config, kgCfg, scope) {
-			if (config.noGrid && config.noGrid.editable) {
-				if (config.noGrid.editable.provider) {
-					var prov = $injector.get(config.noGrid.editable.provider),
-						provFn = config.noGrid.editable.function,
-						fnEdit, fnSave;
+			function _processColumns() {
+				//This will assume that if there is no `provider` then the value of `editable`
+				//is simply true. If so then the default MO is `inline editor`. In this case
+				//We need to check the `columns` array for columns that have a custom editor
+				//type defined.
+				if (kgCfg.columns && kgCfg.columns.length) {
+					var columns = kgCfg.columns;
 
-					if (angular.isObject(provFn)) {
-						if (provFn.edit) {
-							kgCfg.edit = prov[provFn.edit].bind(config, scope);
-						}
-						if (provFn.save) {
-							kgCfg.save = prov[provFn.save].bind(config, scope);
-						}
-					} else {
-						kgCfg.edit = prov[provFn].bind(config, scope);
+					for (var ci = 0; ci < columns.length; ci++) {
+						var col = columns[ci],
+							fn2;
 
-						kgCfg.save = function(e) {
-							$timeout(function() {
-								e.sender.dataSource.read();
-								scope.$broadcast("noKendoGrid::dataChanged", config.noGrid.editable.scopeKey);
-							});
-						};
-					}
+						if (col.editor) {
+							if (col.editor.type === "provider") {
+								var prov2 = $injector.get(col.editor.provider),
+									method = prov2[col.editor.method];
 
-				} else {
-					//This will assume that if there is no `provider` then the value of `editable`
-					//is simply true. If so then the default MO is `inline editor`. In this case
-					//We need to check the `columns` array for columns that have a custom editor
-					//type defined.
-					if (kgCfg.columns && kgCfg.columns.length) {
-						var columns = kgCfg.columns;
-
-						for (var ci = 0; ci < columns.length; ci++) {
-							var col = columns[ci],
-								fn2;
-
-							if (col.editor) {
+								col.editor = method;
+							} else {
 								//TODO: need to provide reference to editor initailizer.
-								if (!col.editor.type) throw "col.editor.type is a required configuration value.";
-								if (!col.editor.noFormOptionsKey) throw "col.editor.noFormOptionsKey is a required configuration value.";
+								if (!col.editor.type || col.editor.type !== "provider") throw "col.editor.type is a required configuration value.";
+								if (col.editor.type !== "provider" && !col.editor.noFormOptionsKey) throw "col.editor.noFormOptionsKey is a required configuration value.";
 
 								fn2 = noKendoHelpers.getConfigMethod(col.editor.type);
 								/*
@@ -595,14 +577,48 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 								 *   to configure the noComponent when the time comes.
 								 */
 								col.editor = fn2.bind(null, col.editor.noFormOptionsKey, angular.copy(col.editor), scope);
+
 							}
 						}
 					}
 				}
 			}
 
-		}
+			if (config.noGrid && config.noGrid.editable) {
+				if (angular.isObject(config.noGrid.editable)) {
+					if (config.noGrid.editable.provider) {
+						var prov = $injector.get(config.noGrid.editable.provider),
+							provFn = config.noGrid.editable.function,
+							fnEdit, fnSave;
 
+						if (angular.isObject(provFn)) {
+							if (provFn.edit) {
+								kgCfg.edit = prov[provFn.edit].bind(config, scope);
+							}
+							if (provFn.save) {
+								kgCfg.save = prov[provFn.save].bind(config, scope);
+							}
+						} else {
+							kgCfg.edit = prov[provFn].bind(config, scope);
+
+							kgCfg.save = function(e) {
+								$timeout(function() {
+									e.sender.dataSource.read();
+									scope.$broadcast("noKendoGrid::dataChanged", config.noGrid.editable.scopeKey);
+								});
+							};
+						}
+
+					} else {
+						_processColumns();
+					}
+
+				} else {
+					_processColumns();
+				}
+			}
+
+		}
 
 		function _handleWaitForAndConfigure(config, scope, el, attrs) {
 			var dsCfg = config.noDataSource ? config.noDataSource : config;
@@ -723,7 +739,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				.data("kendoGrid");
 
 			scope.noGrid._id = noInfoPath.createUUID();
-			if(config.noGrid.referenceOnParentScopeAs){
+			if (config.noGrid.referenceOnParentScopeAs) {
 				noInfoPath.setItem(scope.$parent, config.noGrid.referenceOnParentScopeAs, scope.noGrid);
 			}
 		}
@@ -773,8 +789,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			}.bind(null, scope.noGrid));
 
 			scope.$on("noGrid::refresh", function(theGrid, e, targetGridID) {
-				if(theGrid._id === targetGridID)
-				{
+				if (theGrid._id === targetGridID) {
 					theGrid.dataSource.read();
 				}
 			}.bind(null, scope.noGrid));
@@ -840,44 +855,44 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		}
 
 		function _nestedGrid(config, kgCfg, scope, e) {
-				var compiledGrid, tmpHtml;
+			var compiledGrid, tmpHtml;
 
-				/*
-				 * 	#### Nested grids
-				 *
-				 *	The `nestedGrid` grid property can be an object or a string. When it is
-				 *	a string it is the key to the `noComponent` child node with a `noForm`
-				 *	configuration.
-				 *
-				 *	When it is an object is because a filter needs to be defined on the grid.
-				 *	The `noForm` property contains the `noComponent` key, and filterProperty
-				 *	contains the name of the parent Kendo Grid column from which to get the filter
-				 *	value for the child grid.
-				 */
-				if (angular.isObject(config.noGrid.nestedGrid)) {
-					scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
-					compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid></div>")(scope);
-				} else {
-					compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
-				}
+			/*
+			 * 	#### Nested grids
+			 *
+			 *	The `nestedGrid` grid property can be an object or a string. When it is
+			 *	a string it is the key to the `noComponent` child node with a `noForm`
+			 *	configuration.
+			 *
+			 *	When it is an object is because a filter needs to be defined on the grid.
+			 *	The `noForm` property contains the `noComponent` key, and filterProperty
+			 *	contains the name of the parent Kendo Grid column from which to get the filter
+			 *	value for the child grid.
+			 */
+			if (angular.isObject(config.noGrid.nestedGrid)) {
+				scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
+				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid></div>")(scope);
+			} else {
+				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
+			}
 
-				//console.log(compiledGrid);
-				// angular.element(e.detailCell).append(tmpHtml);
-				//angular.element(e.detailCell).append(compiledGrid.html());
-				$(compiledGrid).appendTo(e.detailCell);
+			//console.log(compiledGrid);
+			// angular.element(e.detailCell).append(tmpHtml);
+			//angular.element(e.detailCell).append(compiledGrid.html());
+			$(compiledGrid).appendTo(e.detailCell);
 
 
 		}
 
-		function _detailRow(config, kgCfg, scope, e){
-			var prov =  $injector.get(config.noGrid.detailRow.provider),
+		function _detailRow(config, kgCfg, scope, e) {
+			var prov = $injector.get(config.noGrid.detailRow.provider),
 				meth = prov[config.noGrid.detailRow.method];
 
 			meth(config, kgCfg, scope, e)
-				.then(function(tpl){
+				.then(function(tpl) {
 					$($compile(tpl)(scope)).appendTo(e.detailCell);
 				})
-				.catch(function(err){
+				.catch(function(err) {
 					console.error(err);
 				});
 		}
@@ -1175,7 +1190,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			function _compile(el, attrs) {
 				var config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope),
 					noForm = noInfoPath.getItem(config, attrs.noForm);
-					input = angular.element("<input type=\"text\"/>");
+				input = angular.element("<input type=\"text\"/>");
 
 				el.append(input);
 
@@ -1190,9 +1205,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				kendoOptions.dataSource = dataSource;
 
 				kendoOptions.change = function(e) {
-					var value = this.dataItem( this.current() );
+					var value = this.dataItem(this.current());
 
-					if(!value) {
+					if (!value) {
 						value = {};
 					}
 
