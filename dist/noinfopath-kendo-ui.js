@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.2.10
+ *	@version 1.2.11
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -203,7 +203,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						}
 
 						noTable.noRead.apply(noTable, noQueryParser.parse(options.data))
-							.then(function(data) {
+							.then(function(data){
 								options.success(data);
 							})
 							.catch(options.error);
@@ -561,12 +561,12 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 							fn2;
 
 						if (col.editor) {
-							if (col.editor.type === "provider") {
+							if(col.editor.type === "provider"){
 								var prov2 = $injector.get(col.editor.provider),
 									method = prov2[col.editor.method];
 
 								col.editor = method;
-							} else {
+							}else{
 								//TODO: need to provide reference to editor initailizer.
 								if (!col.editor.type || col.editor.type !== "provider") throw "col.editor.type is a required configuration value.";
 								if (col.editor.type !== "provider" && !col.editor.noFormOptionsKey) throw "col.editor.noFormOptionsKey is a required configuration value.";
@@ -585,7 +585,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			}
 
 			if (config.noGrid && config.noGrid.editable) {
-				if (angular.isObject(config.noGrid.editable)) {
+				if(angular.isObject(config.noGrid.editable)){
 					if (config.noGrid.editable.provider) {
 						var prov = $injector.get(config.noGrid.editable.provider),
 							provFn = config.noGrid.editable.function,
@@ -613,7 +613,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						_processColumns();
 					}
 
-				} else {
+				}else{
 					_processColumns();
 				}
 			}
@@ -739,7 +739,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				.data("kendoGrid");
 
 			scope.noGrid._id = noInfoPath.createUUID();
-			if (config.noGrid.referenceOnParentScopeAs) {
+			if(config.noGrid.referenceOnParentScopeAs){
 				noInfoPath.setItem(scope.$parent, config.noGrid.referenceOnParentScopeAs, scope.noGrid);
 			}
 		}
@@ -789,7 +789,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			}.bind(null, scope.noGrid));
 
 			scope.$on("noGrid::refresh", function(theGrid, e, targetGridID) {
-				if (theGrid._id === targetGridID) {
+				if(theGrid._id === targetGridID)
+				{
 					theGrid.dataSource.read();
 				}
 			}.bind(null, scope.noGrid));
@@ -855,44 +856,44 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		}
 
 		function _nestedGrid(config, kgCfg, scope, e) {
-			var compiledGrid, tmpHtml;
+				var compiledGrid, tmpHtml;
 
-			/*
-			 * 	#### Nested grids
-			 *
-			 *	The `nestedGrid` grid property can be an object or a string. When it is
-			 *	a string it is the key to the `noComponent` child node with a `noForm`
-			 *	configuration.
-			 *
-			 *	When it is an object is because a filter needs to be defined on the grid.
-			 *	The `noForm` property contains the `noComponent` key, and filterProperty
-			 *	contains the name of the parent Kendo Grid column from which to get the filter
-			 *	value for the child grid.
-			 */
-			if (angular.isObject(config.noGrid.nestedGrid)) {
-				scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
-				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid></div>")(scope);
-			} else {
-				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
-			}
+				/*
+				 * 	#### Nested grids
+				 *
+				 *	The `nestedGrid` grid property can be an object or a string. When it is
+				 *	a string it is the key to the `noComponent` child node with a `noForm`
+				 *	configuration.
+				 *
+				 *	When it is an object is because a filter needs to be defined on the grid.
+				 *	The `noForm` property contains the `noComponent` key, and filterProperty
+				 *	contains the name of the parent Kendo Grid column from which to get the filter
+				 *	value for the child grid.
+				 */
+				if (angular.isObject(config.noGrid.nestedGrid)) {
+					scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
+					compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid></div>")(scope);
+				} else {
+					compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
+				}
 
-			//console.log(compiledGrid);
-			// angular.element(e.detailCell).append(tmpHtml);
-			//angular.element(e.detailCell).append(compiledGrid.html());
-			$(compiledGrid).appendTo(e.detailCell);
+				//console.log(compiledGrid);
+				// angular.element(e.detailCell).append(tmpHtml);
+				//angular.element(e.detailCell).append(compiledGrid.html());
+				$(compiledGrid).appendTo(e.detailCell);
 
 
 		}
 
-		function _detailRow(config, kgCfg, scope, e) {
-			var prov = $injector.get(config.noGrid.detailRow.provider),
+		function _detailRow(config, kgCfg, scope, e){
+			var prov =  $injector.get(config.noGrid.detailRow.provider),
 				meth = prov[config.noGrid.detailRow.method];
 
 			meth(config, kgCfg, scope, e)
-				.then(function(tpl) {
+				.then(function(tpl){
 					$($compile(tpl)(scope)).appendTo(e.detailCell);
 				})
-				.catch(function(err) {
+				.catch(function(err){
 					console.error(err);
 				});
 		}
@@ -1190,7 +1191,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			function _compile(el, attrs) {
 				var config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope),
 					noForm = noInfoPath.getItem(config, attrs.noForm);
-				input = angular.element("<input type=\"text\"/>");
+					input = angular.element("<input type=\"text\"/>");
 
 				el.append(input);
 
@@ -1205,9 +1206,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				kendoOptions.dataSource = dataSource;
 
 				kendoOptions.change = function(e) {
-					var value = this.dataItem(this.current());
+					var value = this.dataItem( this.current() );
 
-					if (!value) {
+					if(!value) {
 						value = {};
 					}
 
