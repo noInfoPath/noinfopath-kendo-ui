@@ -94,18 +94,23 @@
 							db = provider.getDatabase(config.noDataSource.databaseName),
 							noTable = db[config.noDataSource.entityName];
 
-						if (config.noDataSource.sortMap && options.data.sort) {
-							for (var s in options.data.sort) {
-								var sort = options.data.sort[s],
-									mapped = config.noDataSource.sortMap[sort.field];
+						if(options.data.sort){
+							if (config.noDataSource.sortMap) {
+								for (var s in options.data.sort) {
+									var sort = options.data.sort[s],
+										mapped = config.noDataSource.sortMap[sort.field];
 
-								if (mapped) {
-									sort.field = mapped;
+									if (mapped) {
+										sort.field = mapped;
+									}
 								}
-
 							}
-
+						}else{
+							if(config.noDataSource.sort){
+								options.data.sort = config.noDataSource.sort;
+							}
 						}
+
 
 						if (options.data.filter) {
 							if (options.data.filter.logic) {
@@ -122,7 +127,7 @@
 						}
 
 						noTable.noRead.apply(noTable, noQueryParser.parse(options.data))
-							.then(function(data){
+							.then(function(data) {
 								options.success(data);
 							})
 							.catch(options.error);

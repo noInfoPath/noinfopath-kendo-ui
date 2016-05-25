@@ -184,12 +184,12 @@
 							fn2;
 
 						if (col.editor) {
-							if(col.editor.type === "provider"){
+							if (col.editor.type === "provider") {
 								var prov2 = $injector.get(col.editor.provider),
 									method = prov2[col.editor.method];
 
-								col.editor = method;
-							}else{
+								col.editor = method.bind(null, scope);
+							} else {
 								//TODO: need to provide reference to editor initailizer.
 								if (!col.editor.type || col.editor.type !== "provider") throw "col.editor.type is a required configuration value.";
 								if (col.editor.type !== "provider" && !col.editor.noFormOptionsKey) throw "col.editor.noFormOptionsKey is a required configuration value.";
@@ -208,7 +208,7 @@
 			}
 
 			if (config.noGrid && config.noGrid.editable) {
-				if(angular.isObject(config.noGrid.editable)){
+				if (angular.isObject(config.noGrid.editable)) {
 					if (config.noGrid.editable.provider) {
 						var prov = $injector.get(config.noGrid.editable.provider),
 							provFn = config.noGrid.editable.function,
@@ -236,7 +236,7 @@
 						_processColumns();
 					}
 
-				}else{
+				} else {
 					_processColumns();
 				}
 			}
@@ -362,7 +362,7 @@
 				.data("kendoGrid");
 
 			scope.noGrid._id = noInfoPath.createUUID();
-			if(config.noGrid.referenceOnParentScopeAs){
+			if (config.noGrid.referenceOnParentScopeAs) {
 				noInfoPath.setItem(scope.$parent, config.noGrid.referenceOnParentScopeAs, scope.noGrid);
 			}
 		}
@@ -412,8 +412,7 @@
 			}.bind(null, scope.noGrid));
 
 			scope.$on("noGrid::refresh", function(theGrid, e, targetGridID) {
-				if(theGrid._id === targetGridID)
-				{
+				if (theGrid._id === targetGridID) {
 					theGrid.dataSource.read();
 				}
 			}.bind(null, scope.noGrid));
@@ -479,50 +478,50 @@
 		}
 
 		function _nestedGrid(config, kgCfg, scope, e) {
-				var compiledGrid, tmpHtml;
+			var compiledGrid, tmpHtml;
 
-				/*
-				 * 	#### Nested grids
-				 *
-				 *	The `nestedGrid` grid property can be an object or a string. When it is
-				 *	a string it is the key to the `noComponent` child node with a `noForm`
-				 *	configuration.
-				 *
-				 *	When it is an object is because a filter needs to be defined on the grid.
-				 *	The `noForm` property contains the `noComponent` key, and filterProperty
-				 *	contains the name of the parent Kendo Grid column from which to get the filter
-				 *	value for the child grid.
-				 */
-				if (angular.isObject(config.noGrid.nestedGrid)) {
-					scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
-					compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid></div>")(scope);
-				} else {
-					compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
-				}
+			/*
+			 * 	#### Nested grids
+			 *
+			 *	The `nestedGrid` grid property can be an object or a string. When it is
+			 *	a string it is the key to the `noComponent` child node with a `noForm`
+			 *	configuration.
+			 *
+			 *	When it is an object is because a filter needs to be defined on the grid.
+			 *	The `noForm` property contains the `noComponent` key, and filterProperty
+			 *	contains the name of the parent Kendo Grid column from which to get the filter
+			 *	value for the child grid.
+			 */
+			if (angular.isObject(config.noGrid.nestedGrid)) {
+				scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
+				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid></div>")(scope);
+			} else {
+				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
+			}
 
-				//console.log(compiledGrid);
-				// angular.element(e.detailCell).append(tmpHtml);
-				//angular.element(e.detailCell).append(compiledGrid.html());
-				$(compiledGrid).appendTo(e.detailCell);
+			//console.log(compiledGrid);
+			// angular.element(e.detailCell).append(tmpHtml);
+			//angular.element(e.detailCell).append(compiledGrid.html());
+			$(compiledGrid).appendTo(e.detailCell);
 
 
 		}
 
-		function _detailRow(config, kgCfg, scope, e){
-			var prov =  $injector.get(config.noGrid.detailRow.provider),
+		function _detailRow(config, kgCfg, scope, e) {
+			var prov = $injector.get(config.noGrid.detailRow.provider),
 				meth = prov[config.noGrid.detailRow.method];
 
 			meth(config, kgCfg, scope, e)
-				.then(function(tpl){
+				.then(function(tpl) {
 					$($compile(tpl)(scope)).appendTo(e.detailCell);
 				})
-				.catch(function(err){
+				.catch(function(err) {
 					console.error(err);
 				});
 		}
 
 		function _configure(config, scope, el, attrs, params) {
-			console.log("configure");
+			//console.log("configure");
 			var dsCfg = config.noDataSource ? config.noDataSource : config,
 				kgCfg = angular.copy(config.noKendoGrid),
 				grid = angular.element("<grid></grid>"),
@@ -597,10 +596,12 @@
 					colTpl.append("<a class=\"k-button k-button-icontext k-grid-edit\" href=\"##\"><span class=\"k-icon k-edit\"></span>Edit</a>");
 					colTpl.append("<a class=\"k-button k-button-icontext k-grid-delete\" href=\"##\"><span class=\"k-icon k-delete\"></span>Delete</a>");
 				} else {
-					if (col.template) {
-						colTpl.text(col.template);
-					} else {
-						colTpl.text("#=" + col.field + "#");
+					if(col.template){
+						if (col.template) {
+							colTpl.text(col.template);
+						} else {
+							colTpl.text("#=" + col.field + "#");
+						}
 					}
 				}
 
@@ -619,8 +620,8 @@
 
 	angular.module("noinfopath.kendo.ui")
 
-	.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
+		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
 
-	.service("noKendoRowTemplates", [NoKendoRowTemplates]);
+		.service("noKendoRowTemplates", [NoKendoRowTemplates]);
 
 })(angular);

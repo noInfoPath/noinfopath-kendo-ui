@@ -5,7 +5,7 @@
 			function _compile(el, attrs) {
 				var config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope),
 					noForm = noInfoPath.getItem(config, attrs.noForm);
-					input = angular.element("<input type=\"text\"/>");
+				input = angular.element("<input type=\"text\"/>");
 
 				el.append(input);
 
@@ -20,9 +20,9 @@
 				kendoOptions.dataSource = dataSource;
 
 				kendoOptions.change = function(e) {
-					var value = this.dataItem( this.current() );
+					var value = this.dataItem(this.current());
 
-					if(!value) {
+					if (!value) {
 						value = {};
 					}
 
