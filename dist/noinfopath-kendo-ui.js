@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.2.12
+ *	@version 1.2.13
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -553,6 +553,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		}
 
 		function _editable(config, kgCfg, scope) {
+
+
 			function _processColumns() {
 				//This will assume that if there is no `provider` then the value of `editable`
 				//is simply true. If so then the default MO is `inline editor`. In this case
@@ -568,9 +570,12 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						if (col.editor) {
 							if (col.editor.type === "provider") {
 								var prov2 = $injector.get(col.editor.provider),
-									method = prov2[col.editor.method];
+									editor = prov2[col.editor.editor],
+									template = prov2[col.editor.template];
 
-								col.editor = method.bind(null, scope);
+
+								col.template = template.bind(null, col);
+								col.editor = editor.bind(null, scope);
 							} else {
 								//TODO: need to provide reference to editor initailizer.
 								if (!col.editor.type || col.editor.type !== "provider") throw "col.editor.type is a required configuration value.";
@@ -586,6 +591,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 							}
 						}
 					}
+
 				}
 			}
 
