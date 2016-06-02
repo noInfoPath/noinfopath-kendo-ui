@@ -14,57 +14,54 @@
 	 * Creates a Kendo UI Grid, bound to a NoInfoPath data provider, and
 	 * injects it into the DOM.
 	 *
+	 *	> NOTE: Kendo UI Grid is not open source, it is a licensed product from Kendo. In order to use noKendoGrid, you must aquire a license from Kendo (Telerik).
+	 *
 	 * ### Attributes
 	 *
 	 * |Name|Descriptions|
 	 * |----|------------|
-	 * |no-config|The name of the configuration node in noConfig.current. |
+	 * |no-form|The name of the configuration node in no-form.js. |
 	 *
 	 * ```html
-	 * <no-kendo-grid no-config="noComponents.cooperators"/>
+	 * <no-kendo-grid no-form="noForm.noComponents.cooperators"/>
 	 * ```
 	 * #### Sample noComponent Configuration
 	 *
-	 * ```json
-	 *   {
-	 *       noComponents: {
-	 *           "cooperators": {
-	 *               dataProvider: "noWebSQL",
-	 *               entityName: "vw_Cooperator_Summary",
-	 *               noKendoGrid: {},
-	 *               noKendoDataSource: {}
-	 *           }
-	 *       }
-	 *   }
-	 * ```
-	 *
-	 * OR
-	 *
-	 * |Name|Descriptions|
-	 * |----|------------|
-	 * |noForm|Name of the noForm configuration to retreive from the noFormBuilderService.|
-	 * |noComponent|Name of the noForm component to use for configuration data.|
-	 *
-	 * ```html
-	 * <no-kendo-grid no-form="form1" no-component="grid1" />
-	 * ```
-	 *
-	 * #### Sample noForm Configuration
+	 *	Any of the configuration options in the noKendoGrid node are options taken directly
+	 *	from the Kendo UI Grid documentations.
 	 *
 	 * ```json
-	 *   {
-	 *       form1: {
-	 *           components: {
-	 *               "grid1": {
-	 *                   dataProvider: "noWebSQL",
-	 *                   databaseName: "FCFNv2",
-	 *                   entityName: "vw_Cooperator_Summary"
-	 *                   kendoGrid: {},
-	 *                   kendoDataSource: {}
-	 *               }
-	 *           }
-	 *       }
-	 *   }
+	 *	 {
+	 *		 "noGrid": {
+	 *			 "referenceOnParentScopeAs": "docGrid"
+	 *		 },
+	 *		 "noDataSource": {
+	 *		 	...
+	 *		 },
+	 *		 "noKendoGrid": {
+	 *			 "sortable": true,
+	 *			 "pageable": {
+	 *				 "previousNext": false,
+	 *				 "numeric": false,
+	 *				 "pageSize": 50,
+	 *				 "refresh": true
+	 *			 },
+	 *			 "scrollable": {
+	 *				 "virtual": true
+	 *			 },
+	 *			 "columns": [{
+	 *				 "title": "Name",
+	 *				 "field": "FileID.name"
+	 *			 }, {
+	 *				 "title": "Description",
+	 *				 "field": "description"
+	 *			 }]
+	 *		 },
+	 *		 "noKendoDataSource": {
+	 *		 	...
+	 *		 }
+	 *	 }
+	 *
 	 * ```
 	 */
 	function NoKendoGridDirective($injector, $compile, $timeout, /*$http,*/ noTemplateCache, $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource, noKendoHelpers) {
@@ -250,7 +247,8 @@
 		}
 
 		function _handleWaitForAndConfigure(config, scope, el, attrs) {
-			var dsCfg = config.noDataSource ? config.noDataSource : config;
+			var dsCfg = config.noDataSource ? config.noDataSource : config,
+				cancelWait;
 
 			/*
 			 * #### noDataSource::waitFor property
@@ -261,8 +259,9 @@
 
 			if (dsCfg.waitFor) {
 				if (dsCfg.waitFor.source === "scope") {
-					scope.$watch(dsCfg.waitFor.property, function(newval, oldval, scope) {
+					cancelWait = scope.$watch(dsCfg.waitFor.property, function(newval, oldval, scope) {
 						if (newval) {
+							cancelWait();
 							_configure(config, scope, el, attrs, newval);
 						}
 					});
@@ -374,12 +373,15 @@
 		}
 
 		function _noRecords(config, el, grid, message) {
+			el.empty();
 			if (config.noGrid.noRecords) {
+
 				el.append(grid);
 				el.append(message);
 
 				message.html($compile(_resloveNoRecordsTemplate())(scope));
 			} else {
+
 				grid.removeClass("ng-hide");
 				el.append(grid);
 			}
@@ -602,7 +604,7 @@
 					colTpl.append("<a class=\"k-button k-button-icontext k-grid-edit\" href=\"##\"><span class=\"k-icon k-edit\"></span>Edit</a>");
 					colTpl.append("<a class=\"k-button k-button-icontext k-grid-delete\" href=\"##\"><span class=\"k-icon k-delete\"></span>Delete</a>");
 				} else {
-					if(col.template){
+					if (col.template) {
 						if (col.template) {
 							colTpl.text(col.template);
 						} else {
@@ -626,8 +628,8 @@
 
 	angular.module("noinfopath.kendo.ui")
 
-		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
+	.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
 
-		.service("noKendoRowTemplates", [NoKendoRowTemplates]);
+	.service("noKendoRowTemplates", [NoKendoRowTemplates]);
 
 })(angular);
