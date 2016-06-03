@@ -175,7 +175,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 							db = provider.getDatabase(config.noDataSource.databaseName),
 							noTable = db[config.noDataSource.entityName];
 
-						if(options.data.sort){
+						if (options.data.sort) {
 							if (config.noDataSource.sortMap) {
 								for (var s in options.data.sort) {
 									var sort = options.data.sort[s],
@@ -186,8 +186,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 									}
 								}
 							}
-						}else{
-							if(config.noDataSource.sort){
+						} else {
+							if (config.noDataSource.sort) {
 								options.data.sort = config.noDataSource.sort;
 							}
 						}
@@ -377,7 +377,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			}
 
 			return new KendoDataSourceService();
-	}]);
+		}]);
 })(angular, kendo);
 
 //grid.js
@@ -1027,7 +1027,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 				if (noForm.binding === "kendo") {
 					input.attr("name", noForm.kendoModel);
-				//	input.attr("data-bind", "value: " + noForm.kendoModel);
+					//	input.attr("data-bind", "value: " + noForm.kendoModel);
 					// config.options.change = function(data) {
 					// 	var tmp = noInfoPath.getItem(scope, config.ngKendo);
 					// 	tmp.set(config.kendoModel, this.value());
@@ -1064,7 +1064,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					datePicker,
 					internalDate;
 
-				if (config.binding === "kendo"){
+				if (config.binding === "kendo") {
 					config.options.change = function(data) {
 						var tmp = noInfoPath.getItem(scope, config.ngKendo);
 						tmp.set(config.kendoModel, this.value());
