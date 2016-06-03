@@ -97,57 +97,54 @@ like the IndexedDB, WebSql and HTTP implementations.
 Creates a Kendo UI Grid, bound to a NoInfoPath data provider, and
 injects it into the DOM.
 
+> NOTE: Kendo UI Grid is not open source, it is a licensed product from Kendo. In order to use noKendoGrid, you must aquire a license from Kendo (Telerik).
+
 ### Attributes
 
 |Name|Descriptions|
 |----|------------|
-|no-config|The name of the configuration node in noConfig.current. |
+|no-form|The name of the configuration node in no-form.js. |
 
 ```html
-<no-kendo-grid no-config="noComponents.cooperators"/>
+<no-kendo-grid no-form="noForm.noComponents.cooperators"/>
 ```
 #### Sample noComponent Configuration
 
-```json
-  {
-      noComponents: {
-          "cooperators": {
-              dataProvider: "noWebSQL",
-              entityName: "vw_Cooperator_Summary",
-              noKendoGrid: {},
-              noKendoDataSource: {}
-          }
-      }
-  }
-```
-
-OR
-
-|Name|Descriptions|
-|----|------------|
-|noForm|Name of the noForm configuration to retreive from the noFormBuilderService.|
-|noComponent|Name of the noForm component to use for configuration data.|
-
-```html
-<no-kendo-grid no-form="form1" no-component="grid1" />
-```
-
-#### Sample noForm Configuration
+Any of the configuration options in the noKendoGrid node are options taken directly
+from the Kendo UI Grid documentations.
 
 ```json
-  {
-      form1: {
-          components: {
-              "grid1": {
-                  dataProvider: "noWebSQL",
-                  databaseName: "FCFNv2",
-                  entityName: "vw_Cooperator_Summary"
-                  kendoGrid: {},
-                  kendoDataSource: {}
-              }
-          }
-      }
-  }
+ {
+	 "noGrid": {
+		 "referenceOnParentScopeAs": "docGrid"
+	 },
+	 "noDataSource": {
+	 	...
+	 },
+	 "noKendoGrid": {
+		 "sortable": true,
+		 "pageable": {
+			 "previousNext": false,
+			 "numeric": false,
+			 "pageSize": 50,
+			 "refresh": true
+		 },
+		 "scrollable": {
+			 "virtual": true
+		 },
+		 "columns": [{
+			 "title": "Name",
+			 "field": "FileID.name"
+		 }, {
+			 "title": "Description",
+			 "field": "description"
+		 }]
+	 },
+	 "noKendoDataSource": {
+	 	...
+	 }
+ }
+
 ```
 
   ##### change() event handler
