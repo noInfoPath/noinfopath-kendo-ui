@@ -3,9 +3,9 @@
 	angular.module("noinfopath.kendo.ui")
 		.directive("noKendoAutoComplete", ["$compile", "noFormConfig", "$state", "noLoginService", "noKendoDataSourceFactory", "lodash", function($compile, noFormConfig, $state, noLoginService, noKendoDataSourceFactory, _) {
 			function _compile(el, attrs) {
-				var config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope),
-					noForm = noInfoPath.getItem(config, attrs.noForm);
-				input = angular.element("<input type=\"text\"/>");
+				var config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
+					noForm = noInfoPath.getItem(config, attrs.noForm),
+					input = angular.element("<input type=\"text\"/>");
 
 				el.append(input);
 
@@ -33,8 +33,6 @@
 					scope.$apply();
 				};
 
-
-
 				if (config.noKendoAutoComplete.waitFor) {
 					scope.$watch(config.noKendoAutoComplete.waitFor.property, function(newval) {
 						if (newval) {
@@ -47,11 +45,8 @@
 					});
 				}
 
-
 				scope[config.scopeKey + "_autoComplete"] = el.find("input").kendoAutoComplete(kendoOptions).data("kendoAutoComplete");
-
 			}
-
 
 			directive = {
 				restrict: "E",

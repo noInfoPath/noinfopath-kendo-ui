@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.2.13
+ *	@version 1.2.14
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -575,11 +575,11 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 
 								col.template = template.bind(null, col);
-								col.editor = editor.bind(null, scope);
+								col.editor = editor.bind(null, scope, col);
 							} else {
 								//TODO: need to provide reference to editor initailizer.
-								if (!col.editor.type || col.editor.type !== "provider") throw "col.editor.type is a required configuration value.";
-								if (col.editor.type !== "provider" && !col.editor.noFormOptionsKey) throw "col.editor.noFormOptionsKey is a required configuration value.";
+								if (!col.editor.type) throw "col.editor.type is a required configuration value.";
+								if (!col.editor.noFormOptionsKey) throw "col.editor.noFormOptionsKey is a required configuration value.";
 
 								fn2 = noKendoHelpers.getConfigMethod(col.editor.type);
 								/*
@@ -984,12 +984,10 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					colTpl.append("<a class=\"k-button k-button-icontext k-grid-edit\" href=\"##\"><span class=\"k-icon k-edit\"></span>Edit</a>");
 					colTpl.append("<a class=\"k-button k-button-icontext k-grid-delete\" href=\"##\"><span class=\"k-icon k-delete\"></span>Delete</a>");
 				} else {
-					if(col.template){
-						if (col.template) {
-							colTpl.text(col.template);
-						} else {
-							colTpl.text("#=" + col.field + "#");
-						}
+					if (col.template) {
+						colTpl.text(col.template);
+					} else {
+						colTpl.text("#=" + col.field + "#");
 					}
 				}
 
@@ -1023,16 +1021,18 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					noForm = noInfoPath.getItem(config, attrs.noForm),
 					input = angular.element("<input type=\"date\">");
 
-				if (config.binding === "kendo") {
-					input.attr("name", config.kendoModel);
-					input.attr("data-bind", "value: " + config.kendoModel);
-					config.options.change = function(data) {
-						var tmp = noInfoPath.getItem(scope, config.ngKendo);
-						tmp.set(config.kendoModel, this.value());
-						//noInfoPath.setItem(scope, config.ngKendo, this.value());
-					};
+				el.empty();
 
-					internalDate = new Date(noInfoPath.getItem(scope, config.ngModel));
+				if (noForm.binding === "kendo") {
+					input.attr("name", noForm.kendoModel);
+				//	input.attr("data-bind", "value: " + noForm.kendoModel);
+					// config.options.change = function(data) {
+					// 	var tmp = noInfoPath.getItem(scope, config.ngKendo);
+					// 	tmp.set(config.kendoModel, this.value());
+					// 	//noInfoPath.setItem(scope, config.ngKendo, this.value());
+					// };
+
+					// internalDate = new Date(noInfoPath.getItem(scope, noForm.ngModel));
 				}
 
 				if (config.disabled === true) {
@@ -1061,6 +1061,16 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				var
 					datePicker,
 					internalDate;
+
+				if (config.binding === "kendo"){
+					config.options.change = function(data) {
+						var tmp = noInfoPath.getItem(scope, config.ngKendo);
+						tmp.set(config.kendoModel, this.value());
+						//noInfoPath.setItem(scope, config.ngKendo, this.value());
+					};
+
+					internalDate = new Date(noInfoPath.getItem(scope, config.ngModel));
+				}
 
 				//Create the Kendo date picker.
 				datePicker = el.find("input[type='date']").kendoDatePicker(config.options).data("kendoDatePicker");
@@ -1115,10 +1125,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				$timeout(function() {
 					scope.$apply();
 				});
-
-
 			}
-
 
 			directive = {
 				restrict: "E",
@@ -1128,10 +1135,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			return directive;
 
-
-
 		}]);
-
 })(angular);
 
 //multiselect.js
@@ -1201,9 +1205,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 	angular.module("noinfopath.kendo.ui")
 		.directive("noKendoAutoComplete", ["$compile", "noFormConfig", "$state", "noLoginService", "noKendoDataSourceFactory", "lodash", function($compile, noFormConfig, $state, noLoginService, noKendoDataSourceFactory, _) {
 			function _compile(el, attrs) {
-				var config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity, scope),
-					noForm = noInfoPath.getItem(config, attrs.noForm);
-				input = angular.element("<input type=\"text\"/>");
+				var config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
+					noForm = noInfoPath.getItem(config, attrs.noForm),
+					input = angular.element("<input type=\"text\"/>");
 
 				el.append(input);
 
@@ -1231,8 +1235,6 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					scope.$apply();
 				};
 
-
-
 				if (config.noKendoAutoComplete.waitFor) {
 					scope.$watch(config.noKendoAutoComplete.waitFor.property, function(newval) {
 						if (newval) {
@@ -1245,11 +1247,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					});
 				}
 
-
 				scope[config.scopeKey + "_autoComplete"] = el.find("input").kendoAutoComplete(kendoOptions).data("kendoAutoComplete");
-
 			}
-
 
 			directive = {
 				restrict: "E",
