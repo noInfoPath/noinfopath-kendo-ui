@@ -7,16 +7,18 @@
 					noForm = noInfoPath.getItem(config, attrs.noForm),
 					input = angular.element("<input type=\"date\">");
 
-				if (config.binding === "kendo") {
-					input.attr("name", config.kendoModel);
-					input.attr("data-bind", "value: " + config.kendoModel);
-					config.options.change = function(data) {
-						var tmp = noInfoPath.getItem(scope, config.ngKendo);
-						tmp.set(config.kendoModel, this.value());
-						//noInfoPath.setItem(scope, config.ngKendo, this.value());
-					};
+				el.empty();
 
-					internalDate = new Date(noInfoPath.getItem(scope, config.ngModel));
+				if (noForm.binding === "kendo") {
+					input.attr("name", noForm.kendoModel);
+				//	input.attr("data-bind", "value: " + noForm.kendoModel);
+					// config.options.change = function(data) {
+					// 	var tmp = noInfoPath.getItem(scope, config.ngKendo);
+					// 	tmp.set(config.kendoModel, this.value());
+					// 	//noInfoPath.setItem(scope, config.ngKendo, this.value());
+					// };
+
+					// internalDate = new Date(noInfoPath.getItem(scope, noForm.ngModel));
 				}
 
 				if (config.disabled === true) {
@@ -45,6 +47,16 @@
 				var
 					datePicker,
 					internalDate;
+
+				if (config.binding === "kendo"){
+					config.options.change = function(data) {
+						var tmp = noInfoPath.getItem(scope, config.ngKendo);
+						tmp.set(config.kendoModel, this.value());
+						//noInfoPath.setItem(scope, config.ngKendo, this.value());
+					};
+
+					internalDate = new Date(noInfoPath.getItem(scope, config.ngModel));
+				}
 
 				//Create the Kendo date picker.
 				datePicker = el.find("input[type='date']").kendoDatePicker(config.options).data("kendoDatePicker");
@@ -99,10 +111,7 @@
 				$timeout(function() {
 					scope.$apply();
 				});
-
-
 			}
-
 
 			directive = {
 				restrict: "E",
@@ -112,8 +121,5 @@
 
 			return directive;
 
-
-
 		}]);
-
 })(angular);

@@ -190,11 +190,11 @@
 
 
 								col.template = template.bind(null, col);
-								col.editor = editor.bind(null, scope);
+								col.editor = editor.bind(null, scope, col);
 							} else {
 								//TODO: need to provide reference to editor initailizer.
-								if (!col.editor.type || col.editor.type !== "provider") throw "col.editor.type is a required configuration value.";
-								if (col.editor.type !== "provider" && !col.editor.noFormOptionsKey) throw "col.editor.noFormOptionsKey is a required configuration value.";
+								if (!col.editor.type) throw "col.editor.type is a required configuration value.";
+								if (!col.editor.noFormOptionsKey) throw "col.editor.noFormOptionsKey is a required configuration value.";
 
 								fn2 = noKendoHelpers.getConfigMethod(col.editor.type);
 								/*
@@ -605,11 +605,9 @@
 					colTpl.append("<a class=\"k-button k-button-icontext k-grid-delete\" href=\"##\"><span class=\"k-icon k-delete\"></span>Delete</a>");
 				} else {
 					if (col.template) {
-						if (col.template) {
-							colTpl.text(col.template);
-						} else {
-							colTpl.text("#=" + col.field + "#");
-						}
+						colTpl.text(col.template);
+					} else {
+						colTpl.text("#=" + col.field + "#");
 					}
 				}
 
