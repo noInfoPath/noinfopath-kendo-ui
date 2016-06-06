@@ -201,6 +201,9 @@
 							"date": function(data) {
 								return data ? new Date(data) : "";
 							},
+							"utcDate": function(data) {
+								return data ? data.format("L") : "";
+							},
 							"ReverseYesNo": function(data) {
 								var v = data === 0 ? 1 : 0;
 
