@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.2.15
+ *	@version 1.2.16
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -281,6 +281,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						parsers = {
 							"date": function(data) {
 								return data ? new Date(data) : "";
+							},
+							"utcDate": function(data) {
+								return data ? data.format("L") : "";
 							},
 							"ReverseYesNo": function(data) {
 								var v = data === 0 ? 1 : 0;
