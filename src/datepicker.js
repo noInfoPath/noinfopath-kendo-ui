@@ -11,7 +11,7 @@
 
 				if (noForm.binding === "kendo") {
 					input.attr("name", noForm.kendoModel);
-				//	input.attr("data-bind", "value: " + noForm.kendoModel);
+					//	input.attr("data-bind", "value: " + noForm.kendoModel);
 					// config.options.change = function(data) {
 					// 	var tmp = noInfoPath.getItem(scope, config.ngKendo);
 					// 	tmp.set(config.kendoModel, this.value());
@@ -21,19 +21,22 @@
 					// internalDate = new Date(noInfoPath.getItem(scope, noForm.ngModel));
 				}
 
-				if (config.disabled === true) {
+
+				if (noForm.disabled === true) {
 					input.attr("disabled", true);
 				}
 
-				if (attrs.$attr.required) {
+
+				//Warn: this usage is deprecated.  Use noForm.required instead.
+				if (attrs.$attr.required || noForm.required) {
 					el.removeAttr("required");
 					var inputHidden = angular.element("<input />");
 
 					inputHidden.attr("type", "hidden");
 					inputHidden.attr("required", "required");
 
-					inputHidden.attr("ng-model", attrs.ngModel);
-					inputHidden.attr("name", attrs.noModel);
+					inputHidden.attr("ng-model", attrs.ngModel || noForm.ngModel);
+					//inputHidden.attr("name", attrs.noModel);
 
 					el.append(inputHidden);
 				}
@@ -43,23 +46,23 @@
 				return _link.bind(null, noForm);
 			}
 
-			function _link(config, scope, el, attrs) {
+			function _link(noForm, scope, el, attrs) {
 				var
 					datePicker,
 					internalDate;
 
-				if (config.binding === "kendo"){
+				if (noForm.binding === "kendo") {
 					config.options.change = function(data) {
-						var tmp = noInfoPath.getItem(scope, config.ngKendo);
-						tmp.set(config.kendoModel, this.value());
+						var tmp = noInfoPath.getItem(scope, noForm.ngKendo);
+						tmp.set(noForm.kendoModel, this.value());
 						//noInfoPath.setItem(scope, config.ngKendo, this.value());
 					};
 
-					internalDate = new Date(noInfoPath.getItem(scope, config.ngModel));
+					internalDate = new Date(noInfoPath.getItem(scope, noForm.ngModel));
 				}
 
 				//Create the Kendo date picker.
-				datePicker = el.find("input[type='date']").kendoDatePicker(config.options).data("kendoDatePicker");
+				datePicker = el.find("input[type='date']").kendoDatePicker(noForm.options).data("kendoDatePicker");
 
 				/*
 				 *   #### @property binding
@@ -70,15 +73,15 @@
 				 *   getting and setting data.
 				 *
 				 */
-				if (config.binding === "ng" || config.binding === undefined) {
-					datePicker.value(new Date(noInfoPath.getItem(scope, config.ngModel)));
+				if (noForm.binding === "ng" || noForm.binding === undefined) {
+					datePicker.value(new Date(noInfoPath.getItem(scope, noForm.ngModel)));
 
-					scope.$watch(config.ngModel, function(newval, oldval) {
+					scope.$watch(noForm.ngModel, function(newval, oldval) {
 						if (newval != oldval) {
 							if (newval !== null) {
 								datePicker.value(new Date(newval));
-							} else if (config.initValue === true) {
-								noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(new Date()));
+							} else if (noForm.initValue === true) {
+								noInfoPath.setItem(scope, noForm.ngModel, noInfoPath.toDbDate(new Date()));
 
 								// if something overwrites the value of the date picker
 								// (loading of a record with null data for example) this
@@ -91,22 +94,22 @@
 					datePicker.bind("change", function() {
 						var newDate = angular.isDate(this.value()) ? noInfoPath.toDbDate(this.value()) : null;
 
-						noInfoPath.setItem(scope, config.ngModel, newDate);
+						noInfoPath.setItem(scope, noForm.ngModel, newDate);
 						//this will solve the issue of the data not appearing on the scope
 						scope.$apply();
 					});
 
-					internalDate = noInfoPath.getItem(scope, config.ngModel);
+					internalDate = noInfoPath.getItem(scope, noForm.ngModel);
 				}
 
-				if ((config.initValue === undefined || config.initValue) && !internalDate) {
+				if ((noForm.initValue === undefined || noForm.initValue) && !internalDate) {
 					internalDate = noInfoPath.toDbDate(new Date());
 				}
 
 				datePicker.value(new Date(internalDate));
 
 				//fixing the issue where the data is not on the scope on initValue load
-				noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(internalDate));
+				noInfoPath.setItem(scope, noForm.ngModel, noInfoPath.toDbDate(internalDate));
 
 				$timeout(function() {
 					scope.$apply();

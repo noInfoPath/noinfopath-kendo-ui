@@ -370,6 +370,8 @@
 			if (config.noGrid.referenceOnParentScopeAs) {
 				noInfoPath.setItem(scope.$parent, config.noGrid.referenceOnParentScopeAs, scope.noGrid);
 			}
+
+			scope.noGrid.dataSource.component = scope.noGrid;
 		}
 
 		function _noRecords(config, el, grid, message) {
@@ -528,6 +530,55 @@
 				});
 		}
 
+		function _watch(dsConfig, filterCfg, valueObj, newval, oldval, scope) {
+			var grid = scope.noGrid,
+				filters = grid.dataSource.filter(),
+				filter = _.find(filters.filters, {
+					field: filterCfg.field
+				});
+
+			if(!filter) throw "Filter " + filterCfg.field + " was not found.";
+
+			function handleKendoDataBoundControlsSimple(){
+				console.log("handleKendoDataBoundControlsAdvanced");
+				filter.value = newval;
+			}
+
+			function handleKendoDataBoundControlsAdvanced(){
+				console.log("handleKendoDataBoundControlsAdvanced");
+				//Need to reconstitue the values
+				for(var fi=0; fi<filterCfg.value.length; fi++){
+					var valCfg = filterCfg.value[fi];
+
+					if(valCfg.property === valueObj.property){
+						filter.value[fi] = newval;
+					}else{
+						if(valCfg.source === "scope"){
+							filter.value[fi] = noInfoPath.getItem(scope, valCfg.property);
+						}else if(["$scope", "$stateParams"].indexOf(valCfg.source) > -1){
+							var prov = $injector.get(valCfg.source);
+							filter.value[fi] = noInfoPath.getItem(prov, valCfg.property);
+						}else{
+							console.warn("TODO: May need to implement other sources for dynamic filters", valCfg);
+						}
+					}
+				}
+			}
+
+
+
+			if(noInfoPath.isCompoundFilter(filterCfg.field)){
+				//this.value[_.findIndex(this.value, {property: valueCfg.property})] = newval;
+				handleKendoDataBoundControlsAdvanced();
+			}else{
+				handleKendoDataBoundControlsSimple();
+			}
+
+			grid.dataSource.page(0);
+			grid.refresh();
+
+		}
+
 		function _configure(config, scope, el, attrs, params) {
 			//console.log("configure");
 			var dsCfg = config.noDataSource ? config.noDataSource : config,
@@ -537,7 +588,7 @@
 				dataSource;
 
 
-			dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope);
+			dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope, _watch);
 
 			kgCfg.dataSource = dataSource;
 

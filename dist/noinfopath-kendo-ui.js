@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.2.16
+ *	@version 1.2.17
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -146,7 +146,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					});
 				}
 
-				this.create = function(_, userId, config, scope) {
+				this.create = function(_, userId, config, scope, watch) {
 					//console.warn("TODO: Implement config.noDataSource and ???");
 					if (!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
 
@@ -255,24 +255,45 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 					}
 
-					function watch(filterCfg, newval, oldval, scope) {
-						var grid = scope.noGrid,
-							filters, filter;
-
-						this.value = newval;
-
-						if (grid) {
-							filters = grid.dataSource.filter();
-							filter = _.find(filters.filters, {
-								field: filterCfg.field
-							});
-							if (filter) {
-								filter.value = newval;
-							}
-							grid.dataSource.page(0);
-							grid.refresh();
-						}
-					}
+					// function watch(dsCfg, filterCfg, valueObj, newval, oldval, scope) {
+					// 	var grid = scope.noGrid,
+					// 		filters, filter, compountValues;
+					//
+					// 	if(noInfoPath.isCompoundFilter(filterCfg.field)){
+					// 		//Need to reconstitue the values
+					// 		for(var fi=0; fi<filterCfg.value.length; fi++){
+					// 			var valCfg = filterCfg.value[fi];
+					//
+					// 			if(valCfg.property === valueObj.property){
+					// 				this.value[fi] = newval;
+					// 			}else{
+					// 				if(valCfg.source === "scope"){
+					// 					this.value[fi] = noInfoPath.getItem(scope, valCfg.property);
+					// 				}else if(["$scope", "$stateParams"].indexOf(valCfg.source) > -1){
+					// 					var prov = $injector.get(valCfg.source);
+					// 					this.value[fi] = noInfoPath.getItem(prov, valCfg.property);
+					// 				}else{
+					// 					console.warn("TODO: May need to implement other sources for dynamic filters", valCfg);
+					// 				}
+					// 			}
+					// 		}
+					// 	}else{
+					// 		this.value = newval;
+					// 	}
+					//
+					//
+					// 	if (grid) {
+					// 		filters = grid.dataSource.filter();
+					// 		filter = _.find(filters.filters, {
+					// 			field: filterCfg.field
+					// 		});
+					// 		if (filter) {
+					// 			filter.value = newval;
+					// 		}
+					// 		grid.dataSource.page(0);
+					// 		grid.refresh();
+					// 	}
+					// }
 
 					var yesNo = [
 							"No",
@@ -755,6 +776,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			if (config.noGrid.referenceOnParentScopeAs) {
 				noInfoPath.setItem(scope.$parent, config.noGrid.referenceOnParentScopeAs, scope.noGrid);
 			}
+
+			scope.noGrid.dataSource.component = scope.noGrid;
 		}
 
 		function _noRecords(config, el, grid, message) {
@@ -913,6 +936,55 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				});
 		}
 
+		function _watch(dsConfig, filterCfg, valueObj, newval, oldval, scope) {
+			var grid = scope.noGrid,
+				filters = grid.dataSource.filter(),
+				filter = _.find(filters.filters, {
+					field: filterCfg.field
+				});
+
+			if(!filter) throw "Filter " + filterCfg.field + " was not found.";
+
+			function handleKendoDataBoundControlsSimple(){
+				console.log("handleKendoDataBoundControlsAdvanced");
+				filter.value = newval;
+			}
+
+			function handleKendoDataBoundControlsAdvanced(){
+				console.log("handleKendoDataBoundControlsAdvanced");
+				//Need to reconstitue the values
+				for(var fi=0; fi<filterCfg.value.length; fi++){
+					var valCfg = filterCfg.value[fi];
+
+					if(valCfg.property === valueObj.property){
+						filter.value[fi] = newval;
+					}else{
+						if(valCfg.source === "scope"){
+							filter.value[fi] = noInfoPath.getItem(scope, valCfg.property);
+						}else if(["$scope", "$stateParams"].indexOf(valCfg.source) > -1){
+							var prov = $injector.get(valCfg.source);
+							filter.value[fi] = noInfoPath.getItem(prov, valCfg.property);
+						}else{
+							console.warn("TODO: May need to implement other sources for dynamic filters", valCfg);
+						}
+					}
+				}
+			}
+
+
+
+			if(noInfoPath.isCompoundFilter(filterCfg.field)){
+				//this.value[_.findIndex(this.value, {property: valueCfg.property})] = newval;
+				handleKendoDataBoundControlsAdvanced();
+			}else{
+				handleKendoDataBoundControlsSimple();
+			}
+
+			grid.dataSource.page(0);
+			grid.refresh();
+
+		}
+
 		function _configure(config, scope, el, attrs, params) {
 			//console.log("configure");
 			var dsCfg = config.noDataSource ? config.noDataSource : config,
@@ -922,7 +994,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				dataSource;
 
 
-			dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope);
+			dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope, _watch);
 
 			kgCfg.dataSource = dataSource;
 
@@ -1040,19 +1112,22 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					// internalDate = new Date(noInfoPath.getItem(scope, noForm.ngModel));
 				}
 
-				if (config.disabled === true) {
+
+				if (noForm.disabled === true) {
 					input.attr("disabled", true);
 				}
 
-				if (attrs.$attr.required) {
+
+				//Warn: this usage is deprecated.  Use noForm.required instead.
+				if (attrs.$attr.required || noForm.required) {
 					el.removeAttr("required");
 					var inputHidden = angular.element("<input />");
 
 					inputHidden.attr("type", "hidden");
 					inputHidden.attr("required", "required");
 
-					inputHidden.attr("ng-model", attrs.ngModel);
-					inputHidden.attr("name", attrs.noModel);
+					inputHidden.attr("ng-model", attrs.ngModel || noForm.ngModel);
+					//inputHidden.attr("name", attrs.noModel);
 
 					el.append(inputHidden);
 				}
@@ -1062,23 +1137,23 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				return _link.bind(null, noForm);
 			}
 
-			function _link(config, scope, el, attrs) {
+			function _link(noForm, scope, el, attrs) {
 				var
 					datePicker,
 					internalDate;
 
-				if (config.binding === "kendo") {
+				if (noForm.binding === "kendo") {
 					config.options.change = function(data) {
-						var tmp = noInfoPath.getItem(scope, config.ngKendo);
-						tmp.set(config.kendoModel, this.value());
+						var tmp = noInfoPath.getItem(scope, noForm.ngKendo);
+						tmp.set(noForm.kendoModel, this.value());
 						//noInfoPath.setItem(scope, config.ngKendo, this.value());
 					};
 
-					internalDate = new Date(noInfoPath.getItem(scope, config.ngModel));
+					internalDate = new Date(noInfoPath.getItem(scope, noForm.ngModel));
 				}
 
 				//Create the Kendo date picker.
-				datePicker = el.find("input[type='date']").kendoDatePicker(config.options).data("kendoDatePicker");
+				datePicker = el.find("input[type='date']").kendoDatePicker(noForm.options).data("kendoDatePicker");
 
 				/*
 				 *   #### @property binding
@@ -1089,15 +1164,15 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				 *   getting and setting data.
 				 *
 				 */
-				if (config.binding === "ng" || config.binding === undefined) {
-					datePicker.value(new Date(noInfoPath.getItem(scope, config.ngModel)));
+				if (noForm.binding === "ng" || noForm.binding === undefined) {
+					datePicker.value(new Date(noInfoPath.getItem(scope, noForm.ngModel)));
 
-					scope.$watch(config.ngModel, function(newval, oldval) {
+					scope.$watch(noForm.ngModel, function(newval, oldval) {
 						if (newval != oldval) {
 							if (newval !== null) {
 								datePicker.value(new Date(newval));
-							} else if (config.initValue === true) {
-								noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(new Date()));
+							} else if (noForm.initValue === true) {
+								noInfoPath.setItem(scope, noForm.ngModel, noInfoPath.toDbDate(new Date()));
 
 								// if something overwrites the value of the date picker
 								// (loading of a record with null data for example) this
@@ -1110,22 +1185,22 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					datePicker.bind("change", function() {
 						var newDate = angular.isDate(this.value()) ? noInfoPath.toDbDate(this.value()) : null;
 
-						noInfoPath.setItem(scope, config.ngModel, newDate);
+						noInfoPath.setItem(scope, noForm.ngModel, newDate);
 						//this will solve the issue of the data not appearing on the scope
 						scope.$apply();
 					});
 
-					internalDate = noInfoPath.getItem(scope, config.ngModel);
+					internalDate = noInfoPath.getItem(scope, noForm.ngModel);
 				}
 
-				if ((config.initValue === undefined || config.initValue) && !internalDate) {
+				if ((noForm.initValue === undefined || noForm.initValue) && !internalDate) {
 					internalDate = noInfoPath.toDbDate(new Date());
 				}
 
 				datePicker.value(new Date(internalDate));
 
 				//fixing the issue where the data is not on the scope on initValue load
-				noInfoPath.setItem(scope, config.ngModel, noInfoPath.toDbDate(internalDate));
+				noInfoPath.setItem(scope, noForm.ngModel, noInfoPath.toDbDate(internalDate));
 
 				$timeout(function() {
 					scope.$apply();
