@@ -107,10 +107,12 @@
 
 		}
 
-		function _refreshKendoGrid(e, t, p) {
-			var grid = p ? p.find("no-kendo-grid").data("kendoGrid") : null;
+		function _refreshKendoGrid(grid, e, t, p) {
+			var pgridhtml = p ? p.find("no-kendo-grid") : null,
+				pgridscope = pgridhtml ? pgridhtml.data("$scope") : {},
+				pgrid = pgridscope ? pgridscope.noGrid : {};
 
-			if (grid) {
+			if (grid._id === pgrid._id) {
 				grid.dataSource.read();
 			}
 		}
@@ -415,7 +417,7 @@
 			 * This fix was intended to remedy the scrollable issue when grids were located in
 			 * "hidden" elements, such as inactive tabs.
 			 */
-			scope.$on("noTabs::Change", _refreshKendoGrid);
+			scope.$on("noTabs::Change", _refreshKendoGrid.bind(null, scope.noGrid));
 
 			scope.$on("noSync::dataReceived", function(theGrid) {
 				theGrid.dataSource.read();
