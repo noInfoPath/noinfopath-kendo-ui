@@ -2,6 +2,30 @@
 (function(angular, undefined) {
 	angular.module("noinfopath.kendo.ui")
 		.directive("noKendoMultiSelect", ["noFormConfig", "$state", "noLoginService", "noKendoDataSourceFactory", "lodash", function(noFormConfig, $state, noLoginService, noKendoDataSourceFactory, _) {
+
+			function _watch(dsCfg, filterCfg, newval, oldval, scope) {
+				var component = scope[dsCfg.entityName + "_multiSelect"],
+					filters, filter;
+
+				this.value = newval;
+
+				//console.log("KendoMultiSelect Watch CB", dsCfg.entityName + "_multiSelect", newval);
+
+				if (component && newval) {
+					filters = component.dataSource.filter();
+					filter = _.find(filters.filters, {
+						field: filterCfg.field
+					});
+					if (filter) {
+						filter.value = newval;
+					}
+					component.dataSource.page(0);
+					component.refresh();
+
+					//scope.$broadcast(dsCfg.entityName + "_multiSelect::populated");
+				}
+			}
+
 			function _compile(el, attrs) {
 				var noForm = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
 					config = noInfoPath.getItem(noForm, attrs.noForm),
@@ -19,9 +43,7 @@
 					dataSource,
 					multiSelect;
 
-				//if(!entity) throw dsCfg.entityName + " not found in provider " + dsCfg.dataProvider;
-
-				dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope);
+				dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope, _watch);
 
 				kendoOptions.dataSource = dataSource;
 
@@ -37,13 +59,12 @@
 
 							noInfoPath.setItem(scope, config.noKendoMultiSelect.ngModel, values);
 
-							scope[config.scopeKey + "_multiSelect"].value(values);
+							scope[dsCfg.entityName + "_multiSelect"].value(values);
 						}
 					});
 				}
 
-
-				scope[config.scopeKey + "_multiSelect"] = el.kendoMultiSelect(kendoOptions).data("kendoMultiSelect");
+				scope[dsCfg.entityName + "_multiSelect"] = el.kendoMultiSelect(kendoOptions).data("kendoMultiSelect");
 
 			}
 
