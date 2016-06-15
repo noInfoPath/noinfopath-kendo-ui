@@ -1225,7 +1225,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 	angular.module("noinfopath.kendo.ui")
 		.directive("noKendoMultiSelect", ["noFormConfig", "$state", "noLoginService", "noKendoDataSourceFactory", "lodash", function(noFormConfig, $state, noLoginService, noKendoDataSourceFactory, _) {
 
-			function _watch(dsCfg, filterCfg, newval, oldval, scope) {
+			function _watch(dsCfg, filterCfg, valueObj, newval, oldval, scope) {
 				var component = scope[dsCfg.entityName + "_multiSelect"],
 					filters, filter;
 
@@ -1289,7 +1289,6 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				scope[dsCfg.entityName + "_multiSelect"] = el.kendoMultiSelect(kendoOptions).data("kendoMultiSelect");
 
 			}
-
 
 			directive = {
 				restrict: "E",
