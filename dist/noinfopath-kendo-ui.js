@@ -1094,11 +1094,23 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 //datepicker.js
 (function(angular, undefined) {
 	angular.module("noinfopath.kendo.ui")
-		.directive("noKendoDatePicker", ["noFormConfig", "$state", "$timeout", function(noFormConfig, $state, $timeout) {
+		.directive("noKendoDatePicker", ["noFormConfig", "$state", "$timeout", "noNCLManager", function(noFormConfig, $state, $timeout, noNCLManager) {
 			function _compile(el, attrs) {
-				var config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
-					noForm = noInfoPath.getItem(config, attrs.noForm),
+				var noid = el.parent().parent().attr("noid"),
+					config,
+					noForm,
+					ncl,
 					input = angular.element("<input type=\"date\">");
+
+				if(noid) {
+					config = noNCLManager.getHashStore($state.params.fid || $state.current.name.pop("."));
+					ncl = config.get(noid);
+					noForm = ncl.noComponent;
+				} else {
+					config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity);
+					noForm = noInfoPath.getItem(config, attrs.noForm);
+				}
+
 
 				el.empty();
 
@@ -1117,6 +1129,16 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 				if (noForm.disabled === true) {
 					input.attr("disabled", true);
+				}
+
+				if(ncl) {
+					el.removeAttr("required");
+					var hidden = angular.element("<input />");
+					hidden.attr("type", "hidden");
+					hidden.attr("required", true);
+					noForm.ngModel = ($state.params.fid || $state.current.name.split(".").pop()) + "." + ncl.noElement.label; // do the escape thing
+					hidden.attr("ng-model", noForm.ngModel); //TODO add the ngmodel dynanmically
+					el.append(hidden);
 				}
 
 
@@ -1226,6 +1248,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		.directive("noKendoMultiSelect", ["noFormConfig", "$state", "noLoginService", "noKendoDataSourceFactory", "lodash", function(noFormConfig, $state, noLoginService, noKendoDataSourceFactory, _) {
 
 			function _watch(dsCfg, filterCfg, valueObj, newval, oldval, scope) {
+			    console.warn("NOTE: noKendoMultiSelect does not support compound filters");
 				var component = scope[dsCfg.entityName + "_multiSelect"],
 					filters, filter;
 
@@ -1404,6 +1427,13 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 						comp = $compile(tpl)(scope);
 						container.append(comp);
+					},
+					"noid": function($injector, $compile, $state, attrs) {
+						var noNCLManager = $injector.get("noNCLManager"),
+							hashStore = noNCLManager.getHashStore($state.params.fid || $state.current.name.split(".").pop()),
+							ncl = hashStore.get(attrs.noid);
+
+						return ncl.noComponent;
 					}
 				},
 				method = cfgFn[type];
@@ -1418,6 +1448,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				configurationType = "noConfig";
 			} else if (attrs.noForm) {
 				configurationType = "noForm";
+			} else if (attrs.noid) {
+				configurationType = "noid";
 			} else {
 				throw "noKendoGrid requires either a noConfig or noForm attribute";
 			}

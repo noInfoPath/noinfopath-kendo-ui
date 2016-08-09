@@ -38,6 +38,13 @@
 
 						comp = $compile(tpl)(scope);
 						container.append(comp);
+					},
+					"noid": function($injector, $compile, $state, attrs) {
+						var noNCLManager = $injector.get("noNCLManager"),
+							hashStore = noNCLManager.getHashStore($state.params.fid || $state.current.name.split(".").pop()),
+							ncl = hashStore.get(attrs.noid);
+
+						return ncl.noComponent;
 					}
 				},
 				method = cfgFn[type];
@@ -52,6 +59,8 @@
 				configurationType = "noConfig";
 			} else if (attrs.noForm) {
 				configurationType = "noForm";
+			} else if (attrs.noid) {
+				configurationType = "noid";
 			} else {
 				throw "noKendoGrid requires either a noConfig or noForm attribute";
 			}

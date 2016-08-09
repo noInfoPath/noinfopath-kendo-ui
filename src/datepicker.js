@@ -1,11 +1,23 @@
 //datepicker.js
 (function(angular, undefined) {
 	angular.module("noinfopath.kendo.ui")
-		.directive("noKendoDatePicker", ["noFormConfig", "$state", "$timeout", function(noFormConfig, $state, $timeout) {
+		.directive("noKendoDatePicker", ["noFormConfig", "$state", "$timeout", "noNCLManager", function(noFormConfig, $state, $timeout, noNCLManager) {
 			function _compile(el, attrs) {
-				var config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity),
-					noForm = noInfoPath.getItem(config, attrs.noForm),
+				var noid = el.parent().parent().attr("noid"),
+					config,
+					noForm,
+					ncl,
 					input = angular.element("<input type=\"date\">");
+
+				if(noid) {
+					config = noNCLManager.getHashStore($state.params.fid || $state.current.name.pop("."));
+					ncl = config.get(noid);
+					noForm = ncl.noComponent;
+				} else {
+					config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity);
+					noForm = noInfoPath.getItem(config, attrs.noForm);
+				}
+
 
 				el.empty();
 
@@ -24,6 +36,16 @@
 
 				if (noForm.disabled === true) {
 					input.attr("disabled", true);
+				}
+
+				if(ncl) {
+					el.removeAttr("required");
+					var hidden = angular.element("<input />");
+					hidden.attr("type", "hidden");
+					hidden.attr("required", true);
+					noForm.ngModel = ($state.params.fid || $state.current.name.split(".").pop()) + "." + ncl.noElement.label; // do the escape thing
+					hidden.attr("ng-model", noForm.ngModel); //TODO add the ngmodel dynanmically
+					el.append(hidden);
 				}
 
 
