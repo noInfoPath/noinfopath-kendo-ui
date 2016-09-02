@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.2.18
+ *	@version 1.2.19
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -74,7 +74,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 (function(angular, undefined) {
 	"use strict";
 
-	angular.module("noinfopath.kendo.ui", ['ui.router'])
+	angular.module("noinfopath.kendo.ui", ['ui.router', "noinfopath.app", "noinfopath.data"])
 
 	;
 })(angular);

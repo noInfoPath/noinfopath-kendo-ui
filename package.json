@@ -1,6 +1,6 @@
 {
   "name": "@noinfopath/noinfopath-kendo-ui",
-  "version": "1.2.18",
+  "version": "1.2.19",
   "description": "noInfoPath wrapper around Kendo UI",
   "main": "noinfopath-kendo-ui.js",
   "directories": {
@@ -41,8 +41,10 @@
     "phantomjs": "^1.9.15"
   },
   "dependencies": {
+    "@noinfopath/noinfopath-app": "^1.1.33",
     "@noinfopath/noinfopath-data": "^1.2.2",
     "@noinfopath/noinfopath-logger": "^1.0.1",
+    "@noinfopath/noinfopath-user": "^1.2.2",
     "angular": "^1.4.8",
     "angular-mocks": "^1.4.8",
     "angular-ui-router": "^0.2.18",

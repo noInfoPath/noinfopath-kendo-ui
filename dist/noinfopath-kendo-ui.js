@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 1.2.18
+ *	@version 1.2.19
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -74,7 +74,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 (function(angular, undefined) {
 	"use strict";
 
-	angular.module("noinfopath.kendo.ui", ['ui.router'])
+	angular.module("noinfopath.kendo.ui", ['ui.router', "noinfopath.app", "noinfopath.data"])
 
 	;
 })(angular);
@@ -304,7 +304,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 								return data ? new Date(data) : "";
 							},
 							"utcDate": function(data) {
-								return data ? data.format("L") : "";
+								return data ? new Date(noInfoPath.toDisplayDate(data)) : "";
 							},
 							"ReverseYesNo": function(data) {
 								var v = data === 0 ? 1 : 0;
@@ -383,7 +383,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 					if (dsCfg.preserveUserFilters && $state.current.data.entities && $state.current.data.entities[name] && $state.current.data.entities[name].filters) {
 
-						ds.filter = angular.merge({}, $state.current.data.entities[name].filters, ds.filter);
+						ds.filter = angular.merge({}, ds.filter, $state.current.data.entities[name].filters);
 
 					}
 
@@ -1167,13 +1167,13 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					internalDate;
 
 				if (noForm.binding === "kendo") {
-					config.options.change = function(data) {
+					noForm.options.change = function(data) {
 						var tmp = noInfoPath.getItem(scope, noForm.ngKendo);
 						tmp.set(noForm.kendoModel, this.value());
 						//noInfoPath.setItem(scope, config.ngKendo, this.value());
 					};
 
-					internalDate = new Date(noInfoPath.getItem(scope, noForm.ngModel));
+					internalDate = noInfoPath.getItem(scope, noForm.ngModel);
 				}
 
 				//Create the Kendo date picker.
@@ -1189,14 +1189,12 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				 *
 				 */
 				if (noForm.binding === "ng" || noForm.binding === undefined) {
-					datePicker.value(new Date(noInfoPath.getItem(scope, noForm.ngModel)));
-
 					scope.$watch(noForm.ngModel, function(newval, oldval) {
 						if (newval != oldval) {
 							if (newval !== null) {
-								datePicker.value(new Date(newval));
+								datePicker.value(new Date(noInfoPath.toDisplayDate(newval)));
 							} else if (noForm.initValue === true) {
-								noInfoPath.setItem(scope, noForm.ngModel, noInfoPath.toDbDate(new Date()));
+								noInfoPath.setItem(scope, noForm.ngModel, moment().utc());
 
 								// if something overwrites the value of the date picker
 								// (loading of a record with null data for example) this
@@ -1207,7 +1205,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					});
 
 					datePicker.bind("change", function() {
-						var newDate = angular.isDate(this.value()) ? noInfoPath.toDbDate(this.value()) : null;
+						var newDate = angular.isDate(this.value()) ? this.value() : null;
 
 						noInfoPath.setItem(scope, noForm.ngModel, newDate);
 						//this will solve the issue of the data not appearing on the scope
@@ -1218,10 +1216,10 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				}
 
 				if ((noForm.initValue === undefined || noForm.initValue) && !internalDate) {
-					internalDate = noInfoPath.toDbDate(new Date());
+					internalDate = new Date();
 				}
 
-				datePicker.value(new Date(internalDate));
+				datePicker.value(noInfoPath.toDisplayDate(new Date(internalDate)));
 
 				//fixing the issue where the data is not on the scope on initValue load
 				noInfoPath.setItem(scope, noForm.ngModel, noInfoPath.toDbDate(internalDate));
