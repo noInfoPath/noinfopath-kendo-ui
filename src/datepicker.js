@@ -74,13 +74,13 @@
 					internalDate;
 
 				if (noForm.binding === "kendo") {
-					config.options.change = function(data) {
+					noForm.options.change = function(data) {
 						var tmp = noInfoPath.getItem(scope, noForm.ngKendo);
 						tmp.set(noForm.kendoModel, this.value());
 						//noInfoPath.setItem(scope, config.ngKendo, this.value());
 					};
 
-					internalDate = new Date(noInfoPath.getItem(scope, noForm.ngModel));
+					internalDate = noInfoPath.getItem(scope, noForm.ngModel);
 				}
 
 				//Create the Kendo date picker.
@@ -96,14 +96,12 @@
 				 *
 				 */
 				if (noForm.binding === "ng" || noForm.binding === undefined) {
-					datePicker.value(new Date(noInfoPath.getItem(scope, noForm.ngModel)));
-
 					scope.$watch(noForm.ngModel, function(newval, oldval) {
 						if (newval != oldval) {
 							if (newval !== null) {
-								datePicker.value(new Date(newval));
+								datePicker.value(new Date(noInfoPath.toDisplayDate(newval)));
 							} else if (noForm.initValue === true) {
-								noInfoPath.setItem(scope, noForm.ngModel, noInfoPath.toDbDate(new Date()));
+								noInfoPath.setItem(scope, noForm.ngModel, moment().utc());
 
 								// if something overwrites the value of the date picker
 								// (loading of a record with null data for example) this
@@ -114,7 +112,7 @@
 					});
 
 					datePicker.bind("change", function() {
-						var newDate = angular.isDate(this.value()) ? noInfoPath.toDbDate(this.value()) : null;
+						var newDate = angular.isDate(this.value()) ? this.value() : null;
 
 						noInfoPath.setItem(scope, noForm.ngModel, newDate);
 						//this will solve the issue of the data not appearing on the scope
@@ -125,10 +123,10 @@
 				}
 
 				if ((noForm.initValue === undefined || noForm.initValue) && !internalDate) {
-					internalDate = noInfoPath.toDbDate(new Date());
+					internalDate = new Date();
 				}
 
-				datePicker.value(new Date(internalDate));
+				datePicker.value(noInfoPath.toDisplayDate(new Date(internalDate)));
 
 				//fixing the issue where the data is not on the scope on initValue load
 				noInfoPath.setItem(scope, noForm.ngModel, noInfoPath.toDbDate(internalDate));

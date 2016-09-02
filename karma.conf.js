@@ -17,6 +17,7 @@ module.exports = function(config) {
 		files: [
 			'bower_components/jquery/dist/jquery.js',
 			'node_modules/angular/angular.js',
+			'node_modules/angular-sanitize/angular-sanitize.js',
 			'node_modules/angular-mocks/angular-mocks.js',
 			'node_modules/angular-ui-router/release/angular-ui-router.js',
 			'bower_components/ng-lodash/build/ng-lodash.js',
@@ -25,7 +26,9 @@ module.exports = function(config) {
 			'node_modules/noinfopath-helpers/src/noinfopath-helpers.js',
 			'node_modules/@noinfopath/noinfopath-logger/dist/noinfopath-logger.js',
 			'node_modules/@noinfopath/noinfopath-data/dist/noinfopath-dexie.js',
+			'node_modules/@noinfopath/noinfopath-user/dist/noinfopath-user.js',
 			'node_modules/@noinfopath/noinfopath-data/dist/noinfopath-data.js',
+			'node_modules/@noinfopath/noinfopath-app/dist/noinfopath-app.js',
 			'src/global.js',
 			'src/datasource.js',
 			'src/grid.js',

@@ -223,7 +223,7 @@
 								return data ? new Date(data) : "";
 							},
 							"utcDate": function(data) {
-								return data ? data.format("L") : "";
+								return data ? new Date(noInfoPath.toDisplayDate(data)) : "";
 							},
 							"ReverseYesNo": function(data) {
 								var v = data === 0 ? 1 : 0;
@@ -302,7 +302,7 @@
 
 					if (dsCfg.preserveUserFilters && $state.current.data.entities && $state.current.data.entities[name] && $state.current.data.entities[name].filters) {
 
-						ds.filter = angular.merge({}, $state.current.data.entities[name].filters, ds.filter);
+						ds.filter = angular.merge({}, ds.filter, $state.current.data.entities[name].filters);
 
 					}
 
