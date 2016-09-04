@@ -28,6 +28,7 @@ module.exports = function(config) {
 			'node_modules/@noinfopath/noinfopath-data/dist/noinfopath-dexie.js',
 			'node_modules/@noinfopath/noinfopath-user/dist/noinfopath-user.js',
 			'node_modules/@noinfopath/noinfopath-data/dist/noinfopath-data.js',
+			'node_modules/@noinfopath/noinfopath-app/node_modules/angular-sanitize/angular-sanitize.js',
 			'node_modules/@noinfopath/noinfopath-app/dist/noinfopath-app.js',
 			'src/global.js',
 			'src/datasource.js',
