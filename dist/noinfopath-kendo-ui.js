@@ -911,7 +911,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			 *	value for the child grid.
 			 */
 			if (angular.isObject(config.noGrid.nestedGrid)) {
-				scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
+				scope.childGridFilter = noInfoPath.getItem(e.data, config.noGrid.nestedGrid.filterProperty);
 				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid></div>")(scope);
 			} else {
 				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
@@ -1000,6 +1000,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			kgCfg.dataSource = dataSource;
 
+			_wireUpKendoEvents(config, kgCfg, scope);
 
 			_selectable(config, kgCfg, scope);
 
@@ -1020,6 +1021,19 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			_configureEventHandlers(config, scope);
 
 
+		}
+
+		function _wireUpKendoEvents(config, kgCfg, scope){
+			if(config.noGrid.events){
+				for (var i = 0; i < config.noGrid.events.length; i++){
+					var ev = config.noGrid.events[i],
+						prov = $injector.get(ev.provider),
+						meth = prov[ev.method],
+						params = noInfoPath.resolveParams(ev.params);
+
+					kgCfg[ev.eventName] = meth.bind.apply(meth, [null].concat(params));
+				}
+			}
 		}
 
 		return {
@@ -1223,6 +1237,10 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 				//fixing the issue where the data is not on the scope on initValue load
 				noInfoPath.setItem(scope, noForm.ngModel, noInfoPath.toDbDate(internalDate));
+
+				if(noForm.readOnly){
+					datePicker.element.attr("readonly", true);
+				}				
 
 				$timeout(function() {
 					scope.$apply();

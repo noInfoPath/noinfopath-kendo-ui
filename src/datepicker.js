@@ -131,6 +131,10 @@
 				//fixing the issue where the data is not on the scope on initValue load
 				noInfoPath.setItem(scope, noForm.ngModel, noInfoPath.toDbDate(internalDate));
 
+				if(noForm.readOnly){
+					datePicker.element.attr("readonly", true);
+				}				
+
 				$timeout(function() {
 					scope.$apply();
 				});
