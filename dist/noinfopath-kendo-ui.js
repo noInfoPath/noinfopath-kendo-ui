@@ -99,7 +99,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			Kendo's data aware widgets to work with NoInfoPath's data providers,
 			like the IndexedDB, WebSql and HTTP implementations.
 		*/
-		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "noDynamicFilters", "lodash", "$state", "noCalculatedFields", function($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields) {
+		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "noDynamicFilters", "lodash", "$state", "noCalculatedFields", "noActionQueue", function($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields, noActionQueue) {
 
 			function KendoDataSourceService() {
 
@@ -165,7 +165,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 						noTrans.upsert(options.data)
 							//.then(toKendoModel.bind(null, options.data, op))
-							.then(success.bind(null, options.success, noTrans))
+							.then(success.bind(null, options.success, noTrans, op))
 							.catch(errors.bind(options.data, options.error));
 
 					}
@@ -225,16 +225,17 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 						noTrans.upsert(options.data)
 							.then(toKendoModel.bind(null, scope, entityName))
-							.then(success.bind(null, options.success, noTrans))
+							.then(success.bind(null, options.success, noTrans, op))
 							.catch(errors.bind(null, options.error));
 
 					}
 
 					function destroy(options) {
-						var noTrans = noTransactionCache.beginTransaction(userId, config, scope);
+						var noTrans = noTransactionCache.beginTransaction(userId, config, scope),
+							op = config.noDataSource.noTransaction.delete[0];
 
 						noTrans.destroy(options.data)
-							.then(success.bind(options.data, options.success, noTrans))
+							.then(success.bind(options.data, options.success, noTrans, op))
 							.catch(errors.bind(options.data, options.error));
 
 					}
@@ -244,57 +245,31 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						reject(err);
 					}
 
-					function success(resolve, noTrans, resp) {
+					function success(resolve, noTrans, op, resp) {
 						noTransactionCache.endTransaction(noTrans)
-							.then(function() {
-								resolve(resp);
-								if (scope.noGrid) {
-									scope.noGrid.dataSource.read();
-								}
-							});
+							.then(function(op) {
+								if(op.actions && op.actions.post){
+									var q = noActionQueue.createQueue({}, scope, {}, op.actions.post);
+									noActionQueue.synchronize(q)
+										.then(function(){
+											resolve(resp);
+											if (scope.noGrid) {
+												scope.noGrid.dataSource.read();
+											}
+										})
+										.catch(function(err){
+											reject(err);
+										})
+								} else {
+									resolve(resp);
+									if (scope.noGrid) {
+										scope.noGrid.dataSource.read();
+									}
+								}																
+							}.bind(null, op));
 
 					}
-
-					// function watch(dsCfg, filterCfg, valueObj, newval, oldval, scope) {
-					// 	var grid = scope.noGrid,
-					// 		filters, filter, compountValues;
-					//
-					// 	if(noInfoPath.isCompoundFilter(filterCfg.field)){
-					// 		//Need to reconstitue the values
-					// 		for(var fi=0; fi<filterCfg.value.length; fi++){
-					// 			var valCfg = filterCfg.value[fi];
-					//
-					// 			if(valCfg.property === valueObj.property){
-					// 				this.value[fi] = newval;
-					// 			}else{
-					// 				if(valCfg.source === "scope"){
-					// 					this.value[fi] = noInfoPath.getItem(scope, valCfg.property);
-					// 				}else if(["$scope", "$stateParams"].indexOf(valCfg.source) > -1){
-					// 					var prov = $injector.get(valCfg.source);
-					// 					this.value[fi] = noInfoPath.getItem(prov, valCfg.property);
-					// 				}else{
-					// 					console.warn("TODO: May need to implement other sources for dynamic filters", valCfg);
-					// 				}
-					// 			}
-					// 		}
-					// 	}else{
-					// 		this.value = newval;
-					// 	}
-					//
-					//
-					// 	if (grid) {
-					// 		filters = grid.dataSource.filter();
-					// 		filter = _.find(filters.filters, {
-					// 			field: filterCfg.field
-					// 		});
-					// 		if (filter) {
-					// 			filter.value = newval;
-					// 		}
-					// 		grid.dataSource.page(0);
-					// 		grid.refresh();
-					// 	}
-					// }
-
+					
 					var yesNo = [
 							"No",
 							"Yes"
