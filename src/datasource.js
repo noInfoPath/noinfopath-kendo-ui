@@ -184,11 +184,11 @@
 									if (scope.noGrid) {
 										scope.noGrid.dataSource.read();
 									}
-								}																
+								}
 							}.bind(null, op));
 
 					}
-					
+
 					var yesNo = [
 							"No",
 							"Yes"
@@ -198,7 +198,7 @@
 								return data ? new Date(data) : "";
 							},
 							"utcDate": function(data) {
-								return data ? new Date(noInfoPath.toDisplayDate(data)) : "";
+								return data ? moment.utc(noInfoPath.toDisplayDate(data)).format("L") : "";
 							},
 							"ReverseYesNo": function(data) {
 								var v = data === 0 ? 1 : 0;
