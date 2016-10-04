@@ -4,7 +4,6 @@
 		.directive("noKendoMultiSelect", ["noFormConfig", "$state", "noLoginService", "noKendoDataSourceFactory", "lodash", function(noFormConfig, $state, noLoginService, noKendoDataSourceFactory, _) {
 
 			function _watch(dsCfg, filterCfg, valueObj, newval, oldval, scope) {
-			    console.warn("NOTE: noKendoMultiSelect does not support compound filters");
 				var component = scope[dsCfg.entityName + "_multiSelect"],
 					filters, filter;
 

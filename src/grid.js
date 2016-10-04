@@ -401,14 +401,28 @@
 			 * sort data in this object.
 			 */
 			scope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
-				if (fromState.name === config.noGrid.stateName) {
+				var normalizedName;
 
-					var normalizedName = noInfoPath.kendo.normalizedRouteName(fromParams.entity, fromState.name);
+				if (toState.data.position < fromState.data.position) {
+					// moving backwards
+					normalizedName = noInfoPath.kendo.normalizedRouteName(fromState.entity, fromState.name);
 
 					fromState.data.entities[normalizedName] = {};
-					fromState.data.entities[normalizedName].filters = scope.noGrid.dataSource.filter();
-					fromState.data.entities[normalizedName].sort = scope.noGrid.dataSource.sort();
+					// fromState.data.entities[normalizedName].filter = null;
+					// fromState.data.entities[normalizedName].sort = null;
+
+				} else if (toState.data.position > fromState.data.position) {
+					// moving forwards
+					if (fromState.name === config.noGrid.stateName) {
+
+						normalizedName = noInfoPath.kendo.normalizedRouteName(fromParams.entity, fromState.name);
+
+						fromState.data.entities[normalizedName] = {};
+						fromState.data.entities[normalizedName].filters = scope.noGrid.dataSource.filter();
+						fromState.data.entities[normalizedName].sort = scope.noGrid.dataSource.sort();
+					}
 				}
+
 			});
 
 			/**
