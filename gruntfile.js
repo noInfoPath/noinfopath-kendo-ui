@@ -1,7 +1,5 @@
 module.exports = function(grunt) {
-
   	var DEBUG = !!grunt.option("debug");
-
   	// Project configuration.
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
@@ -52,14 +50,14 @@ module.exports = function(grunt) {
     		}
     	},
         nodocs: {
-    		"internal": {
+    		internal: {
     			options: {
     				src: 'dist/noinfopath-kendo-ui.js',
     				dest: 'docs/noinfopath-kendo-ui.md',
     				start: ['/*','/**']
     			}
     		},
-    		"public": {
+    		public: {
     			options: {
     				src: 'dist/noinfopath-kendo-ui.js',
     				dest: 'docs/noinfopath-kendo-ui.md',
@@ -69,7 +67,7 @@ module.exports = function(grunt) {
     	},
         watch: {
             files: ['src/*.js', 'test/*.spec.js'],
-            tasks: ['document']
+            tasks: ['build']
         },
         uglify: {
             options: {
@@ -80,29 +78,20 @@ module.exports = function(grunt) {
                     'dist/noinfopath-kendo-ui.min.js': ['dist/noinfopath-kendi-ui.js']
                 }
             }
-        },
-		copy: {
-          test: {
-              files: [
-                  //{expand:true, flatten:false, src: [ 'lib/js/noinfopath/*.*'], dest: 'build/'},
-                  {expand:true, flatten:true, src: [ 'dist/*.js'], dest: '../noinfopath-test-server-node/no/lib/js/noinfopath/'},
-              	]
-          	}
-      	}
+        }
 	});
 
+	grunt.loadNpmTasks('grunt-bumpup');
 	grunt.loadNpmTasks('grunt-contrib-concat');
-	grunt.loadNpmTasks('grunt-contrib-copy');
+	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-karma');
-	grunt.loadNpmTasks('grunt-bumpup');
+	grunt.loadNpmTasks('grunt-nodocs');
 	grunt.loadNpmTasks('grunt-version');
-    grunt.loadNpmTasks('grunt-nodocs');
 
 	//Default task(s).
-	grunt.registerTask('build', ['karma:continuous', 'bumpup','version','concat:noinfopath','nodocs:internal','concat:readme']);
-    grunt.registerTask('buildy', ['bumpup','version','concat:noinfopath','nodocs:internal','concat:readme']);
-    grunt.registerTask('jenkins', ['karma:continuous']);
-    grunt.registerTask('document', ['concat:noinfopath', 'nodocs:internal', 'concat:readme']);
-	grunt.registerTask('notest', ['concat:noinfopath', 'copy:test']);
+	grunt.registerTask('document', ['concat:noinfopath', 'nodocs:internal', 'concat:readme']); //Documentation purposes
+	grunt.registerTask('build', ["karma:continuous", 'concat:noinfopath', 'nodocs:internal', 'concat:readme']); //Code testing
+	grunt.registerTask('deploy', ['karma:continuous', 'bumpup', 'version', 'concat:noinfopath', 'nodocs:internal', 'concat:readme']); //Bumpup to publish to npm
+    grunt.registerTask('jenkins', ['karma:continuous']); //Task for CI
 };
