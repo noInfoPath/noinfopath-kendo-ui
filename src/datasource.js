@@ -174,46 +174,6 @@
 
 					}
 
-					// function watch(dsCfg, filterCfg, valueObj, newval, oldval, scope) {
-					// 	var grid = scope.noGrid,
-					// 		filters, filter, compountValues;
-					//
-					// 	if(noInfoPath.isCompoundFilter(filterCfg.field)){
-					// 		//Need to reconstitue the values
-					// 		for(var fi=0; fi<filterCfg.value.length; fi++){
-					// 			var valCfg = filterCfg.value[fi];
-					//
-					// 			if(valCfg.property === valueObj.property){
-					// 				this.value[fi] = newval;
-					// 			}else{
-					// 				if(valCfg.source === "scope"){
-					// 					this.value[fi] = noInfoPath.getItem(scope, valCfg.property);
-					// 				}else if(["$scope", "$stateParams"].indexOf(valCfg.source) > -1){
-					// 					var prov = $injector.get(valCfg.source);
-					// 					this.value[fi] = noInfoPath.getItem(prov, valCfg.property);
-					// 				}else{
-					// 					console.warn("TODO: May need to implement other sources for dynamic filters", valCfg);
-					// 				}
-					// 			}
-					// 		}
-					// 	}else{
-					// 		this.value = newval;
-					// 	}
-					//
-					//
-					// 	if (grid) {
-					// 		filters = grid.dataSource.filter();
-					// 		filter = _.find(filters.filters, {
-					// 			field: filterCfg.field
-					// 		});
-					// 		if (filter) {
-					// 			filter.value = newval;
-					// 		}
-					// 		grid.dataSource.page(0);
-					// 		grid.refresh();
-					// 	}
-					// }
-
 					var yesNo = [
 							"No",
 							"Yes"
@@ -320,5 +280,7 @@
 			}
 
 			return new KendoDataSourceService();
-		}]);
+		}])
+
+		;
 })(angular, kendo);

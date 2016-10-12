@@ -255,46 +255,6 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 					}
 
-					// function watch(dsCfg, filterCfg, valueObj, newval, oldval, scope) {
-					// 	var grid = scope.noGrid,
-					// 		filters, filter, compountValues;
-					//
-					// 	if(noInfoPath.isCompoundFilter(filterCfg.field)){
-					// 		//Need to reconstitue the values
-					// 		for(var fi=0; fi<filterCfg.value.length; fi++){
-					// 			var valCfg = filterCfg.value[fi];
-					//
-					// 			if(valCfg.property === valueObj.property){
-					// 				this.value[fi] = newval;
-					// 			}else{
-					// 				if(valCfg.source === "scope"){
-					// 					this.value[fi] = noInfoPath.getItem(scope, valCfg.property);
-					// 				}else if(["$scope", "$stateParams"].indexOf(valCfg.source) > -1){
-					// 					var prov = $injector.get(valCfg.source);
-					// 					this.value[fi] = noInfoPath.getItem(prov, valCfg.property);
-					// 				}else{
-					// 					console.warn("TODO: May need to implement other sources for dynamic filters", valCfg);
-					// 				}
-					// 			}
-					// 		}
-					// 	}else{
-					// 		this.value = newval;
-					// 	}
-					//
-					//
-					// 	if (grid) {
-					// 		filters = grid.dataSource.filter();
-					// 		filter = _.find(filters.filters, {
-					// 			field: filterCfg.field
-					// 		});
-					// 		if (filter) {
-					// 			filter.value = newval;
-					// 		}
-					// 		grid.dataSource.page(0);
-					// 		grid.refresh();
-					// 	}
-					// }
-
 					var yesNo = [
 							"No",
 							"Yes"
@@ -401,7 +361,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			}
 
 			return new KendoDataSourceService();
-		}]);
+		}])
+
+		;
 })(angular, kendo);
 
 //grid.js
@@ -723,6 +685,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		}
 
 		function _rowTemplate(config, kgCfg, scope, el) {
+			var fns = [];
+
 			if (config.noGrid.rowTemplate && angular.isObject(config.noGrid.rowTemplate)) {
 				var prov3 = $injector.get(config.noGrid.rowTemplate.provider),
 					fn3 = prov3[config.noGrid.rowTemplate.method];
@@ -730,15 +694,23 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				kgCfg.rowTemplate = fn3.call(scope, kgCfg, config.noGrid);
 				kgCfg.altRowTemplate = fn3.call(scope, kgCfg, config.noGrid, true);
 
-				kgCfg.dataBound = function(e) {
-					_handleRowTemplate(scope, e);
-					_handleNoRecords(e, el);
-				};
+				fns.push(_handleRowTemplate.bind(el, scope));
+				fns.push(_handleNoRecords.bind(el, el));
 			} else {
-				kgCfg.dataBound = function(e) {
-					_handleNoRecords(e, el);
-				};
+				fns.push(_handleNoRecords.bind(el, el));
 			}
+
+			fns.push(_ngCompileGrid.bind(el, scope, el));
+
+			kgCfg.dataBound = function(fns, e) {
+				for(var i=0; i<fns.length; i++) {
+					var fn = fns[i];
+
+					fn(e);
+				}
+			}.bind(null, fns);
+
+
 
 		}
 
@@ -850,7 +822,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			});
 		}
 
-		function _handleNoRecords(e, el) {
+		function _handleNoRecords(el, e) {
 			var g = el.find("grid"),
 				p = el.find(".k-pager-wrap"),
 				m = el.find("message");
@@ -868,6 +840,25 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			}
 
 
+		}
+
+		function _ngCompileGrid(scope, el, e) {
+			console.log("TODO: wire up checkboxes after data has been bound.", e, el);
+
+			$compile(el.children().first("div"))(scope);
+
+			//also add click handler for all other checkbox. when the
+			//the event is handled, it should enable the "edit" button
+			//when a single items is check. Multiples cause disabling.
+			//
+			// $(this).find("tbody input:checkbox").click(function (e) {
+			// 	var checkedBoxes = $(this).closest("tbody").find("input:checkbox:checked");
+			//
+			// 	//$(this).closest("no-kendo-grid").parent().find("[no-kendo-grid-delete-selected-rows]");
+			//
+			// 	$(this).closest("no-kendo-grid").parent().find("[no-kendo-grid-delete-selected-rows]").prop("disabled",checkedBoxes.length === 0);
+			// 	$(this).closest("no-kendo-grid").parent().find("[no-kendo-grid-edit-selected-row]").prop("disabled", checkedBoxes.length !== 1);
+			// });
 		}
 
 		function _detailRowExpand(config, kgCfg, scope) {
@@ -938,6 +929,25 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				});
 		}
 
+		function _selectColumn(scope, el) {
+			var tmp = el.find("[select-all-grid-rows]"),
+				html;
+
+			if(tmp.length) {
+				parent = tmp.parent();
+
+				$compile(tmp)(scope);
+
+
+				//console.log(html);
+
+				//parent.html(html);
+
+			}
+
+
+		}
+
 		function _watch(dsConfig, filterCfg, valueObj, newval, oldval, scope) {
 			var grid = scope.noGrid,
 				filters = grid.dataSource.filter(),
@@ -948,7 +958,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			if(!filter) throw "Filter " + filterCfg.field + " was not found.";
 
 			function handleKendoDataBoundControlsSimple(){
-				console.log("handleKendoDataBoundControlsAdvanced");
+				console.log("handleKendoDataBoundControlsSimple");
 				filter.value = newval;
 			}
 
@@ -1019,6 +1029,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			_configureEventHandlers(config, scope);
 
+			_selectColumn(scope, el);
 
 		}
 
@@ -1083,11 +1094,52 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		};
 	}
 
+	function SelectAllGridRowsDirective() {
+			return {
+				restrict: "A",
+				link: function (scope, el, attrs) {
+					el.click(function (e) {
+						$(this).closest("grid").find("tbody input:checkbox").prop("checked", this.checked);
+						$(this).closest("[no-kendo-grid-delete-selected-rows]").prop("disabled", $(this).closest("grid").find("tbody input:checkbox:checked"));
+						$(this).closest("[edit-selected-row]").prop("disabled", $(this).closest("grid").find("tbody input:checkbox:checked"));
+
+						//$(this).closest("no-kendo-grid").parent().find("[no-kendo-grid-delete-selected-rows]").prop("disabled",checkedBoxes.length === 0);
+
+					});
+
+
+				}
+			};
+
+	}
+
+	function DeleteSelectedRows() {
+		return  {
+			restrict: "A",
+			link : function(scope, el, attrs) {
+				el.click(function(e) {
+					var delFn = scope.noGrid.dataSource.transport.destroy
+					;
+
+					console.log(scope.noGrid);
+
+				});
+
+			}
+		};
+	}
+
 	angular.module("noinfopath.kendo.ui")
 
-	.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
+		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
 
-	.service("noKendoRowTemplates", [NoKendoRowTemplates]);
+		.directive("selectAllGridRows", [SelectAllGridRowsDirective])
+
+		.directive("noKendoGridDeleteSelectedRows", [DeleteSelectedRows])
+
+		.service("noKendoRowTemplates", [NoKendoRowTemplates])
+	;
+
 
 })(angular);
 
