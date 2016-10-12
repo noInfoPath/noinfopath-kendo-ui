@@ -723,23 +723,28 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		}
 
 		function _rowTemplate(config, kgCfg, scope, el) {
+			var fns = [];
 			if (config.noGrid.rowTemplate && angular.isObject(config.noGrid.rowTemplate)) {
 				var prov3 = $injector.get(config.noGrid.rowTemplate.provider),
 					fn3 = prov3[config.noGrid.rowTemplate.method];
-
 				kgCfg.rowTemplate = fn3.call(scope, kgCfg, config.noGrid);
 				kgCfg.altRowTemplate = fn3.call(scope, kgCfg, config.noGrid, true);
-
-				kgCfg.dataBound = function(e) {
-					_handleRowTemplate(scope, e);
-					_handleNoRecords(e, el);
-				};
+				fns.push(_handleRowTemplate.bind(el, scope));
+				fns.push(_handleNoRecords.bind(el, el));
 			} else {
-				kgCfg.dataBound = function(e) {
-					_handleNoRecords(e, el);
-				};
+				fns.push(_handleNoRecords.bind(el, el));
 			}
+			fns.push(_ngCompileGrid.bind(el, scope, el));
+			kgCfg.dataBound = function(fns, e) {
+				for(var i=0; i<fns.length; i++) {
+					var fn = fns[i];
+					fn(e);
+				}
+			}.bind(null, fns);
+		}
 
+		function _ngCompileGrid(scope, el, e) {
+			$compile(el.children().first("div"))(scope);
 		}
 
 		function _columns(kgCfg) {
@@ -864,7 +869,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			});
 		}
 
-		function _handleNoRecords(e, el) {
+		function _handleNoRecords(el, e) {
 			var g = el.find("grid"),
 				p = el.find(".k-pager-wrap"),
 				m = el.find("message");
@@ -931,12 +936,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
 			}
 
-			//console.log(compiledGrid);
-			// angular.element(e.detailCell).append(tmpHtml);
-			//angular.element(e.detailCell).append(compiledGrid.html());
 			$(compiledGrid).appendTo(e.detailCell);
-
-
 		}
 
 		function _detailRow(config, kgCfg, scope, e) {
@@ -962,12 +962,10 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			if(!filter) throw "Filter " + filterCfg.field + " was not found.";
 
 			function handleKendoDataBoundControlsSimple(){
-				console.log("handleKendoDataBoundControlsAdvanced");
 				filter.value = newval;
 			}
 
 			function handleKendoDataBoundControlsAdvanced(){
-				console.log("handleKendoDataBoundControlsAdvanced");
 				//Need to reconstitue the values
 				for(var fi=0; fi<filterCfg.value.length; fi++){
 					var valCfg = filterCfg.value[fi];
@@ -987,8 +985,6 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				}
 			}
 
-
-
 			if(noInfoPath.isCompoundFilter(filterCfg.field)){
 				//this.value[_.findIndex(this.value, {property: valueCfg.property})] = newval;
 				handleKendoDataBoundControlsAdvanced();
@@ -998,22 +994,18 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			grid.dataSource.page(0);
 			grid.refresh();
-
 		}
 
 		function _configure(config, scope, el, attrs, params) {
-			//console.log("configure");
 			var dsCfg = config.noDataSource ? config.noDataSource : config,
 				kgCfg = angular.copy(config.noKendoGrid),
 				grid = angular.element("<grid></grid>"),
 				message = angular.element("<message></message>"),
 				dataSource;
 
-
 			dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope, _watch);
 
 			kgCfg.dataSource = dataSource;
-
 
 			_selectable(config, kgCfg, scope);
 
@@ -1032,8 +1024,6 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			_kendoize(config, kgCfg, scope, grid);
 
 			_configureEventHandlers(config, scope);
-
-
 		}
 
 		return {
@@ -1464,7 +1454,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			function _link(config, scope, el, attrs) {
 				var kendoOptions = config.noLookup.options ? config.noLookup.options : {
 						dataTextField: config.noLookup.textField,
-						dataValueField: config.noLookup.valueField
+						dataValueField: config.noLookup.valueField,
+						optionLabel: " "
 					},
 					dsCfg = config.noDataSource ? config.noDataSource : config,
 					dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope);
@@ -1479,29 +1470,13 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						value = {};
 					}
 
-					//value[kendoOptions.dataTextField] = this.value();
-
 					noInfoPath.setItem(scope, config.noLookup.ngModel, this.value());
 					scope[config.noLookup.scopeKey].dirty = true;
 					scope.$apply();
 				};
 
 				scope[config.scopeKey + "_lookup"] = el.find("select").kendoDropDownList(kendoOptions).data("kendoLookup");
-
-				// if (config.noKendoLookup.waitFor) {
-				// 	scope.$watch(config.noKendoLookup.waitFor.property, function(newval) {
-				// 		if (newval) {
-				// 			var values = _.pluck(newval, config.noKendoLookup.waitFor.pluck);
-				//
-				// 			noInfoPath.setItem(scope, config.noKendoLookup.ngModel, values);
-				//
-				// 			scope[config.scopeKey + "_lookup"].value(values);
-				// 		}
-				// 	});
-				// }
-
 			}
-
 
 			directive = {
 				restrict: "E",
@@ -1510,7 +1485,5 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			};
 
 			return directive;
-
 		}]);
-
 })(angular);

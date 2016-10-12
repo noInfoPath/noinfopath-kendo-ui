@@ -317,23 +317,28 @@
 		}
 
 		function _rowTemplate(config, kgCfg, scope, el) {
+			var fns = [];
 			if (config.noGrid.rowTemplate && angular.isObject(config.noGrid.rowTemplate)) {
 				var prov3 = $injector.get(config.noGrid.rowTemplate.provider),
 					fn3 = prov3[config.noGrid.rowTemplate.method];
-
 				kgCfg.rowTemplate = fn3.call(scope, kgCfg, config.noGrid);
 				kgCfg.altRowTemplate = fn3.call(scope, kgCfg, config.noGrid, true);
-
-				kgCfg.dataBound = function(e) {
-					_handleRowTemplate(scope, e);
-					_handleNoRecords(e, el);
-				};
+				fns.push(_handleRowTemplate.bind(el, scope));
+				fns.push(_handleNoRecords.bind(el, el));
 			} else {
-				kgCfg.dataBound = function(e) {
-					_handleNoRecords(e, el);
-				};
+				fns.push(_handleNoRecords.bind(el, el));
 			}
+			fns.push(_ngCompileGrid.bind(el, scope, el));
+			kgCfg.dataBound = function(fns, e) {
+				for(var i=0; i<fns.length; i++) {
+					var fn = fns[i];
+					fn(e);
+				}
+			}.bind(null, fns);
+		}
 
+		function _ngCompileGrid(scope, el, e) {
+			$compile(el.children().first("div"))(scope);
 		}
 
 		function _columns(kgCfg) {
@@ -458,7 +463,7 @@
 			});
 		}
 
-		function _handleNoRecords(e, el) {
+		function _handleNoRecords(el, e) {
 			var g = el.find("grid"),
 				p = el.find(".k-pager-wrap"),
 				m = el.find("message");
@@ -525,12 +530,7 @@
 				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
 			}
 
-			//console.log(compiledGrid);
-			// angular.element(e.detailCell).append(tmpHtml);
-			//angular.element(e.detailCell).append(compiledGrid.html());
 			$(compiledGrid).appendTo(e.detailCell);
-
-
 		}
 
 		function _detailRow(config, kgCfg, scope, e) {
@@ -556,12 +556,10 @@
 			if(!filter) throw "Filter " + filterCfg.field + " was not found.";
 
 			function handleKendoDataBoundControlsSimple(){
-				console.log("handleKendoDataBoundControlsAdvanced");
 				filter.value = newval;
 			}
 
 			function handleKendoDataBoundControlsAdvanced(){
-				console.log("handleKendoDataBoundControlsAdvanced");
 				//Need to reconstitue the values
 				for(var fi=0; fi<filterCfg.value.length; fi++){
 					var valCfg = filterCfg.value[fi];
@@ -581,8 +579,6 @@
 				}
 			}
 
-
-
 			if(noInfoPath.isCompoundFilter(filterCfg.field)){
 				//this.value[_.findIndex(this.value, {property: valueCfg.property})] = newval;
 				handleKendoDataBoundControlsAdvanced();
@@ -592,22 +588,18 @@
 
 			grid.dataSource.page(0);
 			grid.refresh();
-
 		}
 
 		function _configure(config, scope, el, attrs, params) {
-			//console.log("configure");
 			var dsCfg = config.noDataSource ? config.noDataSource : config,
 				kgCfg = angular.copy(config.noKendoGrid),
 				grid = angular.element("<grid></grid>"),
 				message = angular.element("<message></message>"),
 				dataSource;
 
-
 			dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope, _watch);
 
 			kgCfg.dataSource = dataSource;
-
 
 			_selectable(config, kgCfg, scope);
 
@@ -626,8 +618,6 @@
 			_kendoize(config, kgCfg, scope, grid);
 
 			_configureEventHandlers(config, scope);
-
-
 		}
 
 		return {
