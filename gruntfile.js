@@ -1,13 +1,12 @@
 module.exports = function(grunt) {
   	var DEBUG = !!grunt.option("debug");
-  	// Project configuration.
+
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
 	    concat: {
 		    noinfopath: {
 		        src: [
 		        	'src/global.js',
-                    //'src/query-parser.js',
                     'src/datasource.js',
                     'src/grid.js',
                     'src/datepicker.js',
@@ -29,8 +28,7 @@ module.exports = function(grunt) {
             },
             continuous: {
                 configFile: 'karma.conf.js',
-                singleRun: true /*,
-                browsers: ['PhantomJS']*/
+                singleRun: true
             },
             ugly: {
                 configFile: 'karma.ugly.conf.js',
