@@ -534,7 +534,7 @@
 			 *	value for the child grid.
 			 */
 			if (angular.isObject(config.noGrid.nestedGrid)) {
-				scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
+				scope.childGridFilter = noInfoPath.getItem(e.data, config.noGrid.nestedGrid.filterProperty);
 				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid></div>")(scope);
 			} else {
 				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
@@ -642,6 +642,7 @@
 
 			kgCfg.dataSource = dataSource;
 
+			_wireUpKendoEvents(config, kgCfg, scope);
 
 			_selectable(config, kgCfg, scope);
 
@@ -663,6 +664,19 @@
 
 			_selectColumn(scope, el);
 
+		}
+
+		function _wireUpKendoEvents(config, kgCfg, scope){
+			if(config.noGrid.events){
+				for (var i = 0; i < config.noGrid.events.length; i++){
+					var ev = config.noGrid.events[i],
+						prov = $injector.get(ev.provider),
+						meth = prov[ev.method],
+						params = noInfoPath.resolveParams(ev.params);
+
+					kgCfg[ev.eventName] = meth.bind.apply(meth, [null].concat(params));
+				}
+			}
 		}
 
 		return {

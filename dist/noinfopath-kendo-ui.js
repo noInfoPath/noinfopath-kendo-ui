@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 2.0.2
+ *	@version 2.0.3
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -99,7 +99,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			Kendo's data aware widgets to work with NoInfoPath's data providers,
 			like the IndexedDB, WebSql and HTTP implementations.
 		*/
-		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "noDynamicFilters", "lodash", "$state", "noCalculatedFields", function($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields) {
+		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "noDynamicFilters", "lodash", "$state", "noCalculatedFields", "noActionQueue", function($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields, noActionQueue) {
 
 			function KendoDataSourceService() {
 
@@ -165,7 +165,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 						noTrans.upsert(options.data)
 							//.then(toKendoModel.bind(null, options.data, op))
-							.then(success.bind(null, options.success, noTrans))
+							.then(success.bind(null, options.success, noTrans, op))
 							.catch(errors.bind(options.data, options.error));
 
 					}
@@ -225,16 +225,17 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 						noTrans.upsert(options.data)
 							.then(toKendoModel.bind(null, scope, entityName))
-							.then(success.bind(null, options.success, noTrans))
+							.then(success.bind(null, options.success, noTrans, op))
 							.catch(errors.bind(null, options.error));
 
 					}
 
 					function destroy(options) {
-						var noTrans = noTransactionCache.beginTransaction(userId, config, scope);
+						var noTrans = noTransactionCache.beginTransaction(userId, config, scope),
+							op = config.noDataSource.noTransaction.delete[0];
 
 						noTrans.destroy(options.data)
-							.then(success.bind(options.data, options.success, noTrans))
+							.then(success.bind(options.data, options.success, noTrans, op))
 							.catch(errors.bind(options.data, options.error));
 
 					}
@@ -244,14 +245,28 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						reject(err);
 					}
 
-					function success(resolve, noTrans, resp) {
+					function success(resolve, noTrans, op, resp) {
 						noTransactionCache.endTransaction(noTrans)
-							.then(function() {
-								resolve(resp);
-								if (scope.noGrid) {
-									scope.noGrid.dataSource.read();
+							.then(function(op) {
+								if(op.actions && op.actions.post){
+									var q = noActionQueue.createQueue({}, scope, {}, op.actions.post);
+									noActionQueue.synchronize(q)
+										.then(function(){
+											resolve(resp);
+											if (scope.noGrid) {
+												scope.noGrid.dataSource.read();
+											}
+										})
+										.catch(function(err){
+											reject(err);
+										})
+								} else {
+									resolve(resp);
+									if (scope.noGrid) {
+										scope.noGrid.dataSource.read();
+									}
 								}
-							});
+							}.bind(null, op));
 
 					}
 
@@ -264,7 +279,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 								return data ? new Date(data) : "";
 							},
 							"utcDate": function(data) {
-								return data ? new Date(noInfoPath.toDisplayDate(data)) : "";
+								return data ? moment.utc(noInfoPath.toDisplayDate(data)).format("L") : "";
 							},
 							"ReverseYesNo": function(data) {
 								var v = data === 0 ? 1 : 0;
@@ -902,7 +917,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			 *	value for the child grid.
 			 */
 			if (angular.isObject(config.noGrid.nestedGrid)) {
-				scope.childGridFilter = e.data[config.noGrid.nestedGrid.filterProperty];
+				scope.childGridFilter = noInfoPath.getItem(e.data, config.noGrid.nestedGrid.filterProperty);
 				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid></div>")(scope);
 			} else {
 				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
@@ -1010,6 +1025,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			kgCfg.dataSource = dataSource;
 
+			_wireUpKendoEvents(config, kgCfg, scope);
 
 			_selectable(config, kgCfg, scope);
 
@@ -1031,6 +1047,19 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			_selectColumn(scope, el);
 
+		}
+
+		function _wireUpKendoEvents(config, kgCfg, scope){
+			if(config.noGrid.events){
+				for (var i = 0; i < config.noGrid.events.length; i++){
+					var ev = config.noGrid.events[i],
+						prov = $injector.get(ev.provider),
+						meth = prov[ev.method],
+						params = noInfoPath.resolveParams(ev.params);
+
+					kgCfg[ev.eventName] = meth.bind.apply(meth, [null].concat(params));
+				}
+			}
 		}
 
 		return {
@@ -1275,6 +1304,10 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 				//fixing the issue where the data is not on the scope on initValue load
 				noInfoPath.setItem(scope, noForm.ngModel, noInfoPath.toDbDate(internalDate));
+
+				if(noForm.readOnly){
+					datePicker.element.attr("readonly", true);
+				}				
 
 				$timeout(function() {
 					scope.$apply();

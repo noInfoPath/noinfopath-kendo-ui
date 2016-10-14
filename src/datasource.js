@@ -18,7 +18,7 @@
 			Kendo's data aware widgets to work with NoInfoPath's data providers,
 			like the IndexedDB, WebSql and HTTP implementations.
 		*/
-		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "noDynamicFilters", "lodash", "$state", "noCalculatedFields", function($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields) {
+		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "noDynamicFilters", "lodash", "$state", "noCalculatedFields", "noActionQueue", function($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields, noActionQueue) {
 
 			function KendoDataSourceService() {
 
@@ -84,7 +84,7 @@
 
 						noTrans.upsert(options.data)
 							//.then(toKendoModel.bind(null, options.data, op))
-							.then(success.bind(null, options.success, noTrans))
+							.then(success.bind(null, options.success, noTrans, op))
 							.catch(errors.bind(options.data, options.error));
 
 					}
@@ -144,16 +144,17 @@
 
 						noTrans.upsert(options.data)
 							.then(toKendoModel.bind(null, scope, entityName))
-							.then(success.bind(null, options.success, noTrans))
+							.then(success.bind(null, options.success, noTrans, op))
 							.catch(errors.bind(null, options.error));
 
 					}
 
 					function destroy(options) {
-						var noTrans = noTransactionCache.beginTransaction(userId, config, scope);
+						var noTrans = noTransactionCache.beginTransaction(userId, config, scope),
+							op = config.noDataSource.noTransaction.delete[0];
 
 						noTrans.destroy(options.data)
-							.then(success.bind(options.data, options.success, noTrans))
+							.then(success.bind(options.data, options.success, noTrans, op))
 							.catch(errors.bind(options.data, options.error));
 
 					}
@@ -163,14 +164,28 @@
 						reject(err);
 					}
 
-					function success(resolve, noTrans, resp) {
+					function success(resolve, noTrans, op, resp) {
 						noTransactionCache.endTransaction(noTrans)
-							.then(function() {
-								resolve(resp);
-								if (scope.noGrid) {
-									scope.noGrid.dataSource.read();
+							.then(function(op) {
+								if(op.actions && op.actions.post){
+									var q = noActionQueue.createQueue({}, scope, {}, op.actions.post);
+									noActionQueue.synchronize(q)
+										.then(function(){
+											resolve(resp);
+											if (scope.noGrid) {
+												scope.noGrid.dataSource.read();
+											}
+										})
+										.catch(function(err){
+											reject(err);
+										})
+								} else {
+									resolve(resp);
+									if (scope.noGrid) {
+										scope.noGrid.dataSource.read();
+									}
 								}
-							});
+							}.bind(null, op));
 
 					}
 
@@ -183,7 +198,7 @@
 								return data ? new Date(data) : "";
 							},
 							"utcDate": function(data) {
-								return data ? new Date(noInfoPath.toDisplayDate(data)) : "";
+								return data ? moment.utc(noInfoPath.toDisplayDate(data)).format("L") : "";
 							},
 							"ReverseYesNo": function(data) {
 								var v = data === 0 ? 1 : 0;
