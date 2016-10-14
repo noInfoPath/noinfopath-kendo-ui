@@ -4,6 +4,7 @@
 		/*
 		*	## Directive noKendoAutoComplete($compile, noFormConfig, $state, noLoginService, noKendoDataSourceFactory, lodash)
 		*
+		*	### Overview
 		*	`noKendoAutoComplete` is a directive that creates a kendo databound input of type text.
 		*
 		*	### Parameters
@@ -19,7 +20,7 @@
 		*
 		*	### Configuration
 		*
-		*	The noKendoDataSource can have all of kendo supported configuration configured within the noKendoAutoComplete.options object.
+		*	The noKendoAutoComplete configuration object can have all of the kendo supported configuration configured within the noKendoAutoComplete.options object.
 		*	There are some specific configuration values for the noInfoPath noKendoAutoComplete directive, which are detailed below.
 		*
 		*	|Name|Type|Description|
@@ -108,7 +109,7 @@
 			*	within the kendo data model.
 			*
 			*	This directive also puts the current selected value of the noKendoAutoComplete onto the scope to allow for angular
-			*	binding for a multitude of potential purposes, saving with noForms being the a reason.
+			*	binding for a multitude of potential purposes, saving with noForms being a reason.
 			*
 			*	#### Parameters
 			*

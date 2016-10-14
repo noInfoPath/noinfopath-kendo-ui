@@ -1,5 +1,4 @@
 //global.js
-
 /*
  *	# Module noinfopath-kendo-ui
  *	@version 1.2.18
@@ -8,7 +7,7 @@
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
  *	it with other NoInfoPath modules. It is important to note that this module inplements
  *  implied interfaces that NoInfoPath defines. For the sake of this discussion
- *  we'll use the generic object oriented notation of "IXyz", where "I" stands
+ *  we will use the generic object oriented notation of "IXyz", where "I" stands
  *  for interface. This particular module will implement the IQueryParser, and
  *  IQueryBuilder interface.
  *
@@ -51,7 +50,7 @@
  */
 
 /**
- *	## Developers' Remarks
+ *	## Developer Remarks
  *
  *	|Who|When|What|
  *	|---|----|----|

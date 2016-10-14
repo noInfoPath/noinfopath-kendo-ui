@@ -1,70 +1,90 @@
 //grid.js
 (function(angular, undefined) {
-
-	function hide(noFormKey, container, options) {
-		container.prev(".k-edit-label")
-			.addClass("ng-hide");
-		container.addClass("ng-hide");
-
-	}
-
 	/**
-	 * ## noKendoGrid (no-kendo-grid) Directive
+	 *	## Directive noKendoGrid($injector, $compile, $timeout, noTemplateCache, $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource, noKendoHelpers)
 	 *
-	 * Creates a Kendo UI Grid, bound to a NoInfoPath data provider, and
-	 * injects it into the DOM.
+	 *	### Overview
+	 *
+	 *	Creates a Kendo UI Grid, bound to a NoInfoPath data provider, and injects it into the DOM.
 	 *
 	 *	> NOTE: Kendo UI Grid is not open source, it is a licensed product from Kendo. In order to use noKendoGrid, you must aquire a license from Kendo (Telerik).
 	 *
-	 * ### Attributes
+	 *	### Parameters
 	 *
-	 * |Name|Descriptions|
-	 * |----|------------|
-	 * |no-form|The name of the configuration node in no-form.js. |
+	 *	|Name|Type|Description|
+	 *	|----|----|-----------|
+	 *	|$injector|Object|Angular.js $injector service|
+	 *	|$compile|Object|Angular.js $compile service|
+	 *	|$timeout|Object|Angular.js $timeout service|
+	 *	|noTemplateCache|Object|NoInfoPath noTemplateCache service. Located in noinfopath.data|
+	 *	|$state|Object|ui-router state provider object|
+	 *	|$q|Object|Angular.js promise service|
+	 *	|lodash|Object|Lodash provider object|
+	 *	|noLoginService|Object|NoInfoPath noLoginService service. Located in noinfopath.user|
+	 *	|noKendoDataSourceFactory|Object|NoInfoPath noKendoDataSourceFactory. Located in noinfopath.kendo.ui|
+	 *	|noDataSource|Object|NoInfoPath noDataSource service. Located in noinfopath.data|
+	 *	|noKendoHelpers|Object|NoInfoPath noKendoHelpers service. Located in noinfopath.kendo.ui|
 	 *
-	 * ```html
-	 * <no-kendo-grid no-form="noForm.noComponents.cooperators"/>
-	 * ```
-	 * #### Sample noComponent Configuration
+	 *	### Configuration
 	 *
 	 *	Any of the configuration options in the noKendoGrid node are options taken directly
-	 *	from the Kendo UI Grid documentations.
+	 *	from the Kendo UI Grid documentation.
 	 *
-	 * ```json
-	 *	 {
-	 *		 "noGrid": {
-	 *			 "referenceOnParentScopeAs": "docGrid"
-	 *		 },
-	 *		 "noDataSource": {
-	 *		 	...
-	 *		 },
-	 *		 "noKendoGrid": {
-	 *			 "sortable": true,
-	 *			 "pageable": {
-	 *				 "previousNext": false,
-	 *				 "numeric": false,
-	 *				 "pageSize": 50,
-	 *				 "refresh": true
-	 *			 },
-	 *			 "scrollable": {
-	 *				 "virtual": true
-	 *			 },
-	 *			 "columns": [{
-	 *				 "title": "Name",
-	 *				 "field": "FileID.name"
-	 *			 }, {
-	 *				 "title": "Description",
-	 *				 "field": "description"
-	 *			 }]
-	 *		 },
-	 *		 "noKendoDataSource": {
-	 *		 	...
-	 *		 }
-	 *	 }
+	 *	|Name|Type|Description|
+	 *	|----|----|-----------|
+	 *	|noGrid|Object|Object to hold noInfoPath configuration that affects the grid itself|
+	 *	|noGrid.toState|String|The state to navigate to when a user selects a row on the grid|
+	 *	|noGrid.primaryKey|String|The primary key of the data stored within the grid|
+	 *	|noGrid.stateName|String|The state the grid is in|
+	 *	|noGrid.saveOnStateAs|String|The scope key that a reference to the grid will be saved|
+	 *	|noDataSource|Object|A noInfoPath noDataSource object. Documentation can be found in noinfopath.data|
+	 *	|noDataSource.preserveUserFilters|Boolean|Saves the filter object on $state if true, and loads that filter if there is one on $state|
+	 *	|noDataSource.preserveUserSort|Boolean|Saves the sort object on $state if true, and loads that sort configuration if there is one on $state|
+	 *	|noKendoGrid|Object|Configuration for a kendo grid. Any kendo supported properties can be configured here. There are a few special configuration properties that NoInfoPath uses to expand on the configuration, enabling additional functionality|
+	 *	|noKendoDataSource|Object|Configuration for a kendo datasource. Any kendo supported properties can be configured here|
 	 *
-	 * ```
+	 *	#### Sample HTML
+	 *
+	 *	```html
+	 *	<no-kendo-grid no-form="noForm.noComponents.cooperators"/>
+	 *	```
+	 *
+	 *	#### Sample noComponent Configuration
+	 *
+	 *	```json
+	 *	{
+	 *		"noGrid": {
+	 *			"referenceOnParentScopeAs": "docGrid"
+	 *		},
+	 *		"noDataSource": {
+	 *		...
+	 *		},
+	 *		"noKendoGrid": {
+	 *			"sortable": true,
+	 *			"pageable": {
+	 *				"previousNext": false,
+	 *				"numeric": false,
+	 *				"pageSize": 50,
+	 *				"refresh": true
+	 *			},
+	 *			"scrollable": {
+	 *				"virtual": true
+	 *			},
+	 *			"columns": [{
+	 *				"title": "Name",
+	 *				"field": "FileID.name"
+	 *			}, {
+	 *				"title": "Description",
+	 *				"field": "description"
+	 *			}]
+	 *		},
+	 *		"noKendoDataSource": {
+	 *			...
+	 *		}
+	 *	}
+	 *	```
 	 */
-	function NoKendoGridDirective($injector, $compile, $timeout, /*$http,*/ noTemplateCache, $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource, noKendoHelpers) {
+	function NoKendoGridDirective($injector, $compile, $timeout, noTemplateCache, $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource, noKendoHelpers) {
 
 		function _getKendoGridEditorTemplate(config, scope) {
 			return noTemplateCache.get(config.template)
@@ -681,10 +701,14 @@
 		};
 	}
 
+	function hide(noFormKey, container, options) {
+		container.prev(".k-edit-label")
+			.addClass("ng-hide");
+		container.addClass("ng-hide");
+	}
+
 	angular.module("noinfopath.kendo.ui")
-
-	.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
-
-	.service("noKendoRowTemplates", [NoKendoRowTemplates]);
-
+		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
+		.service("noKendoRowTemplates", [NoKendoRowTemplates])
+	;
 })(angular);
