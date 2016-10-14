@@ -90,6 +90,6 @@ module.exports = function(grunt) {
 	//Default task(s).
 	grunt.registerTask("document", ["concat:noinfopath", "nodocs:internal", "concat:readme"]); //Documentation purposes
 	grunt.registerTask("build", ["karma:continuous", "concat:noinfopath", "nodocs:internal", "concat:readme"]); //Code testing
-	grunt.registerTask("deploy", ["karma:continuous", "bumpup", "version", "concat:noinfopath", "nodocs:internal", "concat:readme"]); //Bumpup to publish to npm
+	grunt.registerTask("publish", ["karma:continuous", "bumpup", "version", "concat:noinfopath", "nodocs:internal", "concat:readme"]); //Bumpup to publish to npm
     grunt.registerTask("jenkins", ["karma:continuous"]); //Task for CI
 };
