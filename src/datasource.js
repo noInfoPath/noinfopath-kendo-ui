@@ -1,22 +1,54 @@
 // datasource.js
-(function(angular, kendo) {
+(function(angular, kendo, undefined) {
 	angular.module("noinfopath.kendo.ui")
-		/**
-			## noKendoDataSourceFactory
-
-			### Overview
-			This factory returns a service that creates Kendo DataSource objects
-			that are compatible with other NoInfoPath wrapped Kendo widgets. The
-			configuration data is stored in the NoInfoPath Configuration database,
-			placed there either by using the NoInfopath Designer or by a developer,
-			creating bare metal applications using the NoInfoPath open source
-			components.
-
-			All properties mentioned in the Kendo DataSource documentation are
-			supported with a few tactical exceptions. A few of options are set at
-			runtime by the NoInfoPath Kendo UI DataSource wrapper.  This allows
-			Kendo's data aware widgets to work with NoInfoPath's data providers,
-			like the IndexedDB, WebSql and HTTP implementations.
+		/*
+		*	## Factory noKendoDataSourceFactory($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields)
+		*
+		*	### Overview
+		*	This factory returns a service that creates Kendo DataSource objects
+		*	that are compatible with other NoInfoPath wrapped Kendo widgets. The
+		*	configuration data is stored in the NoInfoPath Configuration database,
+		*	placed there either by using the NoInfopath Designer or by a developer,
+		*	creating bare metal applications using the NoInfoPath open source
+		*	components.
+		*
+		*	All properties mentioned in the Kendo DataSource documentation are
+		*	supported with a few tactical exceptions. A few of options are set at
+		*	runtime by the NoInfoPath Kendo UI DataSource wrapper.  This allows
+		*	Kendo's data aware widgets to work with NoInfoPath's data providers,
+		*	like the IndexedDB, WebSql and HTTP implementations.
+		*
+		*	### Parameters
+		*
+		*	|Name|Type|Description|
+		*	|----|----|-----------|
+		*	|$injector|Object|Angular.js injector provider|
+		*	|$q|Object|Angular.js promise provider|
+		*	|noQueryParser|Object|NoInfoPath noQueryParser service. Located in the noinfopath.data module|
+		*	|noTransactionCache|Object|NoInfoPath noTransactionCache factory. Located in the noinfopath.data module|
+		*	|noDynamicFilters|Object|NoInfoPath noDynamicFilters service. Located in the noinfopath.data module|
+		*	|lodash|Object|ng-lodash provider|
+		*	|$state|Object|angular-ui-router state provider|
+		*	|noCalculatedFields|Object|NoInfoPath noCalculatedFields service. Located in the noinfopath.data module|
+		*
+		*	### Configuration
+		*
+		*	The configuration passed into the noKendoDataSourceFactory is mostly kendo's configuration properties for their datasource object.
+		*	However, there are some NoInfoPath configuration properties which are detailed below.
+		*
+		*	#### noKendoDataSource Configuration
+		*
+		*	|Name|Type|Description|
+		*	|----|----|-----------|
+		*	|schema.model.field.parse|String|A string that parses the data for the kendo datamodel. Current supported types are "date", "utcDate", and "ReverseYesNo"|
+		*	
+		*	#### noDataSource Configuration
+		*
+		*	|Name|Type|Description|
+		*	|----|----|-----------|
+		*	|preserveUserFilters|Boolean|A Boolean value that puts the current filter onto the $state so when the user navigates back to this state, the grid loads the previous filter if any|
+		*	|preserveUserSort|Boolean|A Boolean value that puts the current sort onto the $state so when the user navigates back to this state, the grid loads the previous sort if any|
+		*
 		*/
 		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "noDynamicFilters", "lodash", "$state", "noCalculatedFields", function($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields) {
 
@@ -26,47 +58,14 @@
 					return $q(function(resolve, reject) {
 						try {
 							var kmodel = scope[entityName];
-
-							// for (var k in data) {
-							// 	var d = data[k];
-							//
-							// 	if (d) {
-							// 		kmodel[k] = d;
-							// 	}
-							// }
-
 							resolve(kmodel);
 						} catch (ex) {
 							reject(ex);
 						}
-
-					});
-				}
-
-				//deprecated
-				function updateAngularScope(scopeData, config, kmodel) {
-					return $q(function(resolve, reject) {
-						try {
-
-
-							for (var k in data) {
-								var d = data[k];
-
-								if (d) {
-									kmodel[k] = d;
-								}
-							}
-
-							resolve(kmodel);
-						} catch (ex) {
-							reject(ex);
-						}
-
 					});
 				}
 
 				this.create = function(_, userId, config, scope, watch) {
-					//console.warn("TODO: Implement config.noDataSource and ???");
 					if (!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
 
 					var provider = $injector.get(config.noDataSource.dataProvider),
@@ -74,19 +73,14 @@
 						noTable = db[config.noDataSource.entityName];
 
 					function create(options) {
-
-
 						var noTrans = noTransactionCache.beginTransaction(userId, config, scope),
 							op = config.noDataSource.noTransaction.create[0],
 							entityName = op.scopeKey ? op.scopeKey : op.entityName,
 							scopeData = scope[entityName] ? scope[entityName] : {};
 
-
 						noTrans.upsert(options.data)
-							//.then(toKendoModel.bind(null, options.data, op))
 							.then(success.bind(null, options.success, noTrans))
 							.catch(errors.bind(options.data, options.error));
-
 					}
 
 					function read(_, options) {
@@ -111,7 +105,6 @@
 							}
 						}
 
-
 						if (options.data.filter) {
 							if (options.data.filter.logic) {
 								options.data.filter.logic = _.first(_.pluck(config.noDataSource.filter, "logic"));
@@ -122,7 +115,6 @@
 
 									filter.logic = filterCfg.logic;
 								}
-
 							}
 						}
 
@@ -146,7 +138,6 @@
 							.then(toKendoModel.bind(null, scope, entityName))
 							.then(success.bind(null, options.success, noTrans))
 							.catch(errors.bind(null, options.error));
-
 					}
 
 					function destroy(options) {
@@ -155,7 +146,6 @@
 						noTrans.destroy(options.data)
 							.then(success.bind(options.data, options.success, noTrans))
 							.catch(errors.bind(options.data, options.error));
-
 					}
 
 					function errors(reject, err) {
@@ -171,48 +161,7 @@
 									scope.noGrid.dataSource.read();
 								}
 							});
-
 					}
-
-					// function watch(dsCfg, filterCfg, valueObj, newval, oldval, scope) {
-					// 	var grid = scope.noGrid,
-					// 		filters, filter, compountValues;
-					//
-					// 	if(noInfoPath.isCompoundFilter(filterCfg.field)){
-					// 		//Need to reconstitue the values
-					// 		for(var fi=0; fi<filterCfg.value.length; fi++){
-					// 			var valCfg = filterCfg.value[fi];
-					//
-					// 			if(valCfg.property === valueObj.property){
-					// 				this.value[fi] = newval;
-					// 			}else{
-					// 				if(valCfg.source === "scope"){
-					// 					this.value[fi] = noInfoPath.getItem(scope, valCfg.property);
-					// 				}else if(["$scope", "$stateParams"].indexOf(valCfg.source) > -1){
-					// 					var prov = $injector.get(valCfg.source);
-					// 					this.value[fi] = noInfoPath.getItem(prov, valCfg.property);
-					// 				}else{
-					// 					console.warn("TODO: May need to implement other sources for dynamic filters", valCfg);
-					// 				}
-					// 			}
-					// 		}
-					// 	}else{
-					// 		this.value = newval;
-					// 	}
-					//
-					//
-					// 	if (grid) {
-					// 		filters = grid.dataSource.filter();
-					// 		filter = _.find(filters.filters, {
-					// 			field: filterCfg.field
-					// 		});
-					// 		if (filter) {
-					// 			filter.value = newval;
-					// 		}
-					// 		grid.dataSource.page(0);
-					// 		grid.refresh();
-					// 	}
-					// }
 
 					var yesNo = [
 							"No",
@@ -223,7 +172,7 @@
 								return data ? new Date(data) : "";
 							},
 							"utcDate": function(data) {
-								return data ? moment.utc(noInfoPath.toDisplayDate(data)).format("L") : "";
+								return data ? moment.utc(data).toDate() : "";
 							},
 							"ReverseYesNo": function(data) {
 								var v = data === 0 ? 1 : 0;
@@ -253,7 +202,6 @@
 								total: function(data) {
 									return data.total;
 								}
-
 							}
 						}, config.noKendoDataSource),
 						dsCfg = config.noDataSource ? config.noDataSource : config,
@@ -264,7 +212,8 @@
 					 *   #### Schema Model
 					 *
 					 *   When the noKendoDataSource config contains a schema.model
-					 *   then loop through looking for fields that have a type and a
+					 *   noKendoDataSourceFactory loops through looking for fields 
+					 *	 that are an object that has a type and a
 					 *   parser property and set the parser propety to one of
 					 *   parse functions defined in the parsers collection.
 					 */
@@ -299,24 +248,18 @@
 						filters: tmpFilters
 					} : undefined;
 
-
 					if (dsCfg.preserveUserFilters && $state.current.data.entities && $state.current.data.entities[name] && $state.current.data.entities[name].filters) {
-
 						ds.filter = angular.merge({}, ds.filter, $state.current.data.entities[name].filters);
-
 					}
 
 					if (dsCfg.preserveUserSort && $state.current.data.entities && $state.current.data.entities[name] && $state.current.data.entities[name].sort) {
-
 						ds.sort = $state.current.data.entities[name].sort;
-
 					}
 
 					kds = new kendo.data.DataSource(ds);
 
 					return kds;
 				}.bind(this, _);
-
 			}
 
 			return new KendoDataSourceService();

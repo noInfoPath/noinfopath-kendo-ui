@@ -15,7 +15,8 @@
 			function _link(config, scope, el, attrs) {
 				var kendoOptions = config.noLookup.options ? config.noLookup.options : {
 						dataTextField: config.noLookup.textField,
-						dataValueField: config.noLookup.valueField
+						dataValueField: config.noLookup.valueField,
+						optionLabel: " "
 					},
 					dsCfg = config.noDataSource ? config.noDataSource : config,
 					dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope);
@@ -30,29 +31,13 @@
 						value = {};
 					}
 
-					//value[kendoOptions.dataTextField] = this.value();
-
 					noInfoPath.setItem(scope, config.noLookup.ngModel, this.value());
 					scope[config.noLookup.scopeKey].dirty = true;
 					scope.$apply();
 				};
 
 				scope[config.scopeKey + "_lookup"] = el.find("select").kendoDropDownList(kendoOptions).data("kendoLookup");
-
-				// if (config.noKendoLookup.waitFor) {
-				// 	scope.$watch(config.noKendoLookup.waitFor.property, function(newval) {
-				// 		if (newval) {
-				// 			var values = _.pluck(newval, config.noKendoLookup.waitFor.pluck);
-				//
-				// 			noInfoPath.setItem(scope, config.noKendoLookup.ngModel, values);
-				//
-				// 			scope[config.scopeKey + "_lookup"].value(values);
-				// 		}
-				// 	});
-				// }
-
 			}
-
 
 			directive = {
 				restrict: "E",
@@ -61,7 +46,5 @@
 			};
 
 			return directive;
-
 		}]);
-
 })(angular);

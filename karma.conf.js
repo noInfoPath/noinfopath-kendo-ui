@@ -3,27 +3,26 @@
 
 module.exports = function(config) {
 	config.set({
-
 		// base path that will be used to resolve all patterns (eg. files, exclude)
 		basePath: '',
-
 
 		// frameworks to use
 		// available frameworks: https://npmjs.org/browse/keyword/karma-adapter
 		frameworks: ['jasmine'],
 
-
 		// list of files / patterns to load in the browser
 		files: [
-			'bower_components/jquery/dist/jquery.js',
-			'node_modules/angular/angular.js',
+			'node_modules/jquery/dist/jquery.min.js',
+			'node_modules/angular/angular.min.js',
 			'node_modules/angular-mocks/angular-mocks.js',
-			'node_modules/angular-ui-router/release/angular-ui-router.js',
-			'bower_components/ng-lodash/build/ng-lodash.js',
+			'node_modules/angular-ui-router/release/angular-ui-router.min.js',
+			'node_modules/ng-lodash/build/ng-lodash.js',
 			'lib/js/kendo/kendo.all.min.js',
-			'node_modules/noinfopath/dist/noinfopath.js',
-			'node_modules/noinfopath-helpers/src/noinfopath-helpers.js',
+			'node_modules/@noinfopath/noinfopath/dist/noinfopath.js',
+			'node_modules/@noinfopath/noinfopath-helpers/src/noinfopath-helpers.js',
 			'node_modules/@noinfopath/noinfopath-logger/dist/noinfopath-logger.js',
+			'node_modules/@noinfopath/noinfopath-forms/dist/noinfopath-forms.js',
+			'node_modules/@noinfopath/noinfopath-user/dist/noinfopath-user.js',
 			'node_modules/@noinfopath/noinfopath-data/dist/noinfopath-dexie.js',
 			'node_modules/@noinfopath/noinfopath-data/dist/noinfopath-data.js',
 			'src/global.js',
@@ -33,14 +32,10 @@ module.exports = function(config) {
 			'test/mock/*.mock.js',
 			'test/datasource.spec.js',
 			'test/query-parser.spec.js'
-
-    ],
-
+		],
 
 		// list of files to exclude
-		exclude: [
-    ],
-
+		exclude: [ ],
 
 		// preprocess matching files before serving them to the browser
 		// available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
@@ -53,34 +48,27 @@ module.exports = function(config) {
 			dir: 'coverage/'
 		},
 
-
 		// test results reporter to use
 		// possible values: 'dots', 'progress'
 		// available reporters: https://npmjs.org/browse/keyword/karma-reporter
 		reporters: ['verbose', 'coverage'],
 
-
 		// web server port
 		port: 9876,
 
-
 		// enable / disable colors in the output (reporters and logs)
 		colors: true,
-
 
 		// level of logging
 		// possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
 		logLevel: config.LOG_INFO,
 
-
 		// enable / disable watching file and executing tests whenever any file changes
 		autoWatch: true,
-
 
 		// start these browsers
 		// available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
 		browsers: ['Chrome'],
-
 
 		// Continuous Integration mode
 		// if true, Karma captures browsers, runs the tests and exits
