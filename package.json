@@ -1,6 +1,6 @@
 {
   "name": "@noinfopath/noinfopath-kendo-ui",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "noInfoPath wrapper around Kendo UI",
   "main": "noinfopath-kendo-ui.js",
   "directories": {
@@ -16,6 +16,14 @@
   "author": "noInfoPath <info@noInfoPath.org> (http://www.noinfopath.org/)",
   "license": "MIT",
   "devDependencies": {
+    "@noinfopath/noinfopath": ">2.0.0",
+    "@noinfopath/noinfopath-app": ">1.0.0",
+    "@noinfopath/noinfopath-data": ">2.0.0",
+    "@noinfopath/noinfopath-forms": "^2.0.12",
+    "@noinfopath/noinfopath-helpers": ">2.0.0",
+    "@noinfopath/noinfopath-logger": ">1.0.0",
+    "@noinfopath/noinfopath-ui": "^2.0.11",
+    "@noinfopath/noinfopath-user": ">1.0.0",
     "grunt": "^0.4.5",
     "grunt-bumpup": "^0.6.2",
     "grunt-contrib-concat": "^0.5.1",
@@ -37,19 +45,13 @@
     "karma-phantomjs-launcher": "^0.1.4",
     "karma-safari-launcher": "^0.1.1",
     "karma-verbose-reporter": "0.0.1",
-    "noinfopath-helpers": "0.0.16",
     "phantomjs": "^1.9.15"
   },
   "dependencies": {
-    "@noinfopath/noinfopath-app": "^1.1.33",
-    "@noinfopath/noinfopath-data": "^1.2.2",
-    "@noinfopath/noinfopath-logger": "^1.0.1",
-    "@noinfopath/noinfopath-user": "^1.2.2",
     "angular": "^1.4.8",
     "angular-mocks": "^1.4.8",
     "angular-ui-router": "^0.2.18",
     "jsdoc": "^3.4.0",
-    "noinfopath": "^0.2.5",
     "phantomjs": "^1.9.20"
   }
 }
