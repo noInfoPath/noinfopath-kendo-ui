@@ -177,8 +177,8 @@
 											}
 										})
 										.catch(function(err){
-											reject(err);
-										})
+											throw err;
+										});
 								} else {
 									resolve(resp);
 									if (scope.noGrid) {

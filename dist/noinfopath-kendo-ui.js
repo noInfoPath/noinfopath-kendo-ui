@@ -258,8 +258,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 											}
 										})
 										.catch(function(err){
-											reject(err);
-										})
+											throw err;
+										});
 								} else {
 									resolve(resp);
 									if (scope.noGrid) {
