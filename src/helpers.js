@@ -67,6 +67,21 @@
 
 			return configurationType;
 		};
+
+		function _getGridRow(el) {
+			var tr = el.closest("tr");
+			return $(tr);
+		}
+		this.getGridRow = _getGridRow;
+
+		function _getGridRowUID(el) {
+			var tr = _getGridRow(el),
+				uid = tr.attr("data-uid");
+
+			return uid;
+		}
+		this.getGridRowUID = _getGridRowUID;
+
 	}
 
 	angular.module("noinfopath.kendo.ui")

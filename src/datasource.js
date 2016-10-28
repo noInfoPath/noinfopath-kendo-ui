@@ -151,7 +151,7 @@
 
 					function destroy(options) {
 						var noTrans = noTransactionCache.beginTransaction(userId, config, scope),
-							op = config.noDataSource.noTransaction.delete[0];
+							op = config.noDataSource.noTransaction.destroy[0];
 
 						noTrans.destroy(options.data)
 							.then(success.bind(options.data, options.success, noTrans, op))
@@ -268,7 +268,6 @@
 					 *   should be evaluated as an 'and' or an 'or'. The 'and' logic
 					 *   is the default is no filterLogic is defined.
 					 */
-
 					var tmpFilters = noDynamicFilters.configure(dsCfg, scope, watch);
 					ds.filter = tmpFilters ? {
 						filters: tmpFilters
@@ -296,6 +295,5 @@
 
 			return new KendoDataSourceService();
 		}])
-
 		;
 })(angular, kendo);

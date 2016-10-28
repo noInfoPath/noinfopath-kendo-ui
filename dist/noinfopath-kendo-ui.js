@@ -232,7 +232,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 					function destroy(options) {
 						var noTrans = noTransactionCache.beginTransaction(userId, config, scope),
-							op = config.noDataSource.noTransaction.delete[0];
+							op = config.noDataSource.noTransaction.destroy[0];
 
 						noTrans.destroy(options.data)
 							.then(success.bind(options.data, options.success, noTrans, op))
@@ -349,7 +349,6 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					 *   should be evaluated as an 'and' or an 'or'. The 'and' logic
 					 *   is the default is no filterLogic is defined.
 					 */
-
 					var tmpFilters = noDynamicFilters.configure(dsCfg, scope, watch);
 					ds.filter = tmpFilters ? {
 						filters: tmpFilters
@@ -377,7 +376,6 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			return new KendoDataSourceService();
 		}])
-
 		;
 })(angular, kendo);
 
@@ -723,6 +721,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 					fn(e);
 				}
+
+
 			}.bind(null, fns);
 
 
@@ -858,7 +858,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		}
 
 		function _ngCompileGrid(scope, el, e) {
-			console.log("TODO: wire up checkboxes after data has been bound.", e, el);
+			//console.log("TODO: wire up checkboxes after data has been bound.", e, el);
 
 			$compile(el.children().first("div"))(scope);
 
@@ -874,6 +874,12 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			// 	$(this).closest("no-kendo-grid").parent().find("[no-kendo-grid-delete-selected-rows]").prop("disabled",checkedBoxes.length === 0);
 			// 	$(this).closest("no-kendo-grid").parent().find("[no-kendo-grid-edit-selected-row]").prop("disabled", checkedBoxes.length !== 1);
 			// });
+		}
+
+		function _save(scope) {
+			scope.noGrid.bind("save", function(scope, e){
+				$compile(e.container)(scope);
+			}.bind(scope.noGrid, scope));
 		}
 
 		function _detailRowExpand(config, kgCfg, scope) {
@@ -1047,6 +1053,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			_selectColumn(scope, el);
 
+			_save(scope, el);
 		}
 
 		function _wireUpKendoEvents(config, kgCfg, scope){
@@ -1060,6 +1067,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					kgCfg[ev.eventName] = meth.bind.apply(meth, [null].concat(params));
 				}
 			}
+
 		}
 
 		return {
@@ -1068,7 +1076,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		};
 	}
 
-	function NoKendoRowTemplates() {
+	function NoKendoRowTemplates($q) {
 		this.scaffold = function(cfg, noGrid, alt) {
 			var holder = angular.element("<div></div>"),
 				outerRow = angular.element("<tr data-uid=\"#= uid #\"></tr>"),
@@ -1121,7 +1129,22 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			return kendo.template(t);
 		};
+
+		this.currentGridRowData = function(scope, el) {
+			var tr = el.closest("tr"),
+				grid = scope.noGrid,
+				data = grid.dataItem(tr);
+
+
+			return data;
+		};
+
+		this.currentGridRow = function(scope, el) {
+			var tr = el.closest("tr");
+			return tr;
+		};
 	}
+
 
 	function SelectAllGridRowsDirective() {
 			return {
@@ -1158,6 +1181,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		};
 	}
 
+
+
 	angular.module("noinfopath.kendo.ui")
 
 		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
@@ -1166,7 +1191,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 		.directive("noKendoGridDeleteSelectedRows", [DeleteSelectedRows])
 
-		.service("noKendoRowTemplates", [NoKendoRowTemplates])
+		.service("noKendoRowTemplates", ["$q", NoKendoRowTemplates])
 	;
 
 
@@ -1539,6 +1564,21 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			return configurationType;
 		};
+
+		function _getGridRow(el) {
+			var tr = el.closest("tr");
+			return $(tr);
+		}
+		this.getGridRow = _getGridRow;
+
+		function _getGridRowUID(el) {
+			var tr = _getGridRow(el),
+				uid = tr.attr("data-uid");
+
+			return uid;
+		}
+		this.getGridRowUID = _getGridRowUID;
+
 	}
 
 	angular.module("noinfopath.kendo.ui")

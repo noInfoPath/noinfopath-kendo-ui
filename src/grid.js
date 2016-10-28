@@ -340,6 +340,8 @@
 
 					fn(e);
 				}
+
+
 			}.bind(null, fns);
 
 
@@ -475,7 +477,7 @@
 		}
 
 		function _ngCompileGrid(scope, el, e) {
-			console.log("TODO: wire up checkboxes after data has been bound.", e, el);
+			//console.log("TODO: wire up checkboxes after data has been bound.", e, el);
 
 			$compile(el.children().first("div"))(scope);
 
@@ -491,6 +493,12 @@
 			// 	$(this).closest("no-kendo-grid").parent().find("[no-kendo-grid-delete-selected-rows]").prop("disabled",checkedBoxes.length === 0);
 			// 	$(this).closest("no-kendo-grid").parent().find("[no-kendo-grid-edit-selected-row]").prop("disabled", checkedBoxes.length !== 1);
 			// });
+		}
+
+		function _save(scope) {
+			scope.noGrid.bind("save", function(scope, e){
+				$compile(e.container)(scope);
+			}.bind(scope.noGrid, scope));
 		}
 
 		function _detailRowExpand(config, kgCfg, scope) {
@@ -664,6 +672,7 @@
 
 			_selectColumn(scope, el);
 
+			_save(scope, el);
 		}
 
 		function _wireUpKendoEvents(config, kgCfg, scope){
@@ -677,6 +686,7 @@
 					kgCfg[ev.eventName] = meth.bind.apply(meth, [null].concat(params));
 				}
 			}
+
 		}
 
 		return {
@@ -685,7 +695,7 @@
 		};
 	}
 
-	function NoKendoRowTemplates() {
+	function NoKendoRowTemplates($q) {
 		this.scaffold = function(cfg, noGrid, alt) {
 			var holder = angular.element("<div></div>"),
 				outerRow = angular.element("<tr data-uid=\"#= uid #\"></tr>"),
@@ -738,7 +748,22 @@
 
 			return kendo.template(t);
 		};
+
+		this.currentGridRowData = function(scope, el) {
+			var tr = el.closest("tr"),
+				grid = scope.noGrid,
+				data = grid.dataItem(tr);
+
+
+			return data;
+		};
+
+		this.currentGridRow = function(scope, el) {
+			var tr = el.closest("tr");
+			return tr;
+		};
 	}
+
 
 	function SelectAllGridRowsDirective() {
 			return {
@@ -775,6 +800,8 @@
 		};
 	}
 
+
+
 	angular.module("noinfopath.kendo.ui")
 
 		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
@@ -783,7 +810,7 @@
 
 		.directive("noKendoGridDeleteSelectedRows", [DeleteSelectedRows])
 
-		.service("noKendoRowTemplates", [NoKendoRowTemplates])
+		.service("noKendoRowTemplates", ["$q", NoKendoRowTemplates])
 	;
 
 

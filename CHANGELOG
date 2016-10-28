@@ -1,0 +1,6 @@
+|---------|--|----|-----------|
+|Timestamp|By|Area|Description|
+|---------|--|----|-----------|
+|10/23/2016, 8:20:23 PM|Jeff|noKendoRowTemplates|added currentGridRowData, and currentGridRow methods|
+|10/23/2016, 8:20:23 PM|Jeff|noKendoHelpers|added getGridRow, and getGridRowUID methods|
+|10/24/2016, 8:20:23 PM|Jeff|noKendoGrid::_save|register to watch the "save" event and then $compile whatever is in container.|
