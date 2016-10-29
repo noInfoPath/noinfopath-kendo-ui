@@ -147,11 +147,35 @@ from the Kendo UI Grid documentations.
 
 ```
 
-  ##### change() event handler
+#### kendoGrid.selectable property.
 
-  Listens on the Kendo UI Grid components change event
-  and transitions the user to the ```toState``` specified
+When the selectable property is an object then apply configuration provided in the object.
+
+When the actions property is provided then execute the actions using noActionQueue.
+
+*Example*
+
+```json
+{
+	"selectable":
+	{
+		"actions": []
+	}
+}
+```
+
+> NOTE: When the KendoGrid calls noInfoPath `change` event handler it calls `noAction.createQueue` with the actual KendoGrid object in place of the noKendoGrid directive element.
+> This is important to know because when the `passElement` action property is true it will be passing a fully instanciated grid object, not and HTML element.
+
+ Otherwise, use the provider/method/params configuration.
+
+ When the selectable property is a string (assumed), then we
+  listen on the Kendo UI Grid components change event
+  and transitions the user to the `toState` specified
   in the noConfig node for this directive.
+
+
+> NOTE: Currently only row selection is supported.
 
   `noFormOptionsKey` is required because it identifies where to get he configuration from
   to configure the noComponent when the time comes.
@@ -182,7 +206,7 @@ sort data in this object.
 This fix was intended to remedy the scrollable issue when grids were located in
 "hidden" elements, such as inactive tabs.
 
-	#### Nested grids
+#### Nested grids
 
 The `nestedGrid` grid property can be an object or a string. When it is
 a string it is the key to the `noComponent` child node with a `noForm`

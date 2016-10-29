@@ -82,6 +82,19 @@
 		}
 		this.getGridRowUID = _getGridRowUID;
 
+		function _getSelectedGridRow(grid) {
+			return grid.select();
+		}
+		this.getSelectedGridRow = _getSelectedGridRow;
+
+		function _getSelectedGridRowData(grid) {
+			var tr = _getSelectedGridRow(grid),
+				data = grid.dataItem(tr);
+
+			return data;
+		}
+		this.getSelectedGridRowData = _getSelectedGridRowData;
+
 	}
 
 	angular.module("noinfopath.kendo.ui")

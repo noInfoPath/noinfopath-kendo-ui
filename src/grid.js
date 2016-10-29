@@ -64,7 +64,7 @@
 	 *
 	 * ```
 	 */
-	function NoKendoGridDirective($injector, $compile, $timeout, /*$http,*/ noTemplateCache, $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource, noKendoHelpers) {
+	function NoKendoGridDirective($injector, $compile, $timeout, /*$http,*/ noTemplateCache, $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource, noKendoHelpers, noActionQueue) {
 
 		function _getKendoGridEditorTemplate(config, scope) {
 			return noTemplateCache.get(config.template)
@@ -134,36 +134,91 @@
 			return tpl;
 		}
 
-		function _selectable(config, kgCfg, scope) {
+		function _selectable(config, kgCfg, scope, el) {
 			if (kgCfg.selectable === undefined || kgCfg.selectable) { //When Truthy because we always want row selection.
-				kgCfg.selectable = "row";
 
-				/*
-				 *   ##### change() event handler
-				 *
-				 *   Listens on the Kendo UI Grid components change event
-				 *   and transitions the user to the ```toState``` specified
-				 *   in the noConfig node for this directive.
-				 */
-				kgCfg.change = function() {
-					var dsCfg = config.noDataSource ? config.noDataSource : config,
-						noGrid = config.noGrid ? config.noGrid : config,
-						data = this.dataItem(this.select()),
-						params = {},
-						toState = config.noGrid ? config.noGrid.toState : config.toState,
-						primaryKey = config.noGrid ? config.noGrid.primaryKey : config.primaryKey;
+				/**
+				*	#### kendoGrid.selectable property.
+				*
+				*	When the selectable property is an object then apply configuration provided in the object.
+				*/
+				if(angular.isObject(kgCfg.selectable)) {
+					/**
+					*	When the actions property is provided then execute the actions using noActionQueue.
+					*
+					*	*Example*
+					*
+					*	```json
+					*	{
+					*		"selectable":
+					*		{
+					*			"actions": []
+					*		}
+					*	}
+					*	```
+					*/
+					if(kgCfg.selectable.actions){
+						var actions = kgCfg.selectable.actions;
 
-					params[primaryKey] = data[dsCfg.primaryKey];
+						kgCfg.change = function(actions, e) {
+							/**
+							*	> NOTE: When the KendoGrid calls noInfoPath `change` event handler it calls `noAction.createQueue` with the actual KendoGrid object in place of the noKendoGrid directive element.
+							*	> This is important to know because when the `passElement` action property is true it will be passing a fully instanciated grid object, not and HTML element.
+							*/
+							var execQueue = noActionQueue.createQueue(config, scope, e.sender, actions);
 
-					params = angular.merge(params, $state.params);
-
-					if (toState) {
-						$state.go(toState, params);
+							noActionQueue.synchronize(execQueue);
+						}.bind(undefined, kgCfg.selectable.actions);
 					} else {
-						var tableName = dsCfg.entityName;
-						scope.$emit("noGrid::change+" + tableName, data);
+						/**
+						*  Otherwise, use the provider/method/params configuration.
+   					 	*/
+						if(!kgCfg.selectable.provider) throw {error: "`provider` property is required when selectable is an object."};
+						if(!kgCfg.selectable.method) throw {error: "`method` property is required when selectable is an object."};
+
+						var prov = $injector.get(kgCfg.selectable.provider),
+							meth = prov[kgCfg.selectable.method],
+							params = kgCfg.selectable.params || []
+						;
+
+						kgCfg.change = meth.bind.apply(meth, [null].concat(params));
 					}
-				};
+
+				} else {
+					/**
+					 *	 When the selectable property is a string (assumed), then we
+					 *   listen on the Kendo UI Grid components change event
+					 *   and transitions the user to the `toState` specified
+					 *   in the noConfig node for this directive.
+					 */
+					kgCfg.change = function() {
+						var dsCfg = config.noDataSource ? config.noDataSource : config,
+							noGrid = config.noGrid ? config.noGrid : config,
+							data = this.dataItem(this.select()),
+							params = {},
+							toState = config.noGrid ? config.noGrid.toState : config.toState,
+							primaryKey = config.noGrid ? config.noGrid.primaryKey : config.primaryKey;
+
+						params[primaryKey] = data[dsCfg.primaryKey];
+
+						params = angular.merge(params, $state.params);
+
+						if (toState) {
+							$state.go(toState, params);
+						} else {
+							var tableName = dsCfg.entityName;
+							scope.$emit("noGrid::change+" + tableName, data);
+						}
+					};
+
+				}
+
+				/**
+				*	When the selectable property is undefined or truthy then make the grid rows selectable.
+				*
+				*	> NOTE: Currently only row selection is supported.
+				*/
+				kgCfg.selectable = "row";
 
 			}
 
@@ -530,7 +585,7 @@
 			var compiledGrid, tmpHtml;
 
 			/*
-			 * 	#### Nested grids
+			 * #### Nested grids
 			 *
 			 *	The `nestedGrid` grid property can be an object or a string. When it is
 			 *	a string it is the key to the `noComponent` child node with a `noForm`
@@ -652,7 +707,7 @@
 
 			_wireUpKendoEvents(config, kgCfg, scope);
 
-			_selectable(config, kgCfg, scope);
+			_selectable(config, kgCfg, scope, el);
 
 			_editable(config, kgCfg, scope);
 
@@ -804,7 +859,7 @@
 
 	angular.module("noinfopath.kendo.ui")
 
-		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", NoKendoGridDirective])
+		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", "noActionQueue", NoKendoGridDirective])
 
 		.directive("selectAllGridRows", [SelectAllGridRowsDirective])
 
