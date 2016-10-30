@@ -271,7 +271,7 @@
 				if (angular.isObject(config.noGrid.editable)) {
 					if (config.noGrid.editable.provider) {
 						var prov = $injector.get(config.noGrid.editable.provider),
-							provFn = config.noGrid.editable.function,
+							provFn = config.noGrid.editable.function ,
 							fnEdit, fnSave;
 
 						if (angular.isObject(provFn)) {
@@ -292,6 +292,8 @@
 							};
 						}
 
+					} else if(config.noGrid.editable.templateUrls) {
+						console.log("TODO: templateUrls");
 					} else {
 						_processColumns();
 					}

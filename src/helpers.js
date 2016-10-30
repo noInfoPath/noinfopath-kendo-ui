@@ -69,7 +69,7 @@
 		};
 
 		function _getGridRow(el) {
-			var tr = el.closest("tr");
+			var tr = el.closest("tr[data-uid");
 			return $(tr);
 		}
 		this.getGridRow = _getGridRow;

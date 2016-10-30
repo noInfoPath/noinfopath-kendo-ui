@@ -652,7 +652,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				if (angular.isObject(config.noGrid.editable)) {
 					if (config.noGrid.editable.provider) {
 						var prov = $injector.get(config.noGrid.editable.provider),
-							provFn = config.noGrid.editable.function,
+							provFn = config.noGrid.editable.function ,
 							fnEdit, fnSave;
 
 						if (angular.isObject(provFn)) {
@@ -673,6 +673,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 							};
 						}
 
+					} else if(config.noGrid.editable.templateUrls) {
+						console.log("TODO: templateUrls");
 					} else {
 						_processColumns();
 					}
@@ -1621,7 +1623,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		};
 
 		function _getGridRow(el) {
-			var tr = el.closest("tr");
+			var tr = el.closest("tr[data-uid");
 			return $(tr);
 		}
 		this.getGridRow = _getGridRow;
