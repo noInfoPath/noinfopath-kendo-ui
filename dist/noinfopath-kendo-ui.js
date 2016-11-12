@@ -933,10 +933,14 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			// });
 		}
 
-		function _save(scope) {
+		function _ngCompileRow(scope) {
 			scope.noGrid.bind("save", function(scope, e){
 				$compile(e.container)(scope);
 			}.bind(scope.noGrid, scope));
+
+			// scope.noGrid.bind("cancel", function(scope, e){
+			// 	$compile(e.container)(scope);
+			// }.bind(scope.noGrid, scope));
 		}
 
 		function _detailRowExpand(config, kgCfg, scope) {
@@ -1110,7 +1114,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			_selectColumn(scope, el);
 
-			_save(scope, el);
+			_ngCompileRow(scope, el);
 		}
 
 		function _wireUpKendoEvents(config, kgCfg, scope){
@@ -1187,19 +1191,19 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			return kendo.template(t);
 		};
 
-		this.currentGridRowData = function(scope, el) {
-			var tr = el.closest("tr"),
-				grid = scope.noGrid,
-				data = grid.dataItem(tr);
-
-
-			return data;
-		};
-
-		this.currentGridRow = function(scope, el) {
-			var tr = el.closest("tr");
-			return tr;
-		};
+		// this.currentGridRowData = function(scope, el) {
+		// 	var tr = el.closest("tr"),
+		// 		grid = scope.noGrid,
+		// 		data = grid.dataItem(tr);
+		//
+		//
+		// 	return data;
+		// };
+		//
+		// this.currentGridRow = function(scope, el) {
+		// 	var tr = el.closest("tr");
+		// 	return tr;
+		// };
 	}
 
 
@@ -1566,7 +1570,30 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 	*	> NOTE: A future enhancements will be that it allows for multi-row selection,
 	*	> and cell slections.
 	*/
-	function NoKendoHelpersService($injector, $compile, $state) {
+	function NoKendoHelpersService($injector, $compile, $q, $state) {
+
+		function _resolveCurrentNavigationRow(grid, el) {
+			var tr;
+
+			if(grid.editable) {
+				tr = grid.editable.element;
+			} else {
+				tr = _getSelectedGridRow(grid);
+
+				if(tr.length === 0) tr = _getGridRow(el);
+			}
+
+			// tr = _getGridRow(el);
+			//
+			// 	if(tr.length === 0) {
+			//
+			// }
+
+			if(tr.length === 0) throw {error: "Could not resolve current row related to changing the rows navbar state." };
+
+			return tr;
+		}
+
 		/*
 		*	### @method getConfigMethod
 		*
@@ -1666,7 +1693,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		*
 		*/
 		function _getGridRow(el) {
-			var tr = el.closest("tr[data-uid");
+			var tr = el.closest("tr[data-uid]");
 			return $(tr);
 		}
 		this.getGridRow = _getGridRow;
@@ -1701,6 +1728,15 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		this.getSelectedGridRow = _getSelectedGridRow;
 
 		/**
+		*	### @method getSelectedGridRow
+		*/
+		function _getCurrentGridRow(scope, tragetGridID) {
+			return _getSelectedGridRow(scope[targetGridID]);
+		}
+		this.getCurrentGridRow = _getCurrentGridRow;
+
+
+		/**
 		*	### @method getSelectedGridRowData
 		*/
 		function _getSelectedGridRowData(grid) {
@@ -1717,7 +1753,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		*/
 		this.currentGridRowData = function(scope, el) {
 			var tr = _getGridRow(el),
-				grid = scope.noGrid,
+				grid = scope.noGrid || tr.scope().noGrid,
 				data = grid.dataItem(tr);
 
 
@@ -1727,15 +1763,81 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		/**
 		*	### @method currentGridRow
 		*/
-		this.currentGridRow = function(scope, el) {
-			var tr = _getGridRow(el);
-			return tr;
+		this.changeRowNavBar = function(ctx, scope, el, gridScopeId, navBarName, barid) {
+			var grid = scope[gridScopeId],
+				tr = _resolveCurrentNavigationRow(grid, el),
+				uid = noInfoPath.toScopeSafeGuid(_getGridRowUID(tr)),
+				barkey = navBarName + "_" + uid,
+				scopeKey = "noNavigation." + barkey + ".currentNavBar";
+
+			if(!uid) return;
+
+			if(grid.editable && grid.editable.validatable && grid.editable.validatable.errors().length > 0) return;
+
+			//console.log("changeNavBar", arguments);
+			// if(barid === "^") {
+			// 	var t = noInfoPath.getItem(scope,  "noNavigation." + barkey + ".currentNavBar"),
+			// 		p = t.split(".");
+			//
+			// 	barid = p[0];
+			// }
+
+
+
+			noInfoPath.setItem(scope, scopeKey , barid);
+
+			console.log("scope, grid, tr, scopeKey, barid", scope, grid, tr, scopeKey, barid);
 		};
 
+		this.changeRowNavBarWatch = function(ctx, scope, el, barid, o, s) {
+			// var grid = scope.noGrid,
+			// 	tr = _resolveCurrentNavigationRow(grid, el);
+			// 	// uid = noInfoPath.toScopeSafeGuid(_getGridRowUID(tr)),
+				// barkey = ctx.component.scopeKey + "_" + uid,
+				// scopeKey = "noNavigation." + barkey + ".currentNavBar";
+
+
+			if(barid) {
+				el.find("navbar").addClass("ng-hide");
+				el.find("navbar[bar-id='" + barid + "']").removeClass("ng-hide");
+
+			}
+
+			// if(!uid) return;
+			//
+			// if(grid.editable && grid.editable.validatable && grid.editable.validatable.errors().length > 0) return;
+
+			//console.log("changeNavBar", arguments);
+			// if(barid === "^") {
+			// 	var t = noInfoPath.getItem(scope,  "noNavigation." + barkey + ".currentNavBar"),
+			// 		p = t.split(".");
+			//
+			// 	barid = p[0];
+			// }
+
+
+
+			console.info("changeRowNavBarWatch",ctx.component, barid, scope.noNavigation);
+			//console.log("scope, grid, tr, scopeKey, barid", scope, grid, tr, scopeKey, barid);
+		};
+
+		/**
+		*	### @method ngCompileSelectedRow
+		*/
+		function _ngCompileRow(ctx, scope, el, targetGridID) {
+			var grid = scope[targetGridID],
+				tr = grid.select();
+
+			$compile(tr)(scope);
+
+			return true;
+
+		}
+		this.ngCompileSelectedRow = _ngCompileRow;
 	}
 
 	angular.module("noinfopath.kendo.ui")
-		.service("noKendoHelpers", ["$injector", "$compile", "$state", NoKendoHelpersService]);
+		.service("noKendoHelpers", ["$injector", "$compile", "$q", "$state", NoKendoHelpersService]);
 })(angular);
 
 //lookup.js

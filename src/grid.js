@@ -552,10 +552,14 @@
 			// });
 		}
 
-		function _save(scope) {
+		function _ngCompileRow(scope) {
 			scope.noGrid.bind("save", function(scope, e){
 				$compile(e.container)(scope);
 			}.bind(scope.noGrid, scope));
+
+			// scope.noGrid.bind("cancel", function(scope, e){
+			// 	$compile(e.container)(scope);
+			// }.bind(scope.noGrid, scope));
 		}
 
 		function _detailRowExpand(config, kgCfg, scope) {
@@ -729,7 +733,7 @@
 
 			_selectColumn(scope, el);
 
-			_save(scope, el);
+			_ngCompileRow(scope, el);
 		}
 
 		function _wireUpKendoEvents(config, kgCfg, scope){
@@ -806,19 +810,19 @@
 			return kendo.template(t);
 		};
 
-		this.currentGridRowData = function(scope, el) {
-			var tr = el.closest("tr"),
-				grid = scope.noGrid,
-				data = grid.dataItem(tr);
-
-
-			return data;
-		};
-
-		this.currentGridRow = function(scope, el) {
-			var tr = el.closest("tr");
-			return tr;
-		};
+		// this.currentGridRowData = function(scope, el) {
+		// 	var tr = el.closest("tr"),
+		// 		grid = scope.noGrid,
+		// 		data = grid.dataItem(tr);
+		//
+		//
+		// 	return data;
+		// };
+		//
+		// this.currentGridRow = function(scope, el) {
+		// 	var tr = el.closest("tr");
+		// 	return tr;
+		// };
 	}
 
 

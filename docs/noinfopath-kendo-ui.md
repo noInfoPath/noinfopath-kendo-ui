@@ -278,9 +278,13 @@ button that is child of a given row.
 
 ### @method getSelectedGridRow
 
+### @method getSelectedGridRow
+
 ### @method getSelectedGridRowData
 
 ### @method currentGridRowData
 
 ### @method currentGridRow
+
+### @method ngCompileSelectedRow
 
