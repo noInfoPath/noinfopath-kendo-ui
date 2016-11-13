@@ -209,7 +209,18 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 						noTable.noRead.apply(noTable, noQueryParser.parse(options.data))
 							.then(function(data) {
-								options.success(data);
+
+								if(config.noDataSource.actions && config.noDataSource.actions.post) {
+									var queue = noActionQueue.createQueue(data, scope, null, config.noDataSource.actions.post);
+
+									noActionQueue.synchronize(queue)
+										.then(function(results){
+											options.success(results[0]);
+										});
+								} else {
+									options.success(data);
+								}
+
 							})
 							.catch(options.error);
 					}
