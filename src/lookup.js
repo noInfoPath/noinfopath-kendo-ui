@@ -31,13 +31,17 @@
 						value = {};
 					}
 
+					//value[kendoOptions.dataTextField] = this.value();
+
 					noInfoPath.setItem(scope, config.noLookup.ngModel, this.value());
 					scope[config.noLookup.scopeKey].dirty = true;
 					scope.$apply();
 				};
 
 				scope[config.scopeKey + "_lookup"] = el.find("select").kendoDropDownList(kendoOptions).data("kendoLookup");
+
 			}
+
 
 			directive = {
 				restrict: "E",
@@ -46,5 +50,7 @@
 			};
 
 			return directive;
+
 		}]);
+
 })(angular);

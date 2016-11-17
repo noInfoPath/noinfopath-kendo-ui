@@ -1,54 +1,22 @@
 // datasource.js
-(function(angular, kendo, undefined) {
+(function(angular, kendo) {
 	angular.module("noinfopath.kendo.ui")
-		/*
-		*	## Factory noKendoDataSourceFactory($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields)
-		*
-		*	### Overview
-		*	This factory returns a service that creates Kendo DataSource objects
-		*	that are compatible with other NoInfoPath wrapped Kendo widgets. The
-		*	configuration data is stored in the NoInfoPath Configuration database,
-		*	placed there either by using the NoInfopath Designer or by a developer,
-		*	creating bare metal applications using the NoInfoPath open source
-		*	components.
-		*
-		*	All properties mentioned in the Kendo DataSource documentation are
-		*	supported with a few tactical exceptions. A few of options are set at
-		*	runtime by the NoInfoPath Kendo UI DataSource wrapper.  This allows
-		*	Kendo's data aware widgets to work with NoInfoPath's data providers,
-		*	like the IndexedDB, WebSql and HTTP implementations.
-		*
-		*	### Parameters
-		*
-		*	|Name|Type|Description|
-		*	|----|----|-----------|
-		*	|$injector|Object|Angular.js injector provider|
-		*	|$q|Object|Angular.js promise provider|
-		*	|noQueryParser|Object|NoInfoPath noQueryParser service. Located in the noinfopath.data module|
-		*	|noTransactionCache|Object|NoInfoPath noTransactionCache factory. Located in the noinfopath.data module|
-		*	|noDynamicFilters|Object|NoInfoPath noDynamicFilters service. Located in the noinfopath.data module|
-		*	|lodash|Object|ng-lodash provider|
-		*	|$state|Object|angular-ui-router state provider|
-		*	|noCalculatedFields|Object|NoInfoPath noCalculatedFields service. Located in the noinfopath.data module|
-		*
-		*	### Configuration
-		*
-		*	The configuration passed into the noKendoDataSourceFactory is mostly kendo's configuration properties for their datasource object.
-		*	However, there are some NoInfoPath configuration properties which are detailed below.
-		*
-		*	#### noKendoDataSource Configuration
-		*
-		*	|Name|Type|Description|
-		*	|----|----|-----------|
-		*	|schema.model.field.parse|String|A string that parses the data for the kendo datamodel. Current supported types are "date", "utcDate", and "ReverseYesNo"|
-		*	
-		*	#### noDataSource Configuration
-		*
-		*	|Name|Type|Description|
-		*	|----|----|-----------|
-		*	|preserveUserFilters|Boolean|A Boolean value that puts the current filter onto the $state so when the user navigates back to this state, the grid loads the previous filter if any|
-		*	|preserveUserSort|Boolean|A Boolean value that puts the current sort onto the $state so when the user navigates back to this state, the grid loads the previous sort if any|
-		*
+		/**
+			## noKendoDataSourceFactory
+
+			### Overview
+			This factory returns a service that creates Kendo DataSource objects
+			that are compatible with other NoInfoPath wrapped Kendo widgets. The
+			configuration data is stored in the NoInfoPath Configuration database,
+			placed there either by using the NoInfopath Designer or by a developer,
+			creating bare metal applications using the NoInfoPath open source
+			components.
+
+			All properties mentioned in the Kendo DataSource documentation are
+			supported with a few tactical exceptions. A few of options are set at
+			runtime by the NoInfoPath Kendo UI DataSource wrapper.  This allows
+			Kendo's data aware widgets to work with NoInfoPath's data providers,
+			like the IndexedDB, WebSql and HTTP implementations.
 		*/
 		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "noDynamicFilters", "lodash", "$state", "noCalculatedFields", function($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields) {
 
@@ -65,7 +33,26 @@
 					});
 				}
 
+				//deprecated
+				function updateAngularScope(scopeData, config, kmodel) {
+					return $q(function(resolve, reject) {
+						try {
+							for (var k in data) {
+								var d = data[k];
+
+								if (d) {
+									kmodel[k] = d;
+								}
+							}
+							resolve(kmodel);
+						} catch (ex) {
+							reject(ex);
+						}
+					});
+				}
+
 				this.create = function(_, userId, config, scope, watch) {
+					//console.warn("TODO: Implement config.noDataSource and ???");
 					if (!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
 
 					var provider = $injector.get(config.noDataSource.dataProvider),
@@ -172,7 +159,7 @@
 								return data ? new Date(data) : "";
 							},
 							"utcDate": function(data) {
-								return data ? moment.utc(data).toDate() : "";
+								return data ? new Date(noInfoPath.toDisplayDate(data)) : "";
 							},
 							"ReverseYesNo": function(data) {
 								var v = data === 0 ? 1 : 0;
@@ -202,6 +189,7 @@
 								total: function(data) {
 									return data.total;
 								}
+
 							}
 						}, config.noKendoDataSource),
 						dsCfg = config.noDataSource ? config.noDataSource : config,
@@ -212,8 +200,7 @@
 					 *   #### Schema Model
 					 *
 					 *   When the noKendoDataSource config contains a schema.model
-					 *   noKendoDataSourceFactory loops through looking for fields 
-					 *	 that are an object that has a type and a
+					 *   then loop through looking for fields that have a type and a
 					 *   parser property and set the parser propety to one of
 					 *   parse functions defined in the parsers collection.
 					 */
@@ -248,18 +235,24 @@
 						filters: tmpFilters
 					} : undefined;
 
+
 					if (dsCfg.preserveUserFilters && $state.current.data.entities && $state.current.data.entities[name] && $state.current.data.entities[name].filters) {
+
 						ds.filter = angular.merge({}, ds.filter, $state.current.data.entities[name].filters);
+
 					}
 
 					if (dsCfg.preserveUserSort && $state.current.data.entities && $state.current.data.entities[name] && $state.current.data.entities[name].sort) {
+
 						ds.sort = $state.current.data.entities[name].sort;
+
 					}
 
 					kds = new kendo.data.DataSource(ds);
 
 					return kds;
 				}.bind(this, _);
+
 			}
 
 			return new KendoDataSourceService();
