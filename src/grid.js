@@ -557,9 +557,6 @@
 				$compile(e.container)(scope);
 			}.bind(scope.noGrid, scope));
 
-			// scope.noGrid.bind("cancel", function(scope, e){
-			// 	$compile(e.container)(scope);
-			// }.bind(scope.noGrid, scope));
 		}
 
 		function _detailRowExpand(config, kgCfg, scope) {

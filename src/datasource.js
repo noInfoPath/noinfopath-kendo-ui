@@ -141,7 +141,9 @@
 								}
 
 							})
-							.catch(options.error);
+							.catch(function(e) {
+								options.error(e);
+							});
 					}
 
 					function update(options) {

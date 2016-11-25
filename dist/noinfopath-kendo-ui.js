@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 2.0.6
+ *	@version 2.0.7
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -222,7 +222,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 								}
 
 							})
-							.catch(options.error);
+							.catch(function(e) {
+								options.error(e);
+							});
 					}
 
 					function update(options) {
@@ -949,9 +951,6 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				$compile(e.container)(scope);
 			}.bind(scope.noGrid, scope));
 
-			// scope.noGrid.bind("cancel", function(scope, e){
-			// 	$compile(e.container)(scope);
-			// }.bind(scope.noGrid, scope));
 		}
 
 		function _detailRowExpand(config, kgCfg, scope) {
