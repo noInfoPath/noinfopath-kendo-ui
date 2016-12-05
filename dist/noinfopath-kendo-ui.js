@@ -1844,10 +1844,133 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 		}
 		this.ngCompileSelectedRow = _ngCompileRow;
+
+
 	}
 
+	function NoKendoInlineGridEditors($state, noLoginService, noKendoDataSourceFactory, noFormConfig) {
+		var editors = {
+			text: function (scope, def, options) {
+				// create an input element
+				var input = $("<input/>");
+
+				// set its name to the field to which the column is bound ('name' in this case)
+				input.attr("name", options.field);
+
+				return input;
+			},
+			combobox: function (scope, def, options) {
+
+				var input = $("<div style=\"position: relative\"><input /></div>"),
+					ctx = noFormConfig.getComponentContextByRoute($state.current.name, $state.params.entity, "noKendoGrid", "custom"),
+					dataSource;
+
+				ctx.component = {
+					noDataSource: {
+						"name": def.ListSource,
+						"dataProvider": "noIndexedDb",
+						"databaseName": "rmEFR2",
+						"entityName": def.ListSource,
+						"primaryKey": def.ValueField,
+						"sort": [{
+							"field": def.SortField
+						}]
+					}
+				};
+
+				if(def.Filter){
+					ctx.component.noDataSource.filter = def.Filter;
+				}
+
+				dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, ctx.component, scope);
+
+				dataSource.noInfoPath = def;
+
+				input.find("input").attr("name", options.field);
+
+				input.find("input").kendoComboBox({
+					autobind: false,
+					dataTextField: def.TextField,
+					dataValueField: def.ValueField,
+					dataSource: dataSource,
+					template: def.Template ? def.Template : undefined,
+					change: function (e) {
+						var tr = e.sender.element.closest("TR"),
+							grid = e.sender.element.closest("[data-role='grid']").data("kendoGrid"),
+							data = grid.dataItem(tr);
+
+						data[def.SaveColumn] = this.dataItem();
+					}
+				});
+
+				angular.element(input).children().first().addClass("full-width");
+				return input;
+			},
+			timepicker: function(scope, def, options){
+				var input = $("<div><input /></div>");
+
+				// set its name to the field to which the column is bound ('name' in this case)
+				input.find("input").attr("name", options.field);
+				// input.attr("type", "time");
+				input.find("input").kendoTimePicker({
+					"interval": 10
+				});
+
+				return input;
+			}
+		},
+		templates = {
+			"text": function (valueObj) {
+ 				var value = angular.isObject(valueObj) ? valueObj.Description : null;
+				return value;
+			},
+			"timepicker": function(valueObj) {
+				var value = valueObj && valueObj.toLocaleTimeString ? valueObj.toLocaleTimeString() : "";
+				return value;
+			}
+		},
+		templateNameMap = {
+			"text": "text",
+			"combobox": "text",
+			"timepicker": "timepicker"
+		};
+
+		this.getEditor = function(type) {
+			var r = editors[type];
+
+			if(!r) throw "Invalid inline component type: " + type;
+
+			return r;
+		};
+
+		this.getTemplate = function(type) {
+			var r = templates[templateNameMap[type]];
+
+			if(!r) throw "Invalid inline component type: " + type;
+
+			return r;
+		};
+
+		this.renderEditor = function(container, scope, def, options) {
+			var	render = this.getEditor(def.InputType),
+				input;
+
+			if(render) {
+				input = render(scope, def, options);
+				input.appendTo(container);
+			}
+		}
+
+		this.renderTemplate = function(def, col, model) {
+			var valueObj = model[col.field],
+				value = this.getTemplate(def.InputType)(valueObj);
+
+			return value;
+		}
+	}
 	angular.module("noinfopath.kendo.ui")
-		.service("noKendoHelpers", ["$injector", "$compile", "$q", "$state", NoKendoHelpersService]);
+		.service("noKendoHelpers", ["$injector", "$compile", "$q", "$state", NoKendoHelpersService])
+		.service("noKendoInlineGridEditors", ["$state", "noLoginService", "noKendoDataSourceFactory", "noFormConfig", NoKendoInlineGridEditors]);
 })(angular);
 
 //lookup.js
