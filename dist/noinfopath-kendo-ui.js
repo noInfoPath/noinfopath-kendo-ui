@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 2.0.9
+ *	@version 2.0.10
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -1899,7 +1899,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 							grid = e.sender.element.closest("[data-role='grid']").data("kendoGrid"),
 							data = grid.dataItem(tr);
 
-						data[def.SaveColumn] = this.dataItem();
+						data[def.SaveColumn || "Value"] = this.dataItem();
 					}
 				});
 
@@ -1920,8 +1920,8 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			}
 		},
 		templates = {
-			"text": function (valueObj) {
- 				var value = angular.isObject(valueObj) ? valueObj.Description : null;
+			"text": function (valueObj, def) {
+ 				var value = angular.isObject(valueObj) ?  valueObj[def.TextField] || valueObj.Description : valueObj || "";
 				return value;
 			},
 			"timepicker": function(valueObj) {
@@ -1963,7 +1963,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 		this.renderTemplate = function(def, col, model) {
 			var valueObj = model[col.field],
-				value = this.getTemplate(def.InputType)(valueObj);
+				value = this.getTemplate(def.InputType)(valueObj, def);
 
 			return value;
 		}
