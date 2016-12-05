@@ -15,12 +15,12 @@ module.exports = function(config) {
 
 		// list of files / patterns to load in the browser
 		files: [
-			'bower_components/jquery/dist/jquery.js',
+			'node_modules/jquery/dist/jquery.min.js',
 			'node_modules/angular/angular.js',
 			'node_modules/angular-sanitize/angular-sanitize.js',
 			'node_modules/angular-mocks/angular-mocks.js',
 			'node_modules/angular-ui-router/release/angular-ui-router.js',
-			'bower_components/ng-lodash/build/ng-lodash.js',
+			'node_modules/ng-lodash/build/ng-lodash.min.js',
 			'lib/js/kendo/kendo.all.min.js',
 			'node_modules/@noinfopath/noinfopath/dist/noinfopath.js',
 			'node_modules/@noinfopath/noinfopath-helpers/dist/noinfopath-helpers.js',
