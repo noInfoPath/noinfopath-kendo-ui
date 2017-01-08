@@ -12,12 +12,12 @@
 				// if(!filter) throw "Filter " + filterCfg.field + " was not found.";
 
 				function handleKendoDataBoundControlsSimple(){
-					console.log("handleKendoDataBoundControlsSimple");
+					//console.log("handleKendoDataBoundControlsSimple");
 					filter.value = newval;
 				}
 
 				function handleKendoDataBoundControlsAdvanced(){
-					console.log("handleKendoDataBoundControlsAdvanced");
+					//console.log("handleKendoDataBoundControlsAdvanced");
 					//Need to reconstitue the values
 					for(var fi=0; fi<filterCfg.value.length; fi++){
 						var valCfg = filterCfg.value[fi];

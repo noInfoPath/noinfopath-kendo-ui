@@ -259,7 +259,7 @@
 
 
 
-			console.info("changeRowNavBarWatch",ctx.component, barid, scope.noNavigation);
+			//console.info("changeRowNavBarWatch",ctx.component, barid, scope.noNavigation);
 			//console.log("scope, grid, tr, scopeKey, barid", scope, grid, tr, scopeKey, barid);
 		};
 
