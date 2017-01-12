@@ -13,6 +13,58 @@
 	*	> and cell slections.
 	*/
 	function NoKendoHelpersService($injector, $compile, $q, $state) {
+		function _newRow(ctx, scope, el, gridName, navBarName) {
+			var grid = scope[gridName],
+				nonav,
+				barid;
+
+			grid.addRow();
+
+			nonav = grid.editable.element.find("no-navigation");
+			barid = $(nonav.find("navbar")[0]).attr("bar-id") + ".dirty";
+
+			this.changeRowNavBar(ctx, scope, nonav, gridName, navBarName, barid);
+
+			this.changeRowNavBarWatch(ctx, scope, nonav, barid, barid, scope)
+
+		}
+		this.newRow = _newRow.bind(this);
+
+		function _editRow(ctx, scope, el, gridName, navBarName) {
+			var grid = scope[gridName],
+				row = this.getGridRow(el),
+				barid;
+
+			grid.editRow(row);
+
+			barid = $(el.find("navbar")[0]).attr("bar-id") + ".dirty";
+
+			this.changeRowNavBar(ctx, scope, el, gridName, navBarName, barid);
+
+			this.changeRowNavBarWatch(ctx, scope, el, barid, barid, scope)
+
+		}
+		this.editRow = _editRow.bind(this);
+
+		function _cancelRow(ctx, scope, el, gridName, navBarName) {
+			var grid = scope[gridName],
+				row,
+				barid;
+
+			grid.cancelRow();
+
+			row = this.getSelectedGridRow(grid);
+
+			this.ngCompileSelectedRow(ctx, scope, el, gridName);
+
+			barid = $(el.find("navbar")[0]).attr("bar-id");
+
+			this.changeRowNavBar(ctx, scope, el, gridName, navBarName, barid);
+
+			this.changeRowNavBarWatch(ctx, scope, el, barid, barid, scope)
+
+		}
+		this.cancelRow = _cancelRow.bind(this);
 
 		function _resolveCurrentNavigationRow(grid, el) {
 			var tr;
@@ -135,7 +187,7 @@
 		*
 		*/
 		function _getGridRow(el) {
-			var tr = el.closest("tr[data-uid]");
+			var tr = el.is("[data-uid]") ? el : el.closest("tr[data-uid]");
 			return $(tr);
 		}
 		this.getGridRow = _getGridRow;
@@ -216,28 +268,11 @@
 
 			if(grid.editable && grid.editable.validatable && grid.editable.validatable.errors().length > 0) return;
 
-			//console.log("changeNavBar", arguments);
-			// if(barid === "^") {
-			// 	var t = noInfoPath.getItem(scope,  "noNavigation." + barkey + ".currentNavBar"),
-			// 		p = t.split(".");
-			//
-			// 	barid = p[0];
-			// }
-
-
-
 			noInfoPath.setItem(scope, scopeKey , barid);
 
-			console.log("scope, grid, tr, scopeKey, barid", scope, grid, tr, scopeKey, barid);
 		};
 
 		this.changeRowNavBarWatch = function(ctx, scope, el, barid, o, s) {
-			// var grid = scope.noGrid,
-			// 	tr = _resolveCurrentNavigationRow(grid, el);
-			// 	// uid = noInfoPath.toScopeSafeGuid(_getGridRowUID(tr)),
-				// barkey = ctx.component.scopeKey + "_" + uid,
-				// scopeKey = "noNavigation." + barkey + ".currentNavBar";
-
 
 			if(barid) {
 				el.find("navbar").addClass("ng-hide");
@@ -261,7 +296,7 @@
 
 			//console.info("changeRowNavBarWatch",ctx.component, barid, scope.noNavigation);
 			//console.log("scope, grid, tr, scopeKey, barid", scope, grid, tr, scopeKey, barid);
-		};
+		}.bind(this);
 
 		/**
 		*	### @method ngCompileSelectedRow
