@@ -439,6 +439,7 @@
 
 			scope.noGrid._id = noInfoPath.createUUID();
 			if (config.noGrid.referenceOnParentScopeAs) {
+				grid.attr("id", config.noGrid.referenceOnParentScopeAs);
 				noInfoPath.setItem(scope.$parent, config.noGrid.referenceOnParentScopeAs, scope.noGrid);
 			}
 
@@ -602,6 +603,10 @@
 			if (angular.isObject(config.noGrid.nestedGrid)) {
 				scope.childGridFilter = noInfoPath.getItem(e.data, config.noGrid.nestedGrid.filterProperty);
 				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid.noForm + "\"></no-kendo-grid></div>")(scope);
+				if(config.noGrid.nestedGrid.referenceOnParentScopeAs) {
+					var cg = noInfoPath.getItem(compiledGrid.scope(), config.noGrid.nestedGrid.referenceOnParentScopeAs);
+					noInfoPath.setItem(e.detailRow.scope().$parent, config.noGrid.nestedGrid.referenceOnParentScopeAs, cg);
+				}
 			} else {
 				compiledGrid = $compile("<div><no-kendo-grid no-form=\"" + config.noGrid.nestedGrid + "\"></no-kendo-grid></div>")(scope);
 			}
@@ -823,18 +828,41 @@
 	}
 
 
-	function SelectAllGridRowsDirective() {
+	function SelectAllGridRowsDirective(PubSub) {
 			return {
 				restrict: "A",
 				link: function (scope, el, attrs) {
+
 					el.click(function (e) {
-						$(this).closest("grid").find("tbody input:checkbox").prop("checked", this.checked);
-						$(this).closest("[no-kendo-grid-delete-selected-rows]").prop("disabled", $(this).closest("grid").find("tbody input:checkbox:checked"));
-						$(this).closest("[edit-selected-row]").prop("disabled", $(this).closest("grid").find("tbody input:checkbox:checked"));
+						var grid = $(this).closest("grid"),
+							allCheckBoxes = grid.find("tbody input:checkbox");
 
-						//$(this).closest("no-kendo-grid").parent().find("[no-kendo-grid-delete-selected-rows]").prop("disabled",checkedBoxes.length === 0);
+						allCheckBoxes.prop("checked", this.checked);
 
+						allCheckBoxes = grid.find("tbody input:checkbox:checked");
+						//$(".edit-selected").prop("disabled", $("no-table.body input[type='checkbox']:checked").length !== 1);
+						PubSub.publish("noGrid::rowsChecked", {grid: grid, allCheckBoxes: allCheckBoxes});
 					});
+
+					//also add click handler for all other checkbox. when the
+					//the event is handled, it should enable the "edit" button
+					//when a single items is check. Multiples cause disabling.
+					el.closest("grid").find("tbody input:checkbox").click(function (e) {
+						var grid = $(this).closest("grid"),
+							allCheckBoxes = grid.find("tbody input:checkbox:checked");
+
+						//$(".edit-selected").prop("disabled", $("no-table.body input[type='checkbox']:checked").length !== 1);
+						PubSub.publish("noGrid::rowsChecked", {grid: grid, allCheckBoxes: allCheckBoxes});
+					});
+
+					// el.click(function (e) {
+					// 	$(this).closest("grid").find("tbody input:checkbox").prop("checked", this.checked);
+					// 	$(this).closest("[no-kendo-grid-delete-selected-rows]").prop("disabled", $(this).closest("grid").find("tbody input:checkbox:checked"));
+					// 	$(this).closest("[edit-selected-row]").prop("disabled", $(this).closest("grid").find("tbody input:checkbox:checked"));
+					//
+					// 	//$(this).closest("no-kendo-grid").parent().find("[no-kendo-grid-delete-selected-rows]").prop("disabled",checkedBoxes.length === 0);
+					//
+					// });
 
 
 				}
@@ -859,12 +887,11 @@
 	}
 
 
-
 	angular.module("noinfopath.kendo.ui")
 
 		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", "noActionQueue", NoKendoGridDirective])
 
-		.directive("selectAllGridRows", [SelectAllGridRowsDirective])
+		.directive("selectAllGridRows", ["PubSub", SelectAllGridRowsDirective])
 
 		.directive("noKendoGridDeleteSelectedRows", [DeleteSelectedRows])
 

@@ -1,5 +1,5 @@
 # noinfopath-kendo-ui
-@version 2.0.12
+@version 2.0.13
 
 ## Overview
 NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
