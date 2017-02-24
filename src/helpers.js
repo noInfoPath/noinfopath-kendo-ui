@@ -349,7 +349,7 @@
 					ctx.component.noDataSource.filter = def.Filter;
 				}
 
-				dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, ctx.component, scope);
+				dataSource = noKendoDataSourceFactory.create("combobox", noLoginService.user.userId, ctx.component, scope);
 
 				dataSource.noInfoPath = def;
 

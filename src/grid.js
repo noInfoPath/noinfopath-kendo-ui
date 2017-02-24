@@ -709,7 +709,7 @@
 				dataSource;
 
 
-			dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope, _watch);
+			dataSource = noKendoDataSourceFactory.create(attrs.noForm, noLoginService.user.userId, config, scope, _watch);
 
 			kgCfg.dataSource = dataSource;
 

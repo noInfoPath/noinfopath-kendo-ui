@@ -2,7 +2,7 @@
 
 /*
  *	# noinfopath-kendo-ui
- *	@version 2.0.13
+ *	@version 2.0.14
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -99,7 +99,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			Kendo's data aware widgets to work with NoInfoPath's data providers,
 			like the IndexedDB, WebSql and HTTP implementations.
 		*/
-		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "noDynamicFilters", "lodash", "$state", "noCalculatedFields", "noActionQueue", function($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields, noActionQueue) {
+		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "noDynamicFilters", "lodash", "$state", "noCalculatedFields", "noActionQueue", "noAreaLoader", function($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields, noActionQueue, noAreaLoader) {
 
 			function KendoDataSourceService() {
 
@@ -146,7 +146,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					});
 				}
 
-				this.create = function(_, userId, config, scope, watch) {
+				this.create = function(_, noFormAttr, userId, config, scope, watch) {
 					//console.warn("TODO: Implement config.noDataSource and ???");
 					if (!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
 
@@ -173,7 +173,13 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					function read(_, options) {
 						var provider = $injector.get(config.noDataSource.dataProvider),
 							db = provider.getDatabase(config.noDataSource.databaseName),
-							noTable = db[config.noDataSource.entityName];
+							noTable = db[config.noDataSource.entityName],
+							noReadOptions = new noInfoPath.data.NoReadOptions(config.noDataSource.noReadOptions),
+							readArgs;
+
+						noReadOptions.followForeignKeys = true;
+						noReadOptions.followRelations = false;
+						noReadOptions.followParentKeys = false;
 
 						if (options.data.sort) {
 							if (config.noDataSource.sortMap) {
@@ -207,7 +213,12 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 							}
 						}
 
-						noTable.noRead.apply(noTable, noQueryParser.parse(options.data))
+						readArgs = noQueryParser.parse(options.data);
+						readArgs.push(noReadOptions);
+
+						noAreaLoader.markComponentLoading($state.current.name, noFormAttr);
+
+						noTable.noRead.apply(noTable, readArgs)
 							.then(function(data) {
 
 								if(config.noDataSource.actions && config.noDataSource.actions.post) {
@@ -224,6 +235,9 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 							})
 							.catch(function(e) {
 								options.error(e);
+							})
+							.finally(function(){
+								noAreaLoader.markComponentLoaded($state.current.name, noFormAttr);
 							});
 					}
 
@@ -1103,7 +1117,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 				dataSource;
 
 
-			dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope, _watch);
+			dataSource = noKendoDataSourceFactory.create(attrs.noForm, noLoginService.user.userId, config, scope, _watch);
 
 			kgCfg.dataSource = dataSource;
 
@@ -1974,7 +1988,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 					ctx.component.noDataSource.filter = def.Filter;
 				}
 
-				dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, ctx.component, scope);
+				dataSource = noKendoDataSourceFactory.create("combobox", noLoginService.user.userId, ctx.component, scope);
 
 				dataSource.noInfoPath = def;
 

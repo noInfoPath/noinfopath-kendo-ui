@@ -18,7 +18,7 @@
 			Kendo's data aware widgets to work with NoInfoPath's data providers,
 			like the IndexedDB, WebSql and HTTP implementations.
 		*/
-		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "noDynamicFilters", "lodash", "$state", "noCalculatedFields", "noActionQueue", function($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields, noActionQueue) {
+		.factory("noKendoDataSourceFactory", ["$injector", "$q", "noQueryParser", "noTransactionCache", "noDynamicFilters", "lodash", "$state", "noCalculatedFields", "noActionQueue", "noAreaLoader", function($injector, $q, noQueryParser, noTransactionCache, noDynamicFilters, _, $state, noCalculatedFields, noActionQueue, noAreaLoader) {
 
 			function KendoDataSourceService() {
 
@@ -65,7 +65,7 @@
 					});
 				}
 
-				this.create = function(_, userId, config, scope, watch) {
+				this.create = function(_, noFormAttr, userId, config, scope, watch) {
 					//console.warn("TODO: Implement config.noDataSource and ???");
 					if (!config) throw "kendoDataSourceService::create requires a config object as the first parameter";
 
@@ -92,7 +92,13 @@
 					function read(_, options) {
 						var provider = $injector.get(config.noDataSource.dataProvider),
 							db = provider.getDatabase(config.noDataSource.databaseName),
-							noTable = db[config.noDataSource.entityName];
+							noTable = db[config.noDataSource.entityName],
+							noReadOptions = new noInfoPath.data.NoReadOptions(config.noDataSource.noReadOptions),
+							readArgs;
+
+						noReadOptions.followForeignKeys = true;
+						noReadOptions.followRelations = false;
+						noReadOptions.followParentKeys = false;
 
 						if (options.data.sort) {
 							if (config.noDataSource.sortMap) {
@@ -126,7 +132,12 @@
 							}
 						}
 
-						noTable.noRead.apply(noTable, noQueryParser.parse(options.data))
+						readArgs = noQueryParser.parse(options.data);
+						readArgs.push(noReadOptions);
+
+						noAreaLoader.markComponentLoading($state.current.name, noFormAttr);
+
+						noTable.noRead.apply(noTable, readArgs)
 							.then(function(data) {
 
 								if(config.noDataSource.actions && config.noDataSource.actions.post) {
@@ -143,6 +154,9 @@
 							})
 							.catch(function(e) {
 								options.error(e);
+							})
+							.finally(function(){
+								noAreaLoader.markComponentLoaded($state.current.name, noFormAttr);
 							});
 					}
 
