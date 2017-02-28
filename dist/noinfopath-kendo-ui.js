@@ -216,7 +216,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						readArgs = noQueryParser.parse(options.data);
 						readArgs.push(noReadOptions);
 
-						noAreaLoader.markComponentLoading($state.current.name, noFormAttr);
+						if(config.noGrid && !config.noGrid.preventMarkingComponentLoading) noAreaLoader.markComponentLoading($state.current.name, noFormAttr);
 
 						noTable.noRead.apply(noTable, readArgs)
 							.then(function(data) {
@@ -472,7 +472,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 	 *
 	 * ```
 	 */
-	function NoKendoGridDirective($injector, $compile, $timeout, /*$http,*/ noTemplateCache, $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource, noKendoHelpers, noActionQueue) {
+	function NoKendoGridDirective($injector, $compile, $timeout, /*$http,*/ noTemplateCache, $state, $q, _, noLoginService, noKendoDataSourceFactory, noDataSource, noKendoHelpers, noActionQueue, PubSub) {
 
 		function _getKendoGridEditorTemplate(config, scope) {
 			return noTemplateCache.get(config.template)
@@ -611,11 +611,12 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 						params = angular.merge(params, $state.params);
 
-						if (toState) {
+						if (angular.isString(toState)) {
 							$state.go(toState, params);
 						} else {
 							var tableName = dsCfg.entityName;
 							scope.$emit("noGrid::change+" + tableName, data);
+							PubSub.publish("noGrid::rowSelected", {scope: scope, data: data, table: dsCfg.entityName});
 						}
 					};
 
@@ -1297,7 +1298,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 	angular.module("noinfopath.kendo.ui")
 
-		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", "noActionQueue", NoKendoGridDirective])
+		.directive("noKendoGrid", ['$injector', '$compile', '$timeout', 'noTemplateCache', '$state', '$q', 'lodash', 'noLoginService', 'noKendoDataSourceFactory', "noDataSource", "noKendoHelpers", "noActionQueue", "PubSub", NoKendoGridDirective])
 
 		.directive("selectAllGridRows", ["PubSub", SelectAllGridRowsDirective])
 

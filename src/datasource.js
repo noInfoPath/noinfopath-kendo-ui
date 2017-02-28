@@ -135,7 +135,7 @@
 						readArgs = noQueryParser.parse(options.data);
 						readArgs.push(noReadOptions);
 
-						noAreaLoader.markComponentLoading($state.current.name, noFormAttr);
+						if(config.noGrid && !config.noGrid.preventMarkingComponentLoading) noAreaLoader.markComponentLoading($state.current.name, noFormAttr);
 
 						noTable.noRead.apply(noTable, readArgs)
 							.then(function(data) {
