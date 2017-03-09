@@ -75,7 +75,7 @@ module.exports = function(grunt) {
             wiki: {
                 options: {
                     src: 'src/*.js',
-                    dest: 'docs/lol.md',
+                    dest: 'docs/<%= pkg.shortName %>.md',
                     start: ['/*', '/**'],
                     multiDocs: {
                         multiFiles: true,
@@ -115,7 +115,7 @@ module.exports = function(grunt) {
                     expand: true,
                     flatten: true,
                     src: ['docs/*.md', '!docs/global.md'],
-                    dest: '../wikis/<%= pkg.shortName %=>.wiki/'
+                    dest: '../wikis/<%= pkg.shortName %>.wiki/'
                 }]
             }
         },

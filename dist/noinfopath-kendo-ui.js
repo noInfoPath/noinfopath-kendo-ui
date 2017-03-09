@@ -567,11 +567,19 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 		 * 			"template": "<div>hello</div>"
 		 * 		 }
 		 * 	 },
-		 * 	 "noDataSource": {
-		 * 		 "dataProvider": "noIndexedDb",
-		 * 		 "databaseName": "rmEFR2",
-		 * 		 "entityName": "Documents",
-		 * 		 "prim
+		 * 	 "noDataSource": { }
+		 * ```
+		 * *or*
+		 * ```js
+		 * "photos": {
+		 * 	 "noGrid": {
+		 * 		"referenceOnParentScopeAs": "reportPhotoGrid",
+		 * 		 "noRecords": {
+		 * 			"templateProvider": "noTemplateGetterJawn",
+		 *			"method": "getMyFavoriteTemplate"
+		 * 		 }
+		 * 	 },
+		 * 	 "noDataSource": { }
 		 * ```
 		 *
 		 */

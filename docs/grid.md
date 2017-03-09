@@ -82,11 +82,19 @@ It can be either a template string, or a provider and method.
 			"template": "<div>hello</div>"
 		 }
 	 },
-	 "noDataSource": {
-		 "dataProvider": "noIndexedDb",
-		 "databaseName": "rmEFR2",
-		 "entityName": "Documents",
-		 "prim
+	 "noDataSource": { }
+```
+*or*
+```js
+"photos": {
+	 "noGrid": {
+		"referenceOnParentScopeAs": "reportPhotoGrid",
+		 "noRecords": {
+			"templateProvider": "noTemplateGetterJawn",
+		"method": "getMyFavoriteTemplate"
+		 }
+	 },
+	 "noDataSource": { }
 ```
 
 
