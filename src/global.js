@@ -1,8 +1,17 @@
 //global.js
 
+
 /*
- *	# noinfopath-kendo-ui
- *	@version 2.0.16
+ *	[NoInfoPath Home](http://gitlab.imginconline.com/noinfopath/noinfopath/wikis/home)
+ *
+ *	___
+ *
+ *	[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.16*
+ *
+ *	Copyright (c) 2017 The NoInfoPath Group, LLC.
+ *
+ *	Licensed under the MIT License. (MIT)
+ *
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
