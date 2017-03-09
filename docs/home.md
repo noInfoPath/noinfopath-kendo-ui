@@ -17,6 +17,28 @@ it with NoInfoPath Data. It is important to note that this module inplements
  for interface. This particular module will implement the IQueryParser, and
  IQueryBuilder interface.
 
+
+
+
+### Directives
+
+ TODO Needs better descriptions
+
+|Name|Description|
+|----|-----------|
+|[noKendoAutoComplete](autocomplete)|Autocomplete|
+|[noKendoCombobox](combobox)|combobox|
+|[noKendoDatePicker](datepicker)|pick dates|
+|[noKendoGrid](grid)|The infamous Kendo Grid|
+|[noKendoListView](listview)|List view|
+|[noKendoLookup](lookup)|A glorified select tag|
+|[noKendoMultiSelect](multiselect)|A glorified select tag that is actually cool|
+
+### Services
+|[kendoQueryParser](query-parser)|Query Parser|
+|[noKendoHelpers](helpers)|Helpers for Kendo|
+|[noKendoDataSourceFactory](datasource)|Helps with kendo data source|
+
 ## Dependencies
 
 - AngularJS

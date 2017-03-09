@@ -157,7 +157,7 @@ module.exports = function(grunt) {
 
     grunt.registerTask('document', ['concat:noinfopath', 'nodocs:wiki']);
     grunt.registerTask('wikiWack', ['shell:wiki1', 'concat:wikiHome', 'copy:wiki', 'shell:wiki2']);
-    grunt.registerTask('updateWiki', 'document', 'wikiWack');
+    grunt.registerTask('updateWiki', ['document', 'wikiWack']);
 
     grunt.registerTask('notest', ['concat:noinfopath', 'copy:test']);
 };
