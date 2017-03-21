@@ -96,9 +96,9 @@
 							noReadOptions = new noInfoPath.data.NoReadOptions(config.noDataSource.noReadOptions),
 							readArgs;
 
-						noReadOptions.followForeignKeys = true;
-						noReadOptions.followRelations = false;
-						noReadOptions.followParentKeys = false;
+						// noReadOptions.followForeignKeys = true;
+						// noReadOptions.followRelations = false;
+						// noReadOptions.followParentKeys = false;
 
 						if (options.data.sort) {
 							if (config.noDataSource.sortMap) {
