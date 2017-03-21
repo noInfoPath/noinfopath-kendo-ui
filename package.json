@@ -1,5 +1,6 @@
 {
   "name": "@noinfopath/noinfopath-kendo-ui",
+  "shortName": "noinfopath-kendo-ui",
   "version": "2.0.16",
   "description": "noInfoPath wrapper around Kendo UI",
   "main": "noinfopath-kendo-ui.js",
@@ -16,21 +17,14 @@
   "author": "noInfoPath <info@noInfoPath.org> (http://www.noinfopath.org/)",
   "license": "MIT",
   "devDependencies": {
-    "@noinfopath/noinfopath": ">2.0.0",
-    "@noinfopath/noinfopath-app": ">1.0.0",
-    "@noinfopath/noinfopath-data": ">2.0.0",
-    "@noinfopath/noinfopath-forms": "^2.0.12",
-    "@noinfopath/noinfopath-helpers": ">2.0.0",
-    "@noinfopath/noinfopath-logger": ">1.0.0",
-    "@noinfopath/noinfopath-ui": "^2.0.11",
-    "@noinfopath/noinfopath-user": ">1.0.0",
     "grunt": "^0.4.5",
     "grunt-bumpup": "^0.6.2",
     "grunt-contrib-concat": "^0.5.1",
     "grunt-contrib-copy": "^0.8.0",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-karma": "^0.10.1",
-    "grunt-nodocs": "0.0.10",
+    "grunt-nodocs": ">1.0.0",
+    "grunt-shell": "^2.1.0",
     "grunt-version": "^1.0.0",
     "jasmine-ajax": "^3.0.0",
     "jasmine-core": "^2.1.3",
@@ -52,8 +46,6 @@
     "angular-mocks": "^1.4.8",
     "angular-ui-router": "^0.2.18",
     "jquery": "^3.1.1",
-    "jsdoc": "^3.4.0",
-    "ng-lodash": "^0.2.3",
-    "phantomjs": "^1.9.20"
+    "ng-lodash": "^0.2.3"
   }
 }

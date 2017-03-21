@@ -1,8 +1,17 @@
 //global.js
 
+
 /*
- *	# noinfopath-kendo-ui
- *	@version 2.0.16
+ *	[NoInfoPath Home](http://gitlab.imginconline.com/noinfopath/noinfopath/wikis/home)
+ *
+ *	___
+ *
+ *	[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.16*
+ *
+ *	Copyright (c) 2017 The NoInfoPath Group, LLC.
+ *
+ *	Licensed under the MIT License. (MIT)
+ *
  *
  *	## Overview
  *	NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -11,6 +20,30 @@
  *  we'll use the generic object oriented notation of "IXyz", where "I" stands
  *  for interface. This particular module will implement the IQueryParser, and
  *  IQueryBuilder interface.
+ *
+ *
+ *
+ *
+ *	### Directives
+ *
+ *  TODO Needs better descriptions
+ *
+ *	|Name|Description|
+ *	|----|-----------|
+ *	|[noKendoAutoComplete](autocomplete)|Autocomplete|
+ *	|[noKendoCombobox](combobox)|combobox|
+ *	|[noKendoDatePicker](datepicker)|pick dates|
+ *	|[noKendoGrid](grid)|The infamous Kendo Grid|
+ *	|[noKendoListView](listview)|List view|
+ *	|[noKendoLookup](lookup)|A glorified select tag|
+ *	|[noKendoMultiSelect](multiselect)|A glorified select tag that is actually cool|
+ *
+ *	### Services
+ *	|[kendoQueryParser](query-parser)|Query Parser|
+ *	|[noKendoHelpers](helpers)|Helpers for Kendo|
+ *	|[noKendoDataSourceFactory](datasource)|Helps with kendo data source|
+ *
+ * test
  *
  *	## Dependencies
  *

@@ -8,6 +8,23 @@
 
 	}
 
+/*
+ *
+ *
+ *	[NoInfoPath Home](http://gitlab.imginconline.com/noinfopath/noinfopath/wikis/home)
+ *	___
+ *
+ *	[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) * @version 2.0.41 *
+ *
+ *	Copyright (c) 2017 The NoInfoPath Group, LLC.
+ *
+ *	Licensed under the MIT License. (MIT)
+ *
+ *	___
+ *
+ *
+*/
+
 	/**
 	 * ## noKendoGrid (no-kendo-grid) Directive
 	 *
@@ -117,7 +134,39 @@
 			}
 		}
 
-		function _resloveNoRecordsTemplate() {
+
+		/*
+		 * ##### _resloveNoRecordsTemplate
+		 *
+		 * This function gets the template for a grid that uses noRecords.
+		 * It can be either a template string, or a provider and method.
+		 *
+		 * ##### Example
+		 * ```js
+		 * "photos": {
+		 * 	 "noGrid": {
+		 * 		"referenceOnParentScopeAs": "reportPhotoGrid",
+		 * 		 "noRecords": {
+		 * 			"template": "<div>hello</div>"
+		 * 		 }
+		 * 	 },
+		 * 	 "noDataSource": { }
+		 * ```
+		 * *or*
+		 * ```js
+		 * "photos": {
+		 * 	 "noGrid": {
+		 * 		"referenceOnParentScopeAs": "reportPhotoGrid",
+		 * 		 "noRecords": {
+		 * 			"templateProvider": "noTemplateGetterJawn",
+		 *			"method": "getMyFavoriteTemplate"
+		 * 		 }
+		 * 	 },
+		 * 	 "noDataSource": { }
+		 * ```
+		 *
+		 */
+		function _resloveNoRecordsTemplate(config) {
 			var prov, meth, tpl;
 
 			if (config.noGrid.noRecords.template) {
@@ -454,7 +503,7 @@
 				el.append(grid);
 				el.append(message);
 
-				message.html($compile(_resloveNoRecordsTemplate())(scope));
+				message.html($compile(_resloveNoRecordsTemplate(config))(scope));
 			} else {
 
 				grid.removeClass("ng-hide");
