@@ -1,5 +1,13 @@
-# noinfopath-kendo-ui
-@version 2.0.16
+[NoInfoPath Home](http://gitlab.imginconline.com/noinfopath/noinfopath/wikis/home)
+
+___
+
+[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.17*
+
+Copyright (c) 2017 The NoInfoPath Group, LLC.
+
+Licensed under the MIT License. (MIT)
+
 
 ## Overview
 NoInfoPath Kendo UI is a wrapper around Kendo UI in order to integrate
@@ -8,6 +16,30 @@ it with NoInfoPath Data. It is important to note that this module inplements
  we'll use the generic object oriented notation of "IXyz", where "I" stands
  for interface. This particular module will implement the IQueryParser, and
  IQueryBuilder interface.
+
+
+
+
+### Directives
+
+ TODO Needs better descriptions
+
+|Name|Description|
+|----|-----------|
+|[noKendoAutoComplete](autocomplete)|Autocomplete|
+|[noKendoCombobox](combobox)|combobox|
+|[noKendoDatePicker](datepicker)|pick dates|
+|[noKendoGrid](grid)|The infamous Kendo Grid|
+|[noKendoListView](listview)|List view|
+|[noKendoLookup](lookup)|A glorified select tag|
+|[noKendoMultiSelect](multiselect)|A glorified select tag that is actually cool|
+
+### Services
+|[kendoQueryParser](query-parser)|Query Parser|
+|[noKendoHelpers](helpers)|Helpers for Kendo|
+|[noKendoDataSourceFactory](datasource)|Helps with kendo data source|
+
+test
 
 ## Dependencies
 
@@ -92,6 +124,21 @@ like the IndexedDB, WebSql and HTTP implementations.
   should be evaluated as an 'and' or an 'or'. The 'and' logic
   is the default is no filterLogic is defined.
 
+
+
+[NoInfoPath Home](http://gitlab.imginconline.com/noinfopath/noinfopath/wikis/home)
+___
+
+[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) * @version 2.0.41 *
+
+Copyright (c) 2017 The NoInfoPath Group, LLC.
+
+Licensed under the MIT License. (MIT)
+
+___
+
+
+
 ## noKendoGrid (no-kendo-grid) Directive
 
 Creates a Kendo UI Grid, bound to a NoInfoPath data provider, and
@@ -146,6 +193,36 @@ from the Kendo UI Grid documentations.
  }
 
 ```
+
+##### _resloveNoRecordsTemplate
+
+This function gets the template for a grid that uses noRecords.
+It can be either a template string, or a provider and method.
+
+##### Example
+```js
+"photos": {
+	 "noGrid": {
+		"referenceOnParentScopeAs": "reportPhotoGrid",
+		 "noRecords": {
+			"template": "<div>hello</div>"
+		 }
+	 },
+	 "noDataSource": { }
+```
+*or*
+```js
+"photos": {
+	 "noGrid": {
+		"referenceOnParentScopeAs": "reportPhotoGrid",
+		 "noRecords": {
+			"templateProvider": "noTemplateGetterJawn",
+		"method": "getMyFavoriteTemplate"
+		 }
+	 },
+	 "noDataSource": { }
+```
+
 
 #### kendoGrid.selectable property.
 

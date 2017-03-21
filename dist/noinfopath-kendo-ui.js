@@ -6,7 +6,7 @@
  *
  *	___
  *
- *	[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.16*
+ *	[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.17*
  *
  *	Copyright (c) 2017 The NoInfoPath Group, LLC.
  *
@@ -42,6 +42,8 @@
  *	|[kendoQueryParser](query-parser)|Query Parser|
  *	|[noKendoHelpers](helpers)|Helpers for Kendo|
  *	|[noKendoDataSourceFactory](datasource)|Helps with kendo data source|
+ *
+ * test
  *
  *	## Dependencies
  *
