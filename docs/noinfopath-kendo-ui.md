@@ -2,7 +2,7 @@
 
 ___
 
-[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.17*
+[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.18*
 
 Copyright (c) 2017 The NoInfoPath Group, LLC.
 
@@ -86,23 +86,6 @@ test
 |Jeff|2015-08-08T16:38:00Z|Creating a new NoInfoPath module.|
 |Jeff|2015-09-15T11:10:00Z|Implemented noKendoGrid with noKendoDataSource, which integrates with the NoInfoPath Data Providers.|
 
-## noKendoDataSourceFactory
-
-
-### Overview
-This factory returns a service that creates Kendo DataSource objects
-that are compatible with other NoInfoPath wrapped Kendo widgets. The
-configuration data is stored in the NoInfoPath Configuration database,
-placed there either by using the NoInfopath Designer or by a developer,
-creating bare metal applications using the NoInfoPath open source
-components.
-
-
-All properties mentioned in the Kendo DataSource documentation are
-supported with a few tactical exceptions. A few of options are set at
-runtime by the NoInfoPath Kendo UI DataSource wrapper.  This allows
-Kendo's data aware widgets to work with NoInfoPath's data providers,
-like the IndexedDB, WebSql and HTTP implementations.
 
   #### Schema Model
 
