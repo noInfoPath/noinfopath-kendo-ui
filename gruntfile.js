@@ -86,7 +86,7 @@ module.exports = function(grunt) {
         },
         watch: {
             files: ['src/*.js', 'test/*.spec.js'],
-            tasks: ['document']
+            tasks: ['compile']
         },
         uglify: {
             options: {
@@ -160,4 +160,6 @@ module.exports = function(grunt) {
     grunt.registerTask('updateWiki', ['document', 'wikiWack']);
 
     grunt.registerTask('notest', ['concat:noinfopath', 'copy:test']);
+
+	grunt.registerTask('compile', ['concat:noinfopath']);
 };

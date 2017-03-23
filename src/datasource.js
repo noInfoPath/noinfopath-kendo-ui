@@ -231,6 +231,9 @@
 								var v = data === 0 ? 1 : 0;
 
 								return yesNo[v];
+							},
+							"object": function(data) {
+								return data ? data : {};
 							}
 						},
 						ds = angular.merge({
