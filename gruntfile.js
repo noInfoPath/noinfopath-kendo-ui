@@ -152,6 +152,7 @@ module.exports = function(grunt) {
 
     //Default task(s).
     grunt.registerTask('build', ['karma:continuous', 'bumpup', 'version', 'concat:noinfopath', 'nodocs:internal', 'concat:readme']);
+	grunt.registerTask('release', ['karma:continuous', 'bumpup', 'version', 'updateWiki' ]);
     grunt.registerTask('buildy', ['bumpup', 'version', 'concat:noinfopath', 'nodocs:internal', 'concat:readme']);
     grunt.registerTask('jenkins', ['karma:continuous']);
 

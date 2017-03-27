@@ -2,7 +2,7 @@
 
 ___
 
-[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.17*
+[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.19*
 
 Copyright (c) 2017 The NoInfoPath Group, LLC.
 

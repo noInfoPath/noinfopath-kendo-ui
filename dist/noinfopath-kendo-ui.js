@@ -6,7 +6,7 @@
  *
  *	___
  *
- *	[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.18*
+ *	[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.19*
  *
  *	Copyright (c) 2017 The NoInfoPath Group, LLC.
  *
@@ -1400,77 +1400,76 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 	function DatePicker1(noFormConfig, $state, $timeout, noNCLManager, noParameterParser) {
 		function _compile(el, attrs) {
-			var noid = el.parent().parent().attr("noid"),
+			console.warn("Usage of inline attributes other than `no-form` deprecated.");
+
+			var ctx = noFormConfig.getComponentContextByRoute($state.current.name, $state.params.entity, "noKendoDatePicker", attrs.noForm),
+				noid = el.parent().parent().attr("noid"),
 				config,
-				noForm,
+				noForm = ctx.component,
 				ncl,
-				input = angular.element("<input type=\"date\">");
+				input = angular.element("<input type=\"date\">"), //kendo
+				inputHidden = angular.element("<input type=\"hidden\"/>"); //for ng validation
 
 			if(noid) {
 				config = noNCLManager.getHashStore($state.params.fid || $state.current.name.pop("."));
 				ncl = config.get(noid);
 				noForm = ncl.noComponent;
 			} else {
-				config = noFormConfig.getFormByRoute($state.current.name, $state.params.entity);
-				noForm = noInfoPath.getItem(config, attrs.noForm);
+				config = ctx.config;
+				noForm = ctx.component;
 			}
 
-			el.attr("name", noForm.ngModel);  //Make validation work.
+			//el.attr("name", noForm.ngModel);  //Make validation work.
 
 			el.empty();
 
 			if (noForm.binding === "kendo") {
 				input.attr("name", noForm.kendoModel);
-				//	input.attr("data-bind", "value: " + noForm.kendoModel);
-				// config.options.change = function(data) {
-				// 	var tmp = noInfoPath.getItem(scope, config.ngKendo);
-				// 	tmp.set(config.kendoModel, this.value());
-				// 	//noInfoPath.setItem(scope, config.ngKendo, this.value());
-				// };
-
-				// internalDate = new Date(noInfoPath.getItem(scope, noForm.ngModel));
 			}
 
 
 			if (noForm.disabled === true) {
-				input.attr("disabled", true);
+				input.attr("disabled", "");
 			}
 
 			if(ncl) {
+				console.warn("NCL path needs to be revisited.");
 				el.removeAttr("required");
-				var hidden = angular.element("<input />");
-				hidden.attr("type", "hidden");
-				hidden.attr("required", true);
+				inputHidden.attr("type", "hidden");
+				inputHidden.attr("required", true);
 				noForm.ngModel = ($state.params.fid || $state.current.name.split(".").pop()) + "." + ncl.noElement.label; // do the escape thing
-				hidden.attr("ng-model", noForm.ngModel); //TODO add the ngmodel dynanmically
-				el.append(hidden);
+				inputHidden.attr("ng-model", noForm.ngModel); //TODO add the ngmodel dynanmically
+			} else {
+				inputHidden.attr("ng-model", attrs.ngModel || noForm.ngModel);
+				inputHidden.attr("name", noForm.name || noForm.ngModel); //Technially we should require both `name` and `ngModel` in noForm config.
+
 			}
 
-
-			//Warn: this usage is deprecated.  Use noForm.required instead.
 			if (attrs.$attr.required || noForm.required) {
 				el.removeAttr("required");
-				var inputHidden = angular.element("<input />");
-
-				inputHidden.attr("type", "hidden");
-				inputHidden.attr("required", "required");
-
-				inputHidden.attr("ng-model", attrs.ngModel || noForm.ngModel);
-				inputHidden.attr("name", inputHidden.attr("ng-model"))
-				//inputHidden.attr("name", attrs.noModel);
-
-				el.append(inputHidden);
 			}
 
+			// if(noForm.readOnly){
+			// 	input.attr("readonly", "");
+			// }
+
+			el.append(inputHidden);
 			el.append(input);
 
-			return _link.bind(null, noForm);
+			return _link.bind(null, ctx);
 		}
 
-		function _link(noForm, scope, el, attrs) {
-			var	ngModelCtrl,
+		function _link(ctx, scope, el, attrs) {
+			var	noForm = ctx.component,
+				formName = el.closest("[ng-form]").attr("name"),
+				ngCtrlName = formName + "." + noForm.name,
+				ngModelCtrl,
 				datePicker,
 				internalDate;
+
+				// var dataName1 = el.closest("[ng-form]").attr("name"),
+				// 	ngScopeNameValidtor = dataName1 + "." + noForm.name;
+				// 	ngName1 = noForm.ngModel.indexOf(".") > -1 ? noForm.ngModel : ngScopeNameValidtor;
 
 			if (noForm.binding === "kendo") {
 				noForm.options.change = function(data) {
@@ -1495,12 +1494,15 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			 *
 			 */
 			if (noForm.binding === "ng" || noForm.binding === undefined) {
+				ngModelCtrl = noInfoPath.getItem(scope, ngCtrlName);
+				noParameterParser.updateOne(ngModelCtrl, noInfoPath.toDbDate(internalDate));
+
 				scope.$watch(noForm.ngModel, function(newval, oldval) {
-					if (newval != oldval) {
+					if (newval !== oldval) {
 						if (newval !== null) {
 							datePicker.value(new Date(noInfoPath.toDisplayDate(newval)));
 						} else if (noForm.initValue === true) {
-							var tmp = noInfoPath.getItem(scope, noForm.ngModel);
+							var tmp = noInfoPath.getItem(scope, noForm.ngModel);  //Dead code???
 							noParameterParser.updateOne(ngModelCtrl, moment().utc());
 
 							// if something overwrites the value of the date picker
@@ -1513,33 +1515,26 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 				datePicker.bind("change", function() {
 					var newDate = angular.isDate(this.value()) ? this.value() : null,
-						dataName = this.element.closest("[ng-form]").attr("name"),
-						ctl = noInfoPath.getItem(scope, dataName + "." + noForm.ngModel);
+						ctl = noInfoPath.getItem(scope, ngCtrlName);
 
 					noParameterParser.updateOne(ctl, newDate);
 
 					//this will solve the issue of the data not appearing on the scope
 					scope.$apply();
 				});
-				var dataName = el.closest("[ng-form]").attr("name");
-				internalDate = noInfoPath.getItem(scope, dataName + "." + noForm.ngModel);
+
+				internalDate = noInfoPath.getItem(scope, noForm.ngModel);
 			}
 
 			if ((noForm.initValue === undefined || noForm.initValue) && !internalDate) {
 				internalDate = new Date();
 			}
 
+			//fixing the issue where the data is not on the scope on initValue load
 			datePicker.value(noInfoPath.toDisplayDate(new Date(internalDate)));
 
-			//fixing the issue where the data is not on the scope on initValue load
-			var dataName = el.closest("[ng-form]").attr("name");
-			ngModelCtrl = noInfoPath.getItem(scope, dataName + "." + noForm.ngModel);
-			noParameterParser.updateOne(ngModelCtrl, noInfoPath.toDbDate(internalDate));
 
-			if(noForm.readOnly){
-				datePicker.element.attr("readonly", true);
-			}
-
+			//????
 			$timeout(function() {
 				scope.$apply();
 			});
