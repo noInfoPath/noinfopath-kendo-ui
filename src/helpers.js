@@ -229,6 +229,11 @@
 		}
 		this.getCurrentGridRow = _getCurrentGridRow;
 
+		function _getCurrentGridRowUID(scope, tragetGridID) {
+			return _getGridRowUID(_getSelectedGridRow(scope[targetGridID]));
+		}
+		this.getCurrentGridRowUID = _getCurrentGridRowUID;
+
 
 		/**
 		*	### @method getSelectedGridRowData
