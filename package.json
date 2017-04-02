@@ -1,7 +1,7 @@
 {
   "name": "@noinfopath/noinfopath-kendo-ui",
   "shortName": "noinfopath-kendo-ui",
-  "version": "2.0.19",
+  "version": "2.0.20",
   "description": "noInfoPath wrapper around Kendo UI",
   "main": "noinfopath-kendo-ui.js",
   "directories": {

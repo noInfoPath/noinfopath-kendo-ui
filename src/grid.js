@@ -125,6 +125,7 @@
 		}
 
 		function _refreshKendoGrid(grid, e, t, p) {
+			console.log("_refreshKendoGrid", grid._id, pgrid._id);
 			var pgridhtml = p ? p.find("no-kendo-grid") : null,
 				pgridscope = pgridhtml ? pgridhtml.data("$scope") : {},
 				pgrid = pgridscope ? pgridscope.noGrid : {};
@@ -442,6 +443,7 @@
 			fns.push(_ngCompileGrid.bind(el, scope, el));
 
 			kgCfg.dataBound = function(fns, e) {
+
 				for(var i=0; i<fns.length; i++) {
 					var fn = fns[i];
 
@@ -544,6 +546,7 @@
 			}.bind(null, scope.noGrid));
 
 			scope.$on("noGrid::refresh", function(theGrid, e, targetGridID) {
+				console.log("noGrid::refresh", theGrid._id === targetGridID);
 				if (theGrid._id === targetGridID) {
 					theGrid.dataSource.read();
 				}
@@ -746,7 +749,7 @@
 			}
 
 			grid.dataSource.page(0);
-			grid.refresh();
+			//grid.refresh();
 
 		}
 
