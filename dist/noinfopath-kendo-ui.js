@@ -6,7 +6,7 @@
  *
  *	___
  *
- *	[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.22*
+ *	[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.23*
  *
  *	Copyright (c) 2017 The NoInfoPath Group, LLC.
  *
@@ -250,6 +250,15 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 						readArgs.push(noReadOptions);
 
 						if(config.noGrid && !config.noGrid.preventMarkingComponentLoading) noAreaLoader.markComponentLoading($state.current.name, noFormAttr);
+
+						var tmp = noInfoPath.getItem(config, "noKendoDataSource.schema.model.fields"),
+							select = [];
+						if(tmp) {
+							for(var fk in tmp) {
+								select.push(fk);
+							}
+							readArgs.push(select);
+						}
 
 						noTable.noRead.apply(noTable, readArgs)
 							.then(function(data) {

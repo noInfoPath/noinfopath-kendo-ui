@@ -137,6 +137,15 @@
 
 						if(config.noGrid && !config.noGrid.preventMarkingComponentLoading) noAreaLoader.markComponentLoading($state.current.name, noFormAttr);
 
+						var tmp = noInfoPath.getItem(config, "noKendoDataSource.schema.model.fields"),
+							select = [];
+						if(tmp) {
+							for(var fk in tmp) {
+								select.push(fk);
+							}
+							readArgs.push(select);
+						}
+
 						noTable.noRead.apply(noTable, readArgs)
 							.then(function(data) {
 
