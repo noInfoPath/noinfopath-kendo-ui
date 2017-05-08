@@ -7,6 +7,8 @@
 					noForm = noInfoPath.getItem(config, attrs.noForm),
 					input = angular.element("<input type=\"text\"/>");
 
+				input.attr("k-ng-model", noForm.noKendoAutoComplete.kNgModel);
+				input.attr("ng-model", noForm.noKendoAutoComplete.ngModel);
 				el.append(input);
 
 				return _link.bind(null, noForm);
@@ -15,23 +17,23 @@
 			function _link(config, scope, el, attrs) {
 				var kendoOptions = config.noKendoAutoComplete.options,
 					dsCfg = config.noDataSource ? config.noDataSource : config,
-					dataSource = noKendoDataSourceFactory.create(noLoginService.user.userId, config, scope);
+					dataSource = noKendoDataSourceFactory.create(attrs.noForm, noLoginService.user.userId, config, scope);
 
 				kendoOptions.dataSource = dataSource;
-
-				kendoOptions.change = function(e) {
-					var value = this.dataItem(this.current());
-
-					if (!value) {
-						value = {};
-					}
-
-					value[kendoOptions.dataTextField] = this.value();
-
-					noInfoPath.setItem(scope, config.noKendoAutoComplete.ngModel, value);
-
-					scope.$apply();
-				};
+				//
+				// kendoOptions.change = function(e) {
+				// 	var value = this.dataItem(this.current());
+				//
+				// 	if (!value) {
+				// 		value = {};
+				// 	}
+				//
+				// 	value[kendoOptions.dataTextField] = this.value();
+				//
+				// 	noInfoPath.setItem(scope, config.noKendoAutoComplete.ngModel, value);
+				//
+				// 	scope.$apply();
+				// };
 
 				if (config.noKendoAutoComplete.waitFor) {
 					scope.$watch(config.noKendoAutoComplete.waitFor.property, function(newval) {
