@@ -906,8 +906,6 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			}.bind(null, fns);
 
-
-
 		}
 
 		function _columns(kgCfg) {
@@ -944,11 +942,16 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 			scope.noGrid._id = noInfoPath.createUUID();
 			if (config.noGrid.referenceOnParentScopeAs) {
+				scope.noGrid.scopeKey = config.noGrid.referenceOnParentScopeAs;
 				grid.attr("id", config.noGrid.referenceOnParentScopeAs);
 				noInfoPath.setItem(scope.$parent, config.noGrid.referenceOnParentScopeAs, scope.noGrid);
 			}
 
 			scope.noGrid.dataSource.component = scope.noGrid;
+
+			scope.noGrid.bind("dataBound", function(e){
+				PubSub.publish("noKendoGrid::dataBound", scope.noGrid);
+			});
 		}
 
 		function _noRecords(config, el, grid, message) {
@@ -1507,7 +1510,12 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			 */
 			if (noForm.binding === "ng" || noForm.binding === undefined) {
 				ngModelCtrl = noInfoPath.getItem(scope, ngCtrlName);
-				noParameterParser.updateOne(ngModelCtrl, noInfoPath.toDbDate(internalDate));
+
+				if ((noForm.initValue === undefined || noForm.initValue) && !internalDate) {					
+					noParameterParser.updateOne(ngModelCtrl, noInfoPath.toDbDate(internalDate));
+				}
+
+
 
 				scope.$watch(noForm.ngModel, function(newval, oldval) {
 					if (newval !== oldval) {
@@ -1543,7 +1551,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 			}
 
 			//fixing the issue where the data is not on the scope on initValue load
-			datePicker.value(noInfoPath.toDisplayDate(new Date(internalDate)));
+			if(internalDate) datePicker.value(noInfoPath.toDisplayDate(new Date(internalDate)));
 
 
 			//????

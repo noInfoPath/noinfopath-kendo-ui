@@ -98,7 +98,12 @@
 			 */
 			if (noForm.binding === "ng" || noForm.binding === undefined) {
 				ngModelCtrl = noInfoPath.getItem(scope, ngCtrlName);
-				noParameterParser.updateOne(ngModelCtrl, noInfoPath.toDbDate(internalDate));
+
+				if ((noForm.initValue === undefined || noForm.initValue) && !internalDate) {					
+					noParameterParser.updateOne(ngModelCtrl, noInfoPath.toDbDate(internalDate));
+				}
+
+
 
 				scope.$watch(noForm.ngModel, function(newval, oldval) {
 					if (newval !== oldval) {
@@ -134,7 +139,7 @@
 			}
 
 			//fixing the issue where the data is not on the scope on initValue load
-			datePicker.value(noInfoPath.toDisplayDate(new Date(internalDate)));
+			if(internalDate) datePicker.value(noInfoPath.toDisplayDate(new Date(internalDate)));
 
 
 			//????

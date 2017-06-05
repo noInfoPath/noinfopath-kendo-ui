@@ -453,8 +453,6 @@
 
 			}.bind(null, fns);
 
-
-
 		}
 
 		function _columns(kgCfg) {
@@ -491,11 +489,16 @@
 
 			scope.noGrid._id = noInfoPath.createUUID();
 			if (config.noGrid.referenceOnParentScopeAs) {
+				scope.noGrid.scopeKey = config.noGrid.referenceOnParentScopeAs;
 				grid.attr("id", config.noGrid.referenceOnParentScopeAs);
 				noInfoPath.setItem(scope.$parent, config.noGrid.referenceOnParentScopeAs, scope.noGrid);
 			}
 
 			scope.noGrid.dataSource.component = scope.noGrid;
+
+			scope.noGrid.bind("dataBound", function(e){
+				PubSub.publish("noKendoGrid::dataBound", scope.noGrid);
+			});
 		}
 
 		function _noRecords(config, el, grid, message) {
