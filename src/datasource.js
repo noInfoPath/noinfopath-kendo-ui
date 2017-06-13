@@ -146,27 +146,43 @@
 							readArgs.push(select);
 						}
 
-						noTable.noRead.apply(noTable, readArgs)
-							.then(function(data) {
+						function __go(readArgs) {
+							noTable.noRead.apply(noTable, readArgs)
+								.then(function(data) {
 
-								if(config.noDataSource.actions && config.noDataSource.actions.post) {
-									var queue = noActionQueue.createQueue(data, scope, null, config.noDataSource.actions.post);
+									if(config.noDataSource.actions && config.noDataSource.actions.post) {
+										var queue = noActionQueue.createQueue(data, scope, null, config.noDataSource.actions.post);
 
-									noActionQueue.synchronize(queue)
-										.then(function(results){
-											options.success(results[0]);
-										});
-								} else {
-									options.success(data);
-								}
+										noActionQueue.synchronize(queue)
+											.then(function(results){
+												options.success(results[0]);
+											});
+									} else {
+										options.success(data);
+									}
 
-							})
-							.catch(function(e) {
-								options.error(e);
-							})
-							.finally(function(){
-								noAreaLoader.markComponentLoaded($state.current.name, noFormAttr);
-							});
+								})
+								.catch(function(e) {
+									options.error(e);
+								})
+								.finally(function(){
+									noAreaLoader.markComponentLoaded($state.current.name, noFormAttr);
+								});
+						}
+
+						if(config.noDataSource.actions && config.noDataSource.actions.pre) {
+							var queue = noActionQueue.createQueue(readArgs, scope, null, config.noDataSource.actions.pre);
+
+							noActionQueue.synchronize(queue)
+								.then(function(results){
+									return results[0];
+								})
+								.then(__go);
+						} else {
+							__go(readArgs);
+						}
+
+
 					}
 
 					function update(options) {
