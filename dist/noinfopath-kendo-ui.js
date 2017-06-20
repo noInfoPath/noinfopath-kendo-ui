@@ -6,7 +6,7 @@
  *
  *	___
  *
- *	[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.26*
+ *	[NoInfoPath Kendo UI (noinfopath-kendo-ui)](home) *@version 2.0.27*
  *
  *	Copyright (c) 2017 The NoInfoPath Group, LLC.
  *
@@ -1366,7 +1366,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 
 						allCheckBoxes = grid.find("tbody input:checkbox:checked");
 						//$(".edit-selected").prop("disabled", $("no-table.body input[type='checkbox']:checked").length !== 1);
-						PubSub.publish("noGrid::rowsChecked", {grid: grid, allCheckBoxes: allCheckBoxes});
+						PubSub.publish("noGrid::rowsChecked", {grid: grid, allCheckBoxes: allCheckBoxes, boxChecked: null});
 					});
 
 					//also add click handler for all other checkbox. when the
@@ -1377,7 +1377,7 @@ noInfoPath.kendo.normalizedRouteName = function(fromParams, fromState) {
 							allCheckBoxes = grid.find("tbody input:checkbox:checked");
 
 						//$(".edit-selected").prop("disabled", $("no-table.body input[type='checkbox']:checked").length !== 1);
-						PubSub.publish("noGrid::rowsChecked", {grid: grid, allCheckBoxes: allCheckBoxes});
+						PubSub.publish("noGrid::rowsChecked", {grid: grid, allCheckBoxes: allCheckBoxes, boxChecked: e.target});
 					});
 
 					// el.click(function (e) {

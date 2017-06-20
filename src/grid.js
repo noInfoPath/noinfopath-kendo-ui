@@ -897,7 +897,7 @@
 
 						allCheckBoxes = grid.find("tbody input:checkbox:checked");
 						//$(".edit-selected").prop("disabled", $("no-table.body input[type='checkbox']:checked").length !== 1);
-						PubSub.publish("noGrid::rowsChecked", {grid: grid, allCheckBoxes: allCheckBoxes});
+						PubSub.publish("noGrid::rowsChecked", {grid: grid, allCheckBoxes: allCheckBoxes, boxChecked: null});
 					});
 
 					//also add click handler for all other checkbox. when the
@@ -908,7 +908,7 @@
 							allCheckBoxes = grid.find("tbody input:checkbox:checked");
 
 						//$(".edit-selected").prop("disabled", $("no-table.body input[type='checkbox']:checked").length !== 1);
-						PubSub.publish("noGrid::rowsChecked", {grid: grid, allCheckBoxes: allCheckBoxes});
+						PubSub.publish("noGrid::rowsChecked", {grid: grid, allCheckBoxes: allCheckBoxes, boxChecked: e.target});
 					});
 
 					// el.click(function (e) {
