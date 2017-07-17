@@ -883,7 +883,6 @@
 		// };
 	}
 
-
 	function SelectAllGridRowsDirective(PubSub) {
 			return {
 				restrict: "A",
@@ -891,11 +890,11 @@
 
 					el.click(function (e) {
 						var grid = $(this).closest("grid"),
-							allCheckBoxes = grid.find("tbody input:checkbox");
+							allCheckBoxes = grid.find("tbody input:checkbox, tbody input:radio");
 
 						allCheckBoxes.prop("checked", this.checked);
 
-						allCheckBoxes = grid.find("tbody input:checkbox:checked");
+						allCheckBoxes = grid.find("tbody input:checkbox:checked, tbody input:radio");
 						//$(".edit-selected").prop("disabled", $("no-table.body input[type='checkbox']:checked").length !== 1);
 						PubSub.publish("noGrid::rowsChecked", {grid: grid, allCheckBoxes: allCheckBoxes, boxChecked: null});
 					});
@@ -903,9 +902,9 @@
 					//also add click handler for all other checkbox. when the
 					//the event is handled, it should enable the "edit" button
 					//when a single items is check. Multiples cause disabling.
-					el.closest("grid").find("tbody input:checkbox").click(function (e) {
+					el.closest("grid").find("tbody input:checkbox, tbody input:radio").click(function (e) {
 						var grid = $(this).closest("grid"),
-							allCheckBoxes = grid.find("tbody input:checkbox:checked");
+							allCheckBoxes = grid.find("tbody input:checkbox:checked, tbody input:radio:checked");
 
 						//$(".edit-selected").prop("disabled", $("no-table.body input[type='checkbox']:checked").length !== 1);
 						PubSub.publish("noGrid::rowsChecked", {grid: grid, allCheckBoxes: allCheckBoxes, boxChecked: e.target});
@@ -925,6 +924,7 @@
 			};
 
 	}
+
 
 	function DeleteSelectedRows() {
 		return  {
